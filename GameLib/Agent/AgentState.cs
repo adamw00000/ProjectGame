@@ -10,7 +10,7 @@ namespace GameLib
 
         public bool HoldsPiece = false;
         public PieceState PieceState = PieceState.Unknown;
-        public (int X, int Y) Position; // tak wiem, krotka jest nie fajna, można to zmienić, na razie jest tak
+        public (int X, int Y) Position;
 
         public AgentState()
         {
@@ -21,10 +21,64 @@ namespace GameLib
         // tylko uzupełnić planszę (która zależy od infromacji otrzymanych na początku gry.
         public void Setup(GameRules rules)
         {
+            Position = (rules.AgentStartX, rules.AgentStartY);
             Board = new AgentBoard(rules);
-            // uzupełnić Position itd
+        }
 
-            throw new NotImplementedException();
+        public void Move(Direction direction, int distance)
+        {
+            switch(direction)
+            {
+                case Direction.Left:
+                    Position.X--;
+                    break;
+                case Direction.Right:
+                    Position.X++;
+                    break;
+                case Direction.Up:
+                    Position.Y--;
+                    break;
+                case Direction.Down:
+                    Position.Y++;
+                    break;
+            }
+
+            if (Position.X >= Board.Width || Position.X < 0 ||
+                Position.Y >= Board.Height || Position.Y < 0)
+                throw new InvalidMoveException();
+
+            Board.SetDistance(Position.X, Position.Y, distance);
+        }
+
+        public void PickUpPiece()
+        {
+            if (HoldsPiece)
+                throw new PieceOperationException("Picking up piece when agent has one already");
+
+            HoldsPiece = true;
+            PieceState = PieceState.Unknown;
+        }
+
+        public void SetPieceState(PieceState newState)
+        {
+            PieceState = newState;
+        }
+
+        public void PlacePiece()
+        {
+            if (!HoldsPiece)
+                throw new PieceOperationException("Placing piece when agent doesn't have it");
+
+            HoldsPiece = false;
+            PieceState = PieceState.Unknown;
+        }
+
+        public void Discover(DiscoveryResult discoveryResult)
+        {
+            if (!discoveryResult.IsValid(Board))
+                throw new InvalidDiscoveryResultException();
+
+            Board.ApplyDiscoveryResult(discoveryResult);
         }
     }
 
@@ -33,5 +87,20 @@ namespace GameLib
         Valid,
         Invalid,
         Unknown
+    }
+
+    public enum Direction
+    {
+        Up,
+        Down,
+        Left,
+        Right
+    }
+
+    public class InvalidMoveException: Exception { }
+    public class InvalidDiscoveryResultException : Exception { }
+    public class PieceOperationException : Exception
+    {
+        public PieceOperationException(string message = ""): base(message) {  }
     }
 }
