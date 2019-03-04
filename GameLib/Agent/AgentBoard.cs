@@ -83,5 +83,26 @@ namespace GameLib
                 discoveryResult.BasePosition.Y + j >= 0 &&
                 discoveryResult.BasePosition.Y + j < Height;
         }
+
+        internal void ApplyCommunicationResult(AgentBoard resultBoard)
+        {
+            for (int i = 0; i < Height; i++)
+            {
+                for (int j = 0; j < Width; j++)
+                {
+                    if (IsResultBoardOlder(resultBoard, i, j))
+                        continue;
+
+                    Board[i, j].Distance = resultBoard[i, j].Distance;
+                    Board[i, j].IsGoal = resultBoard[i, j].IsGoal;
+                    Board[i, j].Timestamp = resultBoard[i, j].Timestamp;
+                }
+            }
+        }
+
+        private bool IsResultBoardOlder(AgentBoard resultBoard, int i, int j)
+        {
+            return Board[i, j].Timestamp >= resultBoard[i, j].Timestamp;
+        }
     }
 }

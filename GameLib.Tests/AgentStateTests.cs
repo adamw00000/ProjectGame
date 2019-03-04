@@ -178,24 +178,24 @@ namespace GameLib.Tests
         }
 
         [Fact]
-        public void PlacePiece_WhenAgentHasPiece_UpdatesPieceState()
+        public void PlaceOrDestroyPiece_WhenAgentHasPiece_UpdatesPieceState()
         {
             var state = GetState();
             state.HoldsPiece = true;
 
-            state.PlacePiece();
+            state.PlaceOrDestroyPiece();
 
             state.HoldsPiece.ShouldBe(false);
             state.PieceState.ShouldBe(PieceState.Unknown);
         }
 
         [Fact]
-        public void PlacePiece_WhenAgentDoesntHavePiece_ThrowsPieceOperationException()
+        public void PlaceOrDestroyPiece_WhenAgentDoesntHavePiece_ThrowsPieceOperationException()
         {
             var state = GetState();
             state.HoldsPiece = false;
 
-            Should.Throw<PieceOperationException>(() => state.PlacePiece(), "Placing piece when agent doesn't have it");
+            Should.Throw<PieceOperationException>(() => state.PlaceOrDestroyPiece(), "Placing or destroying piece when agent doesn't have it");
         }
 
         [Fact]
@@ -246,6 +246,73 @@ namespace GameLib.Tests
         {
             return x >= 0 && x < board.Width &&
                 y >= 0 && y < board.Height;
+        }
+
+        [Fact]
+        public void ApplyCommunicationResult_WhenBoardAreDifferentSizes_ThrowsInvalidDiscoveryResultException()
+        {
+            var rules = new GameRules(boardWidth: 8);
+            var state = GetSetUpState(rules);
+            var resultRules = new GameRules(boardWidth: 10);
+            var resultBoard = new AgentBoard(resultRules);
+            var communicationResult = new CommunicationResult(resultBoard);
+
+            Should.Throw<InvalidCommunicationResultException>(() => state.ApplyCommunicationResult(communicationResult));
+        }
+
+        [Fact]
+        public void ApplyCommunicationResult_WhenResultIsNewer_UpdatesBoard()
+        {
+            int distance = 1;
+            var rules = GetDefaultRules();
+            var state = GetSetUpState(rules);
+            var resultBoard = new AgentBoard(rules);
+            SetupCommunicationBoards(state.Board, resultBoard, DateTime.MaxValue, distance);
+            var communicationResult = new CommunicationResult(resultBoard);
+
+            state.ApplyCommunicationResult(communicationResult);
+
+            for (int i = 0; i < state.Board.Height; i++)
+            {
+                for (int j = 0; j < state.Board.Width; j++)
+                {
+                    state.Board[i, j].Distance.ShouldBe(distance);
+                }
+            }
+        }
+
+        [Fact]
+        public void ApplyCommunicationResult_WhenResultIsOlder_DoesntUpdatesBoard()
+        {
+            int distance = 1;
+            var rules = GetDefaultRules();
+            var state = GetSetUpState(rules);
+            var resultBoard = new AgentBoard(rules);
+            SetupCommunicationBoards(state.Board, resultBoard, DateTime.MinValue, distance);
+            var communicationResult = new CommunicationResult(resultBoard);
+
+            state.ApplyCommunicationResult(communicationResult);
+
+            for (int i = 0; i < state.Board.Height; i++)
+            {
+                for (int j = 0; j < state.Board.Width; j++)
+                {
+                    state.Board[i, j].Distance.ShouldBe(int.MaxValue);
+                }
+            }
+        }
+
+        private static void SetupCommunicationBoards(AgentBoard agentBoard, AgentBoard resultBoard, DateTime value, int distance)
+        {
+            for (int i = 0; i < resultBoard.Height; i++)
+            {
+                for (int j = 0; j < resultBoard.Width; j++)
+                {
+                    agentBoard.Board[i, j].Distance = int.MaxValue;
+                    resultBoard.Board[i, j].Distance = distance;
+                    resultBoard.Board[i, j].Timestamp = value;
+                }
+            }
         }
     }
 }

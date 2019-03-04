@@ -69,10 +69,10 @@ namespace GameLib
             PieceState = newState;
         }
 
-        public void PlacePiece()
+        public void PlaceOrDestroyPiece()
         {
             if (!HoldsPiece)
-                throw new PieceOperationException("Placing piece when agent doesn't have it");
+                throw new PieceOperationException("Placing or destroying piece when agent doesn't have it");
 
             HoldsPiece = false;
             PieceState = PieceState.Unknown;
@@ -84,6 +84,14 @@ namespace GameLib
                 throw new InvalidDiscoveryResultException();
 
             Board.ApplyDiscoveryResult(discoveryResult);
+        }
+
+        public void ApplyCommunicationResult(CommunicationResult communicationResult)
+        {
+            if (!communicationResult.IsValid(Board))
+                throw new InvalidCommunicationResultException();
+
+            Board.ApplyCommunicationResult(communicationResult.Board);
         }
     }
 
@@ -104,6 +112,7 @@ namespace GameLib
 
     public class InvalidMoveException: Exception { }
     public class InvalidDiscoveryResultException : Exception { }
+    public class InvalidCommunicationResultException : Exception { }
     public class PieceOperationException : Exception
     {
         public PieceOperationException(string message = ""): base(message) {  }
