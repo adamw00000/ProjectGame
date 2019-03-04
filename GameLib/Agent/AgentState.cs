@@ -27,6 +27,8 @@ namespace GameLib
 
         public void Move(Direction direction, int distance)
         {
+            var oldPosition = Position;
+
             switch(direction)
             {
                 case Direction.Left:
@@ -45,7 +47,10 @@ namespace GameLib
 
             if (Position.X >= Board.Width || Position.X < 0 ||
                 Position.Y >= Board.Height || Position.Y < 0)
+            {
+                Position = oldPosition;
                 throw new InvalidMoveException();
+            }
 
             Board.SetDistance(Position.X, Position.Y, distance);
         }
