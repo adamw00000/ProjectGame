@@ -6,15 +6,16 @@
 image: microsoft/dotnet:sdk
 
 pipelines:
-  default:
-    - step:
-        caches:
+  branches:
+    dev:
+      - step:
+          caches:
           - dotnetcore
-        script: # Modify the comma`nds below to build your repository.
-          #- export PROJECT_NAME=yourProjectName
-          #- export TEST_NAME=yourTestName
-          - dotnet restore
-          - dotnet build ConnectionLib
-          - dotnet build GameLib
-          - dotnet build ProjectGame
-          - dotnet test GameLib.Tests
+          script: # Modify the comma`nds below to build your repository.
+              #- export PROJECT_NAME=yourProjectName
+              #- export TEST_NAME=yourTestName
+              - dotnet restore
+              - dotnet build ConnectionLib
+              - dotnet build GameLib
+              - dotnet build ProjectGame
+              - dotnet test GameLib.Tests
