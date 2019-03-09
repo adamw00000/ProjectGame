@@ -111,9 +111,9 @@ namespace GameLib
     }
 
     public class InvalidMoveException: Exception { }
-    public class InvalidDiscoveryResultException : Exception { }
-    public class InvalidCommunicationResultException : Exception { }
-    public class PieceOperationException : Exception
+    public class InvalidDiscoveryResultException: Exception { }
+    public class InvalidCommunicationResultException: Exception { }
+    public class PieceOperationException: Exception
     {
         public PieceOperationException(string message = ""): base(message) {  }
     }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace GameLib
 {
@@ -9,12 +10,39 @@ namespace GameLib
     {
         private readonly IConnection connection;
 
-        private readonly GameMasterBoard board;
+        private GameMasterState state;
         private readonly GameRules rules;
 
         public GameMaster()
         {
 
         }
+
+        public void GenerateBoard()
+        {
+            state = new GameMasterState(rules);
+        }
+        
+        public async Task GeneratePieces()
+        {
+            while (!state.GameEnded)
+            {
+                state.GeneratePiece();
+                await Task.Delay(200);
+            }
+        }
+
+        public async Task StartGame()
+        {
+            var generatePiecesTask = GeneratePieces();
+
+            while (!state.GameEnded)
+            {
+                //game
+            }
+
+            await generatePiecesTask;
+        }
+
     }
 }

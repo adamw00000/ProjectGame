@@ -27,6 +27,12 @@ namespace GameLib
 
         public void Run()
         {
+            //bool gameEnded = false; //?
+            //while(!gameEnded)
+            //{
+            //    IAction nextAction = decisionModule.ChooseAction(state);
+            //    connection.Send(nextAction);//????
+            //}
             // loop decisionModule <-> connection.Send()
             throw new NotImplementedException();
         }

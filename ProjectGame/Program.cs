@@ -1,4 +1,6 @@
-﻿using System;
+﻿using GameLib;
+using System;
+using System.Threading.Tasks;
 
 namespace ProjectGame
 {
@@ -7,6 +9,8 @@ namespace ProjectGame
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
+
+            RandomGenerator.Initialize();
         }
     }
 }
