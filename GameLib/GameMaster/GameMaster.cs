@@ -28,7 +28,7 @@ namespace GameLib
             while (!state.GameEnded)
             {
                 state.GeneratePiece();
-                await Task.Delay(200);
+                await Task.Delay(rules.PieceSpawnInterval);
             }
         }
 
@@ -43,6 +43,11 @@ namespace GameLib
 
             await generatePiecesTask;
         }
+    }
 
+    public enum Team
+    {
+        Blue = 0,
+        Red = 1
     }
 }

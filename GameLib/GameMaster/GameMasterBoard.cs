@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GameLib
 {
     public class GameMasterBoard
     {
-        public readonly GameMasterField[,] Board;
-        public int Height => Board.GetLength(0);
-        public int Width => Board.GetLength(1);
+        public readonly GameMasterField[,] BoardTable;
+        public int Height => BoardTable.GetLength(0);
+        public int Width => BoardTable.GetLength(1);
         public int GoalAreaHeight { get; }
 
         public int PieceCount { get; set; } = 0; //wlacznie z kawalkami posiadanymi przez graczy
@@ -16,21 +17,53 @@ namespace GameLib
         {
             int width = rules.BoardWidth;
             int height = rules.BoardHeight;
-            Board = new GameMasterField[height, width];
+            BoardTable = new GameMasterField[height, width];
 
             GoalAreaHeight = rules.GoalAreaHeight;
+
+            GenerateGoals(rules.GoalCount);
 
             for (int x = 0; x < height; x++)
             {
                 for (int y = 0; y < width; y++)
                 {
-                    Board[x, y] = new GameMasterField() { Distance = int.MaxValue}; //Niektore pola z goal area sa golami, trzeba to uswawiac
+                    BoardTable[x, y] = new GameMasterField() { Distance = int.MaxValue }; //Niektore pola z goal area sa golami, trzeba to uswawiac
                 }
             }
         }
-        public bool InHisGoalArea(int x, int y, int team)
+
+        private void GenerateGoals(int count)
         {
-            if (team == 0)
+            for (int i = 0; i < count; i++)
+            {
+                ChooseRandomFieldForGoal(out int x, out int y);
+                BoardTable[x, y].IsGoal = true;
+            }
+        }
+
+        private void ChooseRandomFieldForGoal(out int x, out int y)
+        {
+            var random = RandomGenerator.GetGenerator();
+
+            do
+            {
+                x = random.Next(GoalAreaHeight, Height - GoalAreaHeight);
+                y = random.Next(0, Width);
+            } while (BoardTable[x, y].IsGoal); //Madrzejsze losowanie? da sie o(1), todo
+        }
+
+        public GameMasterField this[int x, int y]
+        {
+            get => BoardTable[x, y];
+            set
+            {
+                BoardTable[x, y] = value;
+            }
+        }
+
+        public bool IsAgentInGoalArea(int x, int y, Team team)
+        {
+            if (team == Team.Blue)
             {
                 return x >= 0 && x < GoalAreaHeight;
             }
@@ -39,17 +72,12 @@ namespace GameLib
                 return x >= Height - GoalAreaHeight && x < Height;
             }
         }
+
         public void RecalculateDistances()
         {
-            if (PiecesPositions.Count == 0) //PieceCount==0?? Chyba nie...?
+            if (PiecesPositions.Count == 0) 
             {
-                for (int x = 0; x < Width; x++)
-                {
-                    for (int y = 0; y < Height; y++)
-                    {
-                        Board[x, y].Distance = -1;
-                    }
-                }
+                SetEmptyBoardDistances();
             }
             else
             {
@@ -57,17 +85,29 @@ namespace GameLib
                 {
                     for (int y = 0; y < Height; y++)
                     {
-                        Board[x, y].Distance = int.MaxValue;
+                        BoardTable[x, y].Distance = int.MaxValue;
                     }
                 }
-                bool[,] visited = new bool[Width, Height];
-                foreach (var position in PiecesPositions)
+
+                foreach (var (x, y) in PiecesPositions)
                 {
-                    CalculateDistancesFromPiece(position.x, position.y, 0);
+                    CalculateDistancesFromPiece(x, y, 0);
                 }
             }
         }
-        private void CalculateDistancesFromPiece(int x, int y, int distance)
+
+        private void SetEmptyBoardDistances()
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                for (int y = 0; y < Height; y++)
+                {
+                    BoardTable[x, y].Distance = -1;
+                }
+            }
+        }
+
+        private void CalculateDistancesFromPiece(int x, int y, int distance) //a la flood fill
         {
             bool[,] visited = new bool[Width, Height];
 
@@ -83,19 +123,21 @@ namespace GameLib
                         (int px, int py, int dist) = stack.Pop();
                         visited[px, py] = true;
 
-                        if (Board[px, py].Distance > dist)
+                        if (BoardTable[px, py].Distance > dist)
                         {
-                            Board[px, py].Distance = dist;
+                            BoardTable[px, py].Distance = dist;
                         }
 
                         if (px + i <= Width - 1 && px + i >= 0 && !visited[px + i, py])
                         {
                             stack.Push((px + i, py, dist + 1));
                         }
+
                         if (py + j <= Height - 1 && py + j >= 0 && !visited[px, py + j])
                         {
                             stack.Push((px, py + j, dist + 1));
                         }
+
                         if (py + j <= Height - 1 && py + j >= 0 && px + i <= Width - 1 && px + i >= 0 && !visited[px + i, py + j])
                         {
                             stack.Push((px + i, py + j, dist + 2));
@@ -107,32 +149,33 @@ namespace GameLib
 
         public void GeneratePiece(double probability)
         {
+            ChooseRandomFieldForPiece(out int x, out int y);
+
+            BoardTable[x, y].Piece = new Piece(probability);
+
+            PiecesPositions.Add((x, y));
+            PieceCount++;
+            RecalculateDistances();
+        }
+
+        public void GeneratePieceAt(int x, int y, double probability) //do testow!!
+        {
+            BoardTable[x, y].Piece = new Piece(probability);
+
+            PiecesPositions.Add((x, y));
+            PieceCount++;
+            RecalculateDistances();
+        }
+
+        private void ChooseRandomFieldForPiece(out int x, out int y)
+        {
             var random = RandomGenerator.GetGenerator();
-            
-            ChooseRandomField(random, out int x, out int y);
 
-            Board[x, y].Piece = new Piece(probability);
-
-            PiecesPositions.Add((x, y));
-            PieceCount++;
-            RecalculateDistances();
-        }
-        public void GeneratePieceOnCoordinates(int x, int y, double probability) //do testow!!
-        {
-            Board[x, y].Piece = new Piece(probability);
-
-            PiecesPositions.Add((x, y));
-            PieceCount++;
-            RecalculateDistances();
-        }
-
-        private void ChooseRandomField(System.Random random, out int x, out int y)
-        {
             do
             {
                 x = random.Next(GoalAreaHeight, Height - GoalAreaHeight);
                 y = random.Next(0, Width);
-            } while (Board[x, y].HasPiece); //Madrzejsze losowanie?
+            } while (BoardTable[x, y].HasPiece); //Madrzejsze losowanie? da sie o(1), todo
         }
 
         public int[,] GetDistancesAround(int x, int y)
@@ -145,7 +188,7 @@ namespace GameLib
                 {
                     if (i >= 0 && i < Width && j >= 0 && j < Height)
                     {
-                        result[i - x + 1, j - y + 1] = Board[i, j].Distance;
+                        result[i - x + 1, j - y + 1] = BoardTable[i, j].Distance;
                     }
                     else
                     {
@@ -162,7 +205,7 @@ namespace GameLib
             {
                 for (int j = 0; j < Width; j++)
                 {
-                    if (Board[i, j].Piece != null)
+                    if (BoardTable[i, j].Piece != null)
                         return true;
                 }
             }
@@ -171,20 +214,12 @@ namespace GameLib
             {
                 for (int j = 0; j < Width; j++)
                 {
-                    if (Board[i, j].Piece != null)
+                    if (BoardTable[i, j].Piece != null)
                         return true;
                 }
             }
 
             return false;
-        }
-        public GameMasterField this[int x, int y]
-        {
-            get => Board[x, y];
-            set
-            {
-                Board[x, y] = value;
-            }
         }
     }
 }

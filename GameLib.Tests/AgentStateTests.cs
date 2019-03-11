@@ -4,6 +4,7 @@ using System.Text;
 using Xunit;
 using Shouldly;
 using Moq;
+using static GameLib.Exceptions;
 
 namespace GameLib.Tests
 {
@@ -98,17 +99,16 @@ namespace GameLib.Tests
             switch (direction)
             {
                 case Direction.Left:
-                    expectedX--;
-                    break;
-                case Direction.Right:
-                    expectedX++;
-                    break;
-                    //oś Y z dołu do góry
-                case Direction.Up:
                     expectedY--;
                     break;
-                case Direction.Down:
+                case Direction.Right:
                     expectedY++;
+                    break;
+                case Direction.Up:
+                    expectedX--;
+                    break;
+                case Direction.Down:
+                    expectedX++;
                     break;
             }
             state.Position.X.ShouldBe(expectedX);
@@ -203,7 +203,7 @@ namespace GameLib.Tests
         {
             var state = GetState();
             var fields = new AgentField[3, 4];
-            var discoveryResult = new DiscoveryResult(1, 1, fields);
+            var discoveryResult = new AgentDiscoveryResult(1, 1, fields);
 
             Should.Throw<InvalidDiscoveryResultException>(() => state.Discover(discoveryResult));
         }
@@ -214,7 +214,7 @@ namespace GameLib.Tests
             var rules = GetDefaultRules();
             var state = GetSetUpState(rules);
             var fields = new AgentField[3, 3];
-            var discoveryResult = new DiscoveryResult(-1, -1, fields);
+            var discoveryResult = new AgentDiscoveryResult(-1, -1, fields);
 
             Should.Throw<InvalidDiscoveryResultException>(() => state.Discover(discoveryResult));
         }
@@ -228,7 +228,7 @@ namespace GameLib.Tests
             var rules = GetDefaultRules();
             var state = GetSetUpState(rules);
             AgentField[,] fields = GetFields();
-            var discoveryResult = new DiscoveryResult(x, y, fields);
+            var discoveryResult = new AgentDiscoveryResult(x, y, fields);
 
             state.Discover(discoveryResult);
 
@@ -297,7 +297,7 @@ namespace GameLib.Tests
             {
                 for (int j = 0; j < state.Board.Width; j++)
                 {
-                    state.Board[i, j].Distance.ShouldBe(int.MaxValue);
+                    state.Board[i, j].Distance.ShouldBe(-1);
                 }
             }
         }
@@ -308,9 +308,9 @@ namespace GameLib.Tests
             {
                 for (int j = 0; j < resultBoard.Width; j++)
                 {
-                    agentBoard.Board[i, j].Distance = int.MaxValue;
-                    resultBoard.Board[i, j].Distance = distance;
-                    resultBoard.Board[i, j].Timestamp = value;
+                    agentBoard.BoardTable[i, j].Distance = -1;
+                    resultBoard.BoardTable[i, j].Distance = distance;
+                    resultBoard.BoardTable[i, j].Timestamp = value;
                 }
             }
         }

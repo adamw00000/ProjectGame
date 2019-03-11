@@ -55,5 +55,28 @@
             PutPieceMultiplier = putMultiplier;
             CommunicationMultiplier = communicationMultiplier;
         }
+        public GameRules ReconstructWithAgentPosition(int x, int y)
+        {
+            return new GameRules(
+                boardWidth: BoardWidth,
+                boardHeight: BoardHeight,
+                goalAreaHeight: GoalAreaHeight,
+                goalCount: GoalCount,
+                teamSize: TeamSize,
+                pieceSpawnInterval: PieceSpawnInterval,
+                maxPiecesOnBoard: MaxPiecesOnBoard,
+                badPieceProbability: BadPieceProbability,
+                baseTimePenalty: BaseTimePenalty,
+                moveMultiplier: MoveMultiplier,
+                discoverMultiplier: DestroyPieceMultiplier,
+                pickUpMultiplier: PickUpMultiplier,
+                checkMultiplier: CheckMultiplier,
+                destroyMultiplier: DestroyPieceMultiplier,
+                putMultiplier: PutPieceMultiplier,
+                communicationMultiplier: CommunicationMultiplier,
+                agentStartX: x,
+                agentStartY: y
+            );
+        }
     }
 }

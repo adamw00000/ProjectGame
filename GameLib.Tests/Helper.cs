@@ -15,5 +15,10 @@ namespace GameLib.Tests
         public static GameRules GetAlwaysValidPieceRules() =>
             new GameRules(boardWidth: 8, boardHeight: 8, goalAreaHeight: 2, agentStartX: 4, agentStartY: 5, pieceSpawnInterval: 500, maxPiecesOnBoard: 10, badPieceProbability: 0);
 
+        public static GameMasterState GetGameMasterState(GameRules rules) 
+        {
+            RandomGenerator.Initialize();
+            return new GameMasterState(rules);
+        }
     }
 }

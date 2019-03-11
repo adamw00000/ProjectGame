@@ -6,7 +6,7 @@ namespace GameLib
     {
         public (int X, int Y) Position { get; set; }
         public bool IsLeader { get; private set; }
-        public int Team { get; private set; }
+        public Team Team { get; private set; }
         public Piece Piece { get; set; }
 
         public DateTime LastRequestTimestamp { get; set; }
@@ -14,7 +14,7 @@ namespace GameLib
 
         public bool IsEligibleForAction => DateTime.UtcNow >= LastRequestTimestamp.AddMilliseconds(LastActionDelay);
 
-        public PlayerState(int x, int y, int team = 0, bool isLeader = false)
+        public PlayerState(int x, int y, Team team = Team.Blue, bool isLeader = false)
         {
             Position = (x, y);
             IsLeader = isLeader;

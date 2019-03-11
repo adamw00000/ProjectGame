@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using static GameLib.Exceptions;
 
 namespace GameLib
 {
@@ -32,16 +33,16 @@ namespace GameLib
             switch(direction)
             {
                 case Direction.Left:
-                    Position.X--;
-                    break;
-                case Direction.Right:
-                    Position.X++;
-                    break;
-                case Direction.Up:
                     Position.Y--;
                     break;
-                case Direction.Down:
+                case Direction.Right:
                     Position.Y++;
+                    break;
+                case Direction.Up:
+                    Position.X--;
+                    break;
+                case Direction.Down:
+                    Position.X++;
                     break;
             }
 
@@ -78,7 +79,7 @@ namespace GameLib
             PieceState = PieceState.Unknown;
         }
 
-        public void Discover(DiscoveryResult discoveryResult)
+        public void Discover(AgentDiscoveryResult discoveryResult)
         {
             if (!discoveryResult.IsValid(Board))
                 throw new InvalidDiscoveryResultException();
@@ -108,13 +109,5 @@ namespace GameLib
         Down,
         Left,
         Right
-    }
-
-    public class InvalidMoveException: Exception { }
-    public class InvalidDiscoveryResultException: Exception { }
-    public class InvalidCommunicationResultException: Exception { }
-    public class PieceOperationException: Exception
-    {
-        public PieceOperationException(string message = ""): base(message) {  }
     }
 }
