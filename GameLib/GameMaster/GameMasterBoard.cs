@@ -9,7 +9,7 @@ namespace GameLib
         public int Width => Board.GetLength(1);
         public int GoalAreaHeight { get; }
 
-        public int PieceCount { get; private set; } = 0;
+        public int PieceCount { get; set; } = 0; //wlacznie z kawalkami posiadanymi przez graczy
         public List<(int x, int y)> PiecesPositions = new List<(int x, int y)>();
 
         public GameMasterBoard(GameRules rules)
@@ -24,23 +24,47 @@ namespace GameLib
             {
                 for (int y = 0; y < width; y++)
                 {
-                    Board[x, y] = new GameMasterField() { Distance = int.MaxValue};
+                    Board[x, y] = new GameMasterField() { Distance = int.MaxValue}; //Niektore pola z goal area sa golami, trzeba to uswawiac
                 }
+            }
+        }
+        public bool InHisGoalArea(int x, int y, int team)
+        {
+            if (team == 0)
+            {
+                return x >= 0 && x < GoalAreaHeight;
+            }
+            else
+            {
+                return x >= Height - GoalAreaHeight && x < Height;
             }
         }
         public void RecalculateDistances()
         {
-            for (int x = 0; x < Width; x++)
+            if (PiecesPositions.Count == 0) //PieceCount==0?? Chyba nie...?
             {
-                for (int y = 0; y < Height; y++)
+                for (int x = 0; x < Width; x++)
                 {
-                    Board[x, y].Distance = int.MaxValue;
+                    for (int y = 0; y < Height; y++)
+                    {
+                        Board[x, y].Distance = -1;
+                    }
                 }
             }
-            bool[,] visited = new bool[Width, Height];
-            foreach(var position in PiecesPositions)
+            else
             {
-                CalculateDistancesFromPiece(position.x, position.y, 0);
+                for (int x = 0; x < Width; x++)
+                {
+                    for (int y = 0; y < Height; y++)
+                    {
+                        Board[x, y].Distance = int.MaxValue;
+                    }
+                }
+                bool[,] visited = new bool[Width, Height];
+                foreach (var position in PiecesPositions)
+                {
+                    CalculateDistancesFromPiece(position.x, position.y, 0);
+                }
             }
         }
         private void CalculateDistancesFromPiece(int x, int y, int distance)
@@ -91,6 +115,7 @@ namespace GameLib
 
             PiecesPositions.Add((x, y));
             PieceCount++;
+            RecalculateDistances();
         }
         public void GeneratePieceOnCoordinates(int x, int y, double probability) //do testow!!
         {
@@ -98,6 +123,7 @@ namespace GameLib
 
             PiecesPositions.Add((x, y));
             PieceCount++;
+            RecalculateDistances();
         }
 
         private void ChooseRandomField(System.Random random, out int x, out int y)
@@ -107,6 +133,27 @@ namespace GameLib
                 x = random.Next(GoalAreaHeight, Height - GoalAreaHeight);
                 y = random.Next(0, Width);
             } while (Board[x, y].HasPiece); //Madrzejsze losowanie?
+        }
+
+        public int[,] GetDistancesAround(int x, int y)
+        {
+            int[,] result = new int[3, 3];
+
+            for (int i = x - 1; i < x + 1; i++)
+            {
+                for (int j = y - 1; j < y + 1; j++)
+                {
+                    if (i >= 0 && i < Width && j >= 0 && j < Height)
+                    {
+                        result[i - x + 1, j - y + 1] = Board[i, j].Distance;
+                    }
+                    else
+                    {
+                        result[i - x + 1, j - y + 1] = int.MaxValue;
+                    }
+                }
+            }
+            return result;
         }
 
         public bool AreAnyPiecesInGoalArea()

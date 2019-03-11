@@ -208,74 +208,93 @@ namespace GameLib.Tests
             (int x, int y) firstPiecePosition = state.Board.PiecesPositions[0];
 
             int agentId = 0;
+
             state.PlayerStates.Add(agentId, new PlayerState(firstPiecePosition.x, firstPiecePosition.y) { LastActionDelay = 0 });
 
             state.PickUpPiece(agentId);
 
-            state.Board.Board[0, 0].Distance.ShouldBe(3);
-            state.Board.Board[0, 1].Distance.ShouldBe(2);
-            state.Board.Board[0, 2].Distance.ShouldBe(1);
-            state.Board.Board[0, 3].Distance.ShouldBe(2);
-            state.Board.Board[0, 4].Distance.ShouldBe(3);
-            state.Board.Board[0, 5].Distance.ShouldBe(4);
-            state.Board.Board[0, 6].Distance.ShouldBe(5);
-            state.Board.Board[0, 7].Distance.ShouldBe(6);
-            state.Board.Board[1, 0].Distance.ShouldBe(2);
-            state.Board.Board[1, 1].Distance.ShouldBe(1);
-            state.Board.Board[1, 2].Distance.ShouldBe(0);
-            state.Board.Board[1, 3].Distance.ShouldBe(1);
-            state.Board.Board[1, 4].Distance.ShouldBe(2);
-            state.Board.Board[1, 5].Distance.ShouldBe(3);
-            state.Board.Board[1, 6].Distance.ShouldBe(4);
-            state.Board.Board[1, 7].Distance.ShouldBe(5);
-            state.Board.Board[2, 0].Distance.ShouldBe(3);
-            state.Board.Board[2, 1].Distance.ShouldBe(2);
-            state.Board.Board[2, 2].Distance.ShouldBe(1);
-            state.Board.Board[2, 3].Distance.ShouldBe(2);
-            state.Board.Board[2, 4].Distance.ShouldBe(3);
-            state.Board.Board[2, 5].Distance.ShouldBe(4);
-            state.Board.Board[2, 6].Distance.ShouldBe(5);
-            state.Board.Board[2, 7].Distance.ShouldBe(6);
-            state.Board.Board[3, 0].Distance.ShouldBe(4);
-            state.Board.Board[3, 1].Distance.ShouldBe(3);
-            state.Board.Board[3, 2].Distance.ShouldBe(2);
-            state.Board.Board[3, 3].Distance.ShouldBe(3);
-            state.Board.Board[3, 4].Distance.ShouldBe(4);
-            state.Board.Board[3, 5].Distance.ShouldBe(5);
-            state.Board.Board[3, 6].Distance.ShouldBe(6);
-            state.Board.Board[3, 7].Distance.ShouldBe(7);
-            state.Board.Board[4, 0].Distance.ShouldBe(5);
-            state.Board.Board[4, 1].Distance.ShouldBe(4);
-            state.Board.Board[4, 2].Distance.ShouldBe(3);
-            state.Board.Board[4, 3].Distance.ShouldBe(3);
-            state.Board.Board[4, 4].Distance.ShouldBe(4);
-            state.Board.Board[4, 5].Distance.ShouldBe(5);
-            state.Board.Board[4, 6].Distance.ShouldBe(6);
-            state.Board.Board[4, 7].Distance.ShouldBe(7);
-            state.Board.Board[5, 0].Distance.ShouldBe(5);
-            state.Board.Board[5, 1].Distance.ShouldBe(4);
-            state.Board.Board[5, 2].Distance.ShouldBe(3);
-            state.Board.Board[5, 3].Distance.ShouldBe(2);
-            state.Board.Board[5, 4].Distance.ShouldBe(3);
-            state.Board.Board[5, 5].Distance.ShouldBe(4);
-            state.Board.Board[5, 6].Distance.ShouldBe(5);
-            state.Board.Board[5, 7].Distance.ShouldBe(6);
-            state.Board.Board[6, 0].Distance.ShouldBe(4);
-            state.Board.Board[6, 1].Distance.ShouldBe(3);
-            state.Board.Board[6, 2].Distance.ShouldBe(2);
-            state.Board.Board[6, 3].Distance.ShouldBe(1);
-            state.Board.Board[6, 4].Distance.ShouldBe(2);
-            state.Board.Board[6, 5].Distance.ShouldBe(3);
-            state.Board.Board[6, 6].Distance.ShouldBe(4);
-            state.Board.Board[6, 7].Distance.ShouldBe(5);
-            state.Board.Board[7, 0].Distance.ShouldBe(3);
-            state.Board.Board[7, 1].Distance.ShouldBe(2);
-            state.Board.Board[7, 2].Distance.ShouldBe(1);
-            state.Board.Board[7, 3].Distance.ShouldBe(0);
-            state.Board.Board[7, 4].Distance.ShouldBe(1);
-            state.Board.Board[7, 5].Distance.ShouldBe(2);
-            state.Board.Board[7, 6].Distance.ShouldBe(3);
-            state.Board.Board[7, 7].Distance.ShouldBe(4);
+            int[,] results = { {3,2,1,2,3,4,5,6}, 
+                               {2,1,0,1,2,3,4,5}, 
+                               {3,2,1,2,3,4,5,6}, 
+                               {4,3,2,3,4,5,6,7},
+                               {5,4,3,3,4,5,6,7},
+                               {5,4,3,2,3,4,5,6},
+                               {4,3,2,1,2,3,4,5},
+                               {3,2,1,0,1,2,3,4}};
+
+            for (int x = 0; x < state.Board.Width; x++)
+            {
+                for (int y = 0; y < state.Board.Height; y++)
+                {
+                    state.Board.Board[x, y].Distance.ShouldBe(results[x,y]);
+                }
+            }
+        }
+
+        [Fact]
+        public void AfterPickingUpOnlyPieceOnBoard_DistancesShouldBeNegative_AndPieceCountShouldBeOne()
+        {
+            var rules = Helper.GetStaticDefaultRules();
+            var state = GetState(rules);
+
+            state.GeneratePieceOnCoordinates(4, 5);
+
+
+            state.PlayerStates.Clear();
+            (int x, int y) firstPiecePosition = state.Board.PiecesPositions[0];
+
+            int agentId = 0;
+
+            state.PlayerStates.Add(agentId, new PlayerState(firstPiecePosition.x, firstPiecePosition.y) { LastActionDelay = 0 });
+
+            state.PickUpPiece(agentId);
+
+            for (int x = 0; x < state.Board.Width; x++)
+            {
+                for (int y = 0; y < state.Board.Height; y++)
+                {
+                    state.Board.Board[x, y].Distance.ShouldBe(-1);
+                }
+            }
+            state.Board.PieceCount.ShouldBe(1);
+        }
+
+        [Fact]
+        public void PutPieceWithoutHavingOne_ThrowsPieceOperationException()
+        {
+            var rules = Helper.GetStaticDefaultRules();
+            var state = GetState(rules);
+
+            state.GeneratePiece();
+
+
+            state.PlayerStates.Clear();
+            (int x, int y) firstPiecePosition = state.Board.PiecesPositions[0];
+
+            int agentId = 0;
+
+            state.PlayerStates.Add(agentId, new PlayerState(firstPiecePosition.x, firstPiecePosition.y) { LastActionDelay = 0 });
+
+            Should.Throw<PieceOperationException>(() => state.PutPiece(agentId));
+        }
+
+        [Fact]
+        public void PutPieceOnAnotherPiece_ThrowsPieceOperationException()
+        {
+            var rules = Helper.GetStaticDefaultRules();
+            var state = GetState(rules);
+
+            state.GeneratePieceOnCoordinates(4, 5);
+
+
+            state.PlayerStates.Clear();
+            (int x, int y) firstPiecePosition = state.Board.PiecesPositions[0];
+
+            int agentId = 0;
+
+            state.PlayerStates.Add(agentId, new PlayerState(firstPiecePosition.x, firstPiecePosition.y) { LastActionDelay = 0, Piece = new Piece(0.5) });
+
+            Should.Throw<PieceOperationException>(() => state.PutPiece(agentId)); 
         }
 
         [Fact]
