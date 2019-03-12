@@ -143,7 +143,7 @@ namespace GameLib
 
 
 
-        public bool PutPiece(int playerId)
+        public bool? PutPiece(int playerId)
         {
             PlayerState player = PlayerStates[playerId];
 
@@ -160,40 +160,47 @@ namespace GameLib
 
             if (Board.IsAgentInGoalArea(x, y, player.Team))
             {
-                return PutPieceInGoalArea(player, x, y);
+                return PutPieceInGoalArea(playerId, player, x, y);
             }
             else
             {
-                PutPieceInTaskArea(player, x, y);
-                return false;
+                PutPieceInTaskArea(playerId, player, x, y);
+                return null;
             }
         }
 
-        private bool PutPieceInGoalArea(PlayerState player, int x, int y)
+        private bool? PutPieceInGoalArea(int playerId, PlayerState player, int x, int y)
         {
-            bool result;
-            if (player.Piece.IsValid && Board[x, y].IsGoal)
+            bool? result = null;
+            if (player.Piece.IsValid)
             {
-                result = true;
+                if(Board[x, y].IsGoal)
+                {
+                    result = true;
+                }
+                else
+                {
+                    result = false;
+                }
             }
+            DestroyPlayersPiece(playerId, player);
 
-            DestroyPlayersPiece(player);
-
-            result = false; // zawsze zwróci false!!
             return result;
         }
 
-        private void DestroyPlayersPiece(PlayerState player)
+        private void DestroyPlayersPiece(int playerId, PlayerState player)
         {
             player.Piece = null;
+            PlayerStates[playerId] = player;
             Board.PieceCount--;
         }
 
-        private void PutPieceInTaskArea(PlayerState player, int x, int y)
+        private void PutPieceInTaskArea(int playerId, PlayerState player, int x, int y)
         {
-            Board.BoardTable[x, y].Piece = player.Piece;
+            Board.BoardTable[x, y].Piece = PlayerStates[playerId].Piece;
             Board.PiecesPositions.Add((x, y));
             player.Piece = null;
+            PlayerStates[playerId] = player;
 
             Board.RecalculateDistances();
         }
@@ -208,17 +215,7 @@ namespace GameLib
             if (player.Piece == null)
                 throw new PieceOperationException("Player doesn't have a piece!");
 
-            DestroyPlayersPiece(player);
-        }
-
-        public (int[,],(int x, int y)) DiscoverField(int playerId)
-        {
-            PlayerState player = PlayerStates[playerId];
-
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
-
-            return (Board.GetDistancesAround(player.Position.X, player.Position.Y), (player.Position.X, player.Position.Y));
+            DestroyPlayersPiece(playerId, player);
         }
 
         public bool CheckPiece(int playerId)
@@ -233,6 +230,18 @@ namespace GameLib
 
             return player.Piece.IsValid;
         }
+
+        public (int[,],(int x, int y)) DiscoverField(int playerId) //to be discussed
+        {
+            PlayerState player = PlayerStates[playerId];
+
+            if (!player.IsEligibleForAction)
+                throw new DelayException();
+
+            return (Board.GetDistancesAround(player.Position.X, player.Position.Y), (player.Position.X, player.Position.Y));
+        }
+
+        
     }
 
 }

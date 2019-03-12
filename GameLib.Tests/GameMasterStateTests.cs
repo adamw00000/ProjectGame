@@ -10,6 +10,7 @@ namespace GameLib.Tests
 {
     public class GameMasterStateTests
     {
+        #region --Generate--
         [Fact]
         public void GeneratePiece_WhenSucceeded_PlacesPieceOnTheRandomBoardField()
         {
@@ -37,7 +38,54 @@ namespace GameLib.Tests
             
             state.Board.PieceCount.ShouldBe(previousNumberOfPieces);
         }
-        
+
+        [Fact]
+        public void Piece_WhenGenerated_ShouldBeInTaskArea()
+        {
+            GameRules rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            state.GeneratePiece();
+            state.GeneratePiece();
+            state.GeneratePiece();
+
+            foreach (var (x, y) in state.Board.PiecesPositions)
+            {
+                bool inTaskArea = x >= rules.GoalAreaHeight && x < rules.BoardHeight - rules.GoalAreaHeight;
+                state.Board.BoardTable[x, y].HasPiece.ShouldBe(inTaskArea);
+            }
+        }
+
+        [Fact]
+        public void GeneratedPiece_WhenProbabilityIs1_IsValid()
+        {
+            GameRules rules = Helper.GetAlwaysValidPieceRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            state.GeneratePiece();
+
+            foreach (var (x, y) in state.Board.PiecesPositions)
+            {
+                state.Board.BoardTable[x, y].HasValidPiece.ShouldBe(true);
+            }
+        }
+
+        [Fact]
+        public void GeneratedPiece_WhenProbabilityIs0_IsNotValid()
+        {
+            GameRules rules = Helper.GetAlwaysInvalidPieceRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            state.GeneratePiece();
+
+            foreach (var (x, y) in state.Board.PiecesPositions)
+            {
+                state.Board.BoardTable[x, y].HasValidPiece.ShouldBe(false);
+            }
+        }
+        #endregion
+
+        #region --Move--
         [Theory]
         [InlineData(1, 1, Direction.Up)]
         [InlineData(1, 1, Direction.Down)]
@@ -135,7 +183,9 @@ namespace GameLib.Tests
 
             Should.Throw<InvalidMoveException>(() => state.Move(agentId, direction));
         }
+        #endregion
 
+        #region --PickUpPiece--
         [Fact]
         public void PickUpPiece_WhenAgentIsNotEligible_ThrowsDelayException()
         {
@@ -252,7 +302,9 @@ namespace GameLib.Tests
             }
             state.Board.PieceCount.ShouldBe(1);
         }
+        #endregion
 
+        #region --PutPiece--
         [Fact]
         public void PutPiece_WhenAgentDoesntHaveOne_ThrowsPieceOperationException()
         {
@@ -288,48 +340,111 @@ namespace GameLib.Tests
         }
 
         [Fact]
-        public void Piece_WhenGenerated_ShouldBeInTaskArea()
+        public void PutPieceInGoalArea_DestroysPiece()
         {
-            GameRules rules = Helper.GetDefaultRules();
+            var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
 
-            state.GeneratePiece();
-            state.GeneratePiece();
-            state.GeneratePiece();
+            int agentId = 0;
 
-            foreach (var (x, y) in state.Board.PiecesPositions)
-            {
-                bool inTaskArea = x >= rules.GoalAreaHeight && x < rules.BoardHeight - rules.GoalAreaHeight;
-                state.Board.BoardTable[x, y].HasPiece.ShouldBe(inTaskArea);
-            }
+            state.PlayerStates.Add(agentId, new PlayerState(0, 0) { LastActionDelay = 0, Piece = new Piece(0.5) });
+
+            state.PutPiece(agentId);
+            state.PlayerStates[agentId].Piece.ShouldBe(null);
+            state.Board[0, 0].HasPiece.ShouldBe(false);
         }
 
         [Fact]
-        public void GeneratedPiece_WhenProbabilityIs1_IsValid()
+        public void PutPieceInGoalArea_WhenPieceIsValidAndFieldIsGoal_ReturnsTrue()
         {
-            GameRules rules = Helper.GetAlwaysValidPieceRules();
+            var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
 
-            state.GeneratePiece();
+            int agentId = 0;
 
-            foreach (var (x, y) in state.Board.PiecesPositions)
-            {
-                state.Board.BoardTable[x, y].HasValidPiece.ShouldBe(true);
-            }
+            state.Board[0, 0] = new GameMasterField() { IsGoal = true };
+            state.PlayerStates.Add(agentId, new PlayerState(0, 0) { LastActionDelay = 0, Piece = new Piece(1) });
+
+            state.PutPiece(agentId).ShouldBe(true);
         }
 
         [Fact]
-        public void GeneratedPiece_WhenProbabilityIs0_IsNotValid()
+        public void PutPieceInGoalArea_WhenPieceIsInvalid_ReturnsNull()
         {
-            GameRules rules = Helper.GetAlwaysInvalidPieceRules();
+            var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
 
-            state.GeneratePiece();
+            int agentId = 0;
 
-            foreach (var (x, y) in state.Board.PiecesPositions)
-            {
-                state.Board.BoardTable[x, y].HasValidPiece.ShouldBe(false);
-            }
+            state.Board[0, 0] = new GameMasterField() { IsGoal = true };
+            state.PlayerStates.Add(agentId, new PlayerState(0, 0) { LastActionDelay = 0, Piece = new Piece(0) });
+
+            state.PutPiece(agentId).ShouldBeNull();
         }
+
+        [Theory]
+        [InlineData(4, 4)]
+        [InlineData(3, 5)]
+        [InlineData(2, 0)]
+        public void PutPieceInTaskArea_PutsPieceBackOnBoard_AndPlayerDoesntHaveIt(int x, int y)
+        {
+            var rules = Helper.GetStaticDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            int agentId = 0;
+
+            state.PlayerStates.Add(agentId, new PlayerState(x, y) { LastActionDelay = 0, Piece = new Piece(0.5) });
+
+            state.Board[x, y].HasPiece.ShouldBe(false);
+            state.PutPiece(agentId);
+            state.Board[x, y].HasPiece.ShouldBe(true);
+            state.PlayerStates[agentId].Piece.ShouldBe(null);
+
+        }
+        #endregion
+
+        #region --Other actions--
+
+        [Theory]
+        [InlineData(4, 4)]
+        [InlineData(0, 0)]
+        [InlineData(1, 6)]
+        public void DestroyPiece_ShouldDestroyPiece(int x, int y)
+        {
+            var rules = Helper.GetStaticDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            int agentId = 0;
+
+            state.Board[0, 0] = new GameMasterField() { IsGoal = true };
+            state.PlayerStates.Add(agentId, new PlayerState(x, y) { LastActionDelay = 0, Piece = new Piece(0.5) });
+
+            int piecesCount = state.Board.PieceCount;
+
+            state.DestroyPiece(agentId);
+
+            PlayerState player = state.PlayerStates[agentId];
+
+            player.Piece.ShouldBeNull();
+            state.Board[x, y].HasPiece.ShouldBe(false);
+            state.Board.PieceCount.ShouldBe(piecesCount - 1);
+        }
+        [Fact]
+        public void CheckPiece_ReturnsInformationIfPieceIsValid()
+        {
+            var rules = Helper.GetStaticDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            int agentWithValidPieceId = 0;
+            int agentWithInvalidPieceId = 1;
+
+            state.PlayerStates.Add(agentWithValidPieceId, new PlayerState(0, 0) { LastActionDelay = 0, Piece = new Piece(1) });
+            state.PlayerStates.Add(agentWithInvalidPieceId, new PlayerState(0, 1) { LastActionDelay = 0, Piece = new Piece(0) });
+
+            state.CheckPiece(agentWithValidPieceId).ShouldBe(true);
+            state.CheckPiece(agentWithInvalidPieceId).ShouldBe(false);
+        }
+        #endregion
+
     }
 }
