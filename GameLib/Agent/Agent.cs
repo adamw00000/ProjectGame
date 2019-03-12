@@ -36,5 +36,10 @@ namespace GameLib
             // loop decisionModule <-> connection.Send()
             throw new NotImplementedException();
         }
+
+        public void ServeCommunicationRequest(int requesterId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
