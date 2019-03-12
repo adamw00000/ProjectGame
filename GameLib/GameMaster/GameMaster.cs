@@ -16,5 +16,45 @@ namespace GameLib
         {
 
         }
+
+        public void MoveAgent(int agentId, MoveDirection moveDirection)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void PickPiece(int agentId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void PutPiece(int agentId)
+        {
+            throw new NotImplementedException();
+        }
+        
+        public void Discover(int agentId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CheckPiece(int agentId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DestroyPiece(int agentId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CommunicationRequestWithData(int agentId, Object data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CommunicationAgreementWithData(int agentId, Object data)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
