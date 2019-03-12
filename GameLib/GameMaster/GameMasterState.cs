@@ -30,7 +30,11 @@ namespace GameLib
 
         public void InitializePlayerPositions(int width, int height, int goalAreaHeight, int teamSize) //todo
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < teamSize; i++)
+            {
+                PlayerStates.Add(i, new PlayerState(i / width, width / 2 + (int)(Math.Ceiling((i % width) / 2.0)) * (int)Math.Pow(-1, i), Team.Blue, i == 0));
+                PlayerStates.Add(i + teamSize, new PlayerState(height - 1 - i / width, width / 2 + (int)(Math.Ceiling((i % width) / 2.0)) * (int)Math.Pow(-1, i + 1), Team.Red, i == 0));
+            }
         }
 
         public Dictionary<int, GameRules> GetAgentGameRules()
@@ -175,7 +179,7 @@ namespace GameLib
 
             DestroyPlayersPiece(player);
 
-            result = false;
+            result = false; // zawsze zwróci false!!
             return result;
         }
 
