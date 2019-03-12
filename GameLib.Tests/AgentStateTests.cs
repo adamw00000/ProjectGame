@@ -4,7 +4,6 @@ using System.Text;
 using Xunit;
 using Shouldly;
 using Moq;
-using static GameLib.Exceptions;
 
 namespace GameLib.Tests
 {

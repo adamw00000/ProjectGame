@@ -5,14 +5,13 @@ using System.Linq;
 using Xunit;
 using Shouldly;
 using Moq;
-using static GameLib.Exceptions;
 
 namespace GameLib.Tests
 {
     public class GameMasterStateTests
     {
         [Fact]
-        public void GeneratePiece_WhenCalled_PlacesPieceOnTheRandomBoardField()
+        public void GeneratePiece_WhenSucceeded_PlacesPieceOnTheRandomBoardField()
         {
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);
@@ -44,12 +43,12 @@ namespace GameLib.Tests
         [InlineData(1, 1, Direction.Down)]
         [InlineData(1, 1, Direction.Left)]
         [InlineData(1, 1, Direction.Right)]
-        public void Move_WhenCalled_ChangesAgentsPositionOnBoard(int agentX, int agentY, Direction direction)
+        public void Move_WhenSucceeded_ChangesAgentsPositionOnBoard(int agentX, int agentY, Direction direction)
         {
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);
             var agentId = 0;
-            state.PlayerStates.Clear();
+
             state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY));
 
             state.Move(agentId, direction);
@@ -85,7 +84,7 @@ namespace GameLib.Tests
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);
             var agentId = 0;
-            state.PlayerStates.Clear();
+
             state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY));
 
             Should.Throw<InvalidMoveException>(() => state.Move(agentId, direction));
@@ -99,7 +98,7 @@ namespace GameLib.Tests
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);
             var agentId = 0;
-            state.PlayerStates.Clear();
+
             state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY, team));
 
             Should.Throw<InvalidMoveException>(() => state.Move(agentId, direction));
@@ -115,8 +114,7 @@ namespace GameLib.Tests
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);
             var agentId = 0;
-            state.PlayerStates.Clear();
-
+            
             state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY) { LastRequestTimestamp = DateTime.MaxValue, LastActionDelay = 0 });
 
             Should.Throw<DelayException>(() => state.Move(agentId, direction));
@@ -131,20 +129,20 @@ namespace GameLib.Tests
             var agentX = 1;
             var agentY = 1;
             var direction = Direction.Up;
-            state.PlayerStates.Clear();
+
             state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY));
             state.PlayerStates.Add(agentId + 1, new PlayerState(agentX - 1, agentY));
 
             Should.Throw<InvalidMoveException>(() => state.Move(agentId, direction));
         }
+
         [Fact]
         public void PickUpPiece_WhenAgentIsNotEligible_ThrowsDelayException()
         {
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);
             var agentId = 0;
-            state.PlayerStates.Clear();
-
+            
             state.PlayerStates.Add(agentId, new PlayerState(0, 0) { LastRequestTimestamp = DateTime.MaxValue, LastActionDelay = 0 });
 
             Should.Throw<DelayException>(() => state.PickUpPiece(agentId));
@@ -163,7 +161,7 @@ namespace GameLib.Tests
             state.GeneratePieceAt(5,4);
 
             var agentId = 0;
-            state.PlayerStates.Clear();
+
             state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY));
 
             foreach (var (x, y) in state.Board.PiecesPositions)
@@ -176,25 +174,7 @@ namespace GameLib.Tests
         }
 
         [Fact]
-        public void PickUpPiece_WhenAnotherPlayerHasPiece_ThrowsPieceOperationException()
-        {
-            var rules = Helper.GetDefaultRules();
-            var state = Helper.GetGameMasterState(rules);
-
-            state.GeneratePiece();
-            state.PlayerStates.Clear();
-            (int x, int y) = state.Board.PiecesPositions[0];
-
-            state.PlayerStates.Add(0, new PlayerState(x, y) { LastActionDelay = 0 });
-            state.PlayerStates.Add(1, new PlayerState(1, 1) { LastActionDelay = 0 });
-
-            state.PickUpPiece(0);
-
-            Should.Throw<PieceOperationException>(() => state.PickUpPiece(1));
-        }
-
-        [Fact]
-        public void CorrectPickUpPiece_ShouldCauseRecalculationOfDistances()
+        public void PickUpPiece_WhenSucceeded_ShouldCauseRecalculationOfDistances()
         {
             var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
@@ -202,12 +182,10 @@ namespace GameLib.Tests
             state.GeneratePieceAt(4, 5);
             state.GeneratePieceAt(1, 2);
             state.GeneratePieceAt(7, 3);
-
-            state.PlayerStates.Clear();
+            
             (int x, int y) firstPiecePosition = state.Board.PiecesPositions[0];
 
             int agentId = 0;
-
             state.PlayerStates.Add(agentId, new PlayerState(firstPiecePosition.x, firstPiecePosition.y) { LastActionDelay = 0 });
 
             state.PickUpPiece(agentId);
@@ -231,14 +209,32 @@ namespace GameLib.Tests
         }
 
         [Fact]
-        public void AfterPickingUpOnlyPieceOnBoard_DistancesShouldBeNegative_AndPieceCountShouldBeOne()
+        public void PickUpPiece_WhenSucceeded_ShouldAssignPieceToAgent()
+        {
+            var rules = Helper.GetStaticDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            state.GeneratePiece();
+            (int x, int y) firstPiecePosition = state.Board.PiecesPositions[0];
+            var expectedPiece = state.Board[firstPiecePosition.x, firstPiecePosition.y].Piece;
+
+            int agentId = 0;
+            state.PlayerStates.Add(agentId, new PlayerState(firstPiecePosition.x, firstPiecePosition.y) { LastActionDelay = 0 });
+
+            state.PickUpPiece(agentId);
+
+            var playerState = state.PlayerStates[0];
+            playerState.Piece.ShouldBe(expectedPiece);
+        }
+
+        [Fact]
+        public void PickUpPiece_WhenPickingUpOnlyPieceOnBoard_DistancesShouldBeNegativeAndPieceCountShouldBeOne()
         {
             var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
 
             state.GeneratePieceAt(4, 5);
 
-            state.PlayerStates.Clear();
             (int x, int y) firstPiecePosition = state.Board.PiecesPositions[0];
 
             int agentId = 0;
@@ -258,15 +254,13 @@ namespace GameLib.Tests
         }
 
         [Fact]
-        public void PutPieceWithoutHavingOne_ThrowsPieceOperationException()
+        public void PutPiece_WhenAgentDoesntHaveOne_ThrowsPieceOperationException()
         {
             var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
 
             state.GeneratePiece();
-
-
-            state.PlayerStates.Clear();
+            
             (int x, int y) = state.Board.PiecesPositions[0];
 
             int agentId = 0;
@@ -277,15 +271,13 @@ namespace GameLib.Tests
         }
 
         [Fact]
-        public void PutPieceOnAnotherPiece_ThrowsPieceOperationException()
+        public void PutPiece_WhenOnAnotherPiece_ThrowsPieceOperationException()
         {
             var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
 
             state.GeneratePieceAt(4, 5);
 
-
-            state.PlayerStates.Clear();
             (int x, int y) = state.Board.PiecesPositions[0];
 
             int agentId = 0;
@@ -313,7 +305,7 @@ namespace GameLib.Tests
         }
 
         [Fact]
-        public void PieceIsValid_WhenProbabilityIs_1()
+        public void GeneratedPiece_WhenProbabilityIs1_IsValid()
         {
             GameRules rules = Helper.GetAlwaysValidPieceRules();
             var state = Helper.GetGameMasterState(rules);
@@ -327,7 +319,7 @@ namespace GameLib.Tests
         }
 
         [Fact]
-        public void PieceIsInvalid_WhenProbabilityIs_0()
+        public void GeneratedPiece_WhenProbabilityIs0_IsNotValid()
         {
             GameRules rules = Helper.GetAlwaysInvalidPieceRules();
             var state = Helper.GetGameMasterState(rules);

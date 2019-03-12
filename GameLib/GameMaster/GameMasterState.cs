@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using static GameLib.Exceptions;
 
 namespace GameLib
 {
@@ -60,10 +59,11 @@ namespace GameLib
 
         public void Move(int playerId, Direction direction)
         {
-            if (!PlayerStates[playerId].IsEligibleForAction)
+            var player = PlayerStates[playerId];
+            if (!player.IsEligibleForAction)
                 throw new DelayException();
 
-            var newPosition = PlayerStates[playerId].Position;
+            var newPosition = player.Position;
 
             switch (direction)
             {
@@ -80,15 +80,16 @@ namespace GameLib
                     newPosition.X++;
                     break;
             }
-
+            
             if (!IsOnBoard(newPosition) || IsAnyAgentOn(newPosition)) 
                 throw new InvalidMoveException();
 
-            var enemyTeam = PlayerStates[playerId].Team == Team.Blue ? Team.Red : Team.Blue;
+            var enemyTeam = player.Team == Team.Blue ? Team.Red : Team.Blue;
             if (Board.IsAgentInGoalArea(newPosition.X, newPosition.Y, enemyTeam))
                 throw new InvalidMoveException();
 
-            PlayerStates[playerId] = PlayerStates[playerId].ReconstructWithPosition(newPosition.X, newPosition.Y);
+            player.Position = newPosition;
+            PlayerStates[playerId] = player;
         }
 
         private bool IsOnBoard((int, int) newPosition)
@@ -127,7 +128,16 @@ namespace GameLib
             Board.BoardTable[x, y].Piece = null;
 
             Board.RecalculateDistances();
+            PlayerStates[playerId] = player;
         }
+
+
+
+        //**** WSZYSTKIE METODY NIZEJ SA DO PRZETESTOWANIA I POPRAWIENIA (W WIEKSZOSCI CHYBA NIE MODYFIKUJA PLAYERSTATE) ****
+
+
+
+
 
         public bool PutPiece(int playerId)
         {

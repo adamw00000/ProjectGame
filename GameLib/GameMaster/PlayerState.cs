@@ -23,10 +23,5 @@ namespace GameLib
             LastRequestTimestamp = DateTime.MinValue;
             LastActionDelay = 0;
         }
-
-        public PlayerState ReconstructWithPosition(int x, int y)
-        {
-            return new PlayerState(x, y, Team, IsLeader) { LastRequestTimestamp = LastRequestTimestamp, LastActionDelay = LastActionDelay, Piece = Piece };
-        }
     }
 }
