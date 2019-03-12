@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GameLib.Actions
+﻿namespace GameLib.Actions
 {
-    class ActionPickPiece : IAction
+    internal class ActionPickPiece : IAction
     {
         public ActionPickPiece(int agentId)
         {
-
+            AgentId = agentId;
         }
 
         public int AgentId { get; }

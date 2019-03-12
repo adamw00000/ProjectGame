@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ConnectionLib;
+﻿using ConnectionLib;
+using System;
 
 namespace GameLib
 {

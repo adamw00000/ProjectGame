@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GameLib
 {
@@ -13,7 +11,6 @@ namespace GameLib
 
         public AgentBoard(GameRules rules)
         {
-            // konstrukcja tablicy i wypełnienie AgentField.FieldState odpowiednimi wartościami
             BoardTable = new AgentField[rules.BoardHeight, rules.BoardWidth];
             GoalAreaHeight = rules.GoalAreaHeight;
 
@@ -21,8 +18,12 @@ namespace GameLib
             {
                 for (int j = 0; j < Width; j++)
                 {
-                    BoardTable[i, j] = new AgentField() { Distance = -1, Timestamp = DateTime.UtcNow,
-                        IsGoal = isGoalArea ? FieldState.Unknown : FieldState.NA };
+                    BoardTable[i, j] = new AgentField()
+                    {
+                        Distance = -1,
+                        Timestamp = DateTime.UtcNow,
+                        IsGoal = isGoalArea ? FieldState.Unknown : FieldState.NA
+                    };
                 }
             }
 
@@ -50,7 +51,7 @@ namespace GameLib
                 BoardTable[x, y] = value;
             }
         }
-        
+
         public void SetDistance(int x, int y, int distance)
         {
             BoardTable[x, y].Distance = distance;
@@ -69,7 +70,7 @@ namespace GameLib
                 {
                     if (!IsInBounds(discoveryResult, i, j))
                         continue;
-                    
+
                     BoardTable[discoveryResult.BasePosition.X + i, discoveryResult.BasePosition.Y + j].Distance =
                         discoveryResult.Fields[i + 1, j + 1].Distance;
                 }

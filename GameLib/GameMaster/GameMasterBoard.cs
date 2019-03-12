@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace GameLib
 {
@@ -61,7 +60,7 @@ namespace GameLib
             }
         }
 
-        public bool IsAgentInGoalArea(int x, int y, Team team)
+        public bool IsAgentInGoalArea(int x, int _, Team team)
         {
             if (team == Team.Blue)
             {
@@ -75,7 +74,7 @@ namespace GameLib
 
         public void RecalculateDistances()
         {
-            if (PiecesPositions.Count == 0) 
+            if (PiecesPositions.Count == 0)
             {
                 SetEmptyBoardDistances();
             }
@@ -118,7 +117,7 @@ namespace GameLib
                 for (int j = -1; j <= 1; j += 2)
                 {
                     stack.Push((x, y, distance));
-                    while (stack.Count > 0) 
+                    while (stack.Count > 0)
                     {
                         (int px, int py, int dist) = stack.Pop();
                         visited[px, py] = true;

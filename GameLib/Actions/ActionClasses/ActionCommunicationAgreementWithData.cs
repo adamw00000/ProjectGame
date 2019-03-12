@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GameLib.Actions
 {
-    class ActionCommunicationAgreementWithData : IAction
+    internal class ActionCommunicationAgreementWithData : IAction
     {
         public ActionCommunicationAgreementWithData(int agentId, Object data)
         {
@@ -19,6 +17,6 @@ namespace GameLib.Actions
             gameMaster.CommunicationAgreementWithData(AgentId, data);
         }
 
-        Object data;
+        private readonly Object data;
     }
 }

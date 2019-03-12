@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameLib
 {
@@ -28,12 +26,20 @@ namespace GameLib
             throw new NotImplementedException();
         }
 
-        public void InitializePlayerPositions(int width, int height, int goalAreaHeight, int teamSize) //todo
+        public void InitializePlayerPositions(int width, int height, int teamSize) //todo
         {
             for (int i = 0; i < teamSize; i++)
             {
-                PlayerStates.Add(i, new PlayerState(i / width, width / 2 + (int)(Math.Ceiling((i % width) / 2.0)) * (int)Math.Pow(-1, i), Team.Blue, i == 0));
-                PlayerStates.Add(i + teamSize, new PlayerState(height - 1 - i / width, width / 2 + (int)(Math.Ceiling((i % width) / 2.0)) * (int)Math.Pow(-1, i + 1), Team.Red, i == 0));
+                PlayerStates.Add(i, new PlayerState(i / width, width / 2 + Ceiling(i % width) * Power(i), Team.Blue, i == 0));
+                PlayerStates.Add(i + teamSize, new PlayerState(height - 1 - i / width, width / 2 + Ceiling(i % width) * Power(i + 1), Team.Red, i == 0));
+            }
+            int Ceiling(int n)
+            {
+                return n % 2 == 0 ? n / 2 : n / 2 + 1;
+            }
+            int Power(int n)
+            {
+                return n % 2 == 0 ? 1 : -1;
             }
         }
 
@@ -41,7 +47,7 @@ namespace GameLib
         {
             Dictionary<int, GameRules> rules = new Dictionary<int, GameRules>();
 
-            foreach(var (id, playerState) in PlayerStates)
+            foreach (var (id, playerState) in PlayerStates)
             {
                 var privateRules = gameRules.ReconstructWithAgentPosition(playerState.Position.X, playerState.Position.Y);
                 rules.Add(id, privateRules);
@@ -55,13 +61,14 @@ namespace GameLib
             if (Board.PieceCount < maxPiecesOnBoard)
                 Board.GeneratePiece(validPieceProbability);
         }
+
         public void GeneratePieceAt(int x, int y) //do testow!
         {
             if (Board.PieceCount < maxPiecesOnBoard)
                 Board.GeneratePieceAt(x, y, validPieceProbability);
         }
 
-        public void Move(int playerId, Direction direction)
+        public void Move(int playerId, MoveDirection direction)
         {
             var player = PlayerStates[playerId];
             if (!player.IsEligibleForAction)
@@ -71,21 +78,24 @@ namespace GameLib
 
             switch (direction)
             {
-                case Direction.Left:
+                case MoveDirection.Left:
                     newPosition.Y--;
                     break;
-                case Direction.Right:
+
+                case MoveDirection.Right:
                     newPosition.Y++;
                     break;
-                case Direction.Up:
+
+                case MoveDirection.Up:
                     newPosition.X--;
                     break;
-                case Direction.Down:
+
+                case MoveDirection.Down:
                     newPosition.X++;
                     break;
             }
-            
-            if (!IsOnBoard(newPosition) || IsAnyAgentOn(newPosition)) 
+
+            if (!IsOnBoard(newPosition) || IsAnyAgentOn(newPosition))
                 throw new InvalidMoveException();
 
             var enemyTeam = player.Team == Team.Blue ? Team.Red : Team.Blue;
@@ -128,29 +138,21 @@ namespace GameLib
                 throw new PieceOperationException("No piece on this field!");
 
             player.Piece = Board[x, y].Piece;
-            Board.PiecesPositions.Remove((x,y));
+            Board.PiecesPositions.Remove((x, y));
             Board.BoardTable[x, y].Piece = null;
 
             Board.RecalculateDistances();
             PlayerStates[playerId] = player;
         }
 
-
-
-        //**** WSZYSTKIE METODY NIZEJ SA DO PRZETESTOWANIA I POPRAWIENIA (W WIEKSZOSCI CHYBA NIE MODYFIKUJA PLAYERSTATE) ****
-
-
-
-
-
-        public bool? PutPiece(int playerId)
+        public bool? PutPiece(int playerId) //PutPieceResult zamiast bool? ?
         {
             PlayerState player = PlayerStates[playerId];
 
             if (!player.IsEligibleForAction)
                 throw new DelayException();
 
-            if(player.Piece == null)
+            if (player.Piece == null)
                 throw new PieceOperationException("Player doesn't have a piece!");
 
             (int x, int y) = player.Position;
@@ -174,14 +176,7 @@ namespace GameLib
             bool? result = null;
             if (player.Piece.IsValid)
             {
-                if(Board[x, y].IsGoal)
-                {
-                    result = true;
-                }
-                else
-                {
-                    result = false;
-                }
+                result = Board[x, y].IsGoal;
             }
             DestroyPlayersPiece(playerId, player);
 
@@ -231,7 +226,7 @@ namespace GameLib
             return player.Piece.IsValid;
         }
 
-        public (int[,],(int x, int y)) DiscoverField(int playerId) //to be discussed
+        public (int[,], (int x, int y)) DiscoverField(int playerId) //to be discussed
         {
             PlayerState player = PlayerStates[playerId];
 
@@ -240,8 +235,5 @@ namespace GameLib
 
             return (Board.GetDistancesAround(player.Position.X, player.Position.Y), (player.Position.X, player.Position.Y));
         }
-
-        
     }
-
 }

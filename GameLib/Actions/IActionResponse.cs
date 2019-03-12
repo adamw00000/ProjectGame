@@ -1,8 +1,9 @@
 ﻿namespace GameLib.Actions
 {
-    interface IActionResponse
+    internal interface IActionResponse
     {
         void Handle(Agent agent);
+
         int WaitUntilTime { get; }
     }
 }

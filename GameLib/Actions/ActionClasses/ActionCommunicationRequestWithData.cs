@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GameLib.Actions
 {
-    class ActionCommunicationRequestWithData : IAction
+    internal class ActionCommunicationRequestWithData : IAction
     {
         public ActionCommunicationRequestWithData(int agentId, Object data)
         {
             AgentId = agentId;
+            this.data = data;
         }
 
         public int AgentId { get; }
@@ -17,7 +16,7 @@ namespace GameLib.Actions
         {
             gameMaster.CommunicationRequestWithData(AgentId, data);
         }
-        
-        Object data;
+
+        private readonly Object data;
     }
 }

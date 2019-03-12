@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GameLib
+﻿namespace GameLib
 {
     public struct GameMasterField
     {
@@ -9,8 +7,8 @@ namespace GameLib
         public Piece Piece { get; set; }
 
         public bool HasPiece => Piece != null;
-        public bool HasValidPiece => Piece != null && Piece.IsValid;
-        
+        public bool HasValidPiece => Piece?.IsValid == true;
+
         public bool IsGoal { get; set; }
     }
 }

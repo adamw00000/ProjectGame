@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GameLib.Actions
+﻿namespace GameLib.Actions
 {
-    class ActionDiscovery : IAction
+    internal class ActionDiscovery : IAction
     {
         public ActionDiscovery(int agentId)
         {

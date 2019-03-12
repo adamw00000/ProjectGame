@@ -1,7 +1,5 @@
 ﻿using ConnectionLib;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace GameLib
@@ -15,20 +13,19 @@ namespace GameLib
 
         public GameMaster()
         {
-
         }
 
         public void GenerateBoard()
         {
             state = new GameMasterState(rules);
         }
-        
+
         public async Task GeneratePieces()
         {
             while (!state.GameEnded)
             {
                 state.GeneratePiece();
-                await Task.Delay(rules.PieceSpawnInterval);
+                await Task.Delay(rules.PieceSpawnInterval).ConfigureAwait(false);
             }
         }
 
@@ -46,7 +43,7 @@ namespace GameLib
         {
             throw new NotImplementedException();
         }
-        
+
         public void Discover(int agentId)
         {
             throw new NotImplementedException();
@@ -83,11 +80,5 @@ namespace GameLib
 
             await generatePiecesTask;
         }
-    }
-
-    public enum Team
-    {
-        Blue = 0,
-        Red = 1
     }
 }

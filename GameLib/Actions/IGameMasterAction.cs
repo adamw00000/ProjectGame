@@ -1,6 +1,6 @@
 ﻿namespace GameLib.Actions
 {
-    interface IGameMasterAction
+    internal interface IGameMasterAction
     {
         void Handle(Agent agent);
     }

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GameLib.Actions
 {
-    class ActionPutPieceResponse : IActionResponse
+    internal class ActionPutPieceResponse : IActionResponse
     {
         public ActionPutPieceResponse(int waitUntilTime, PutPieceResult putPieceResult)
         {
@@ -19,6 +17,6 @@ namespace GameLib.Actions
             throw new NotImplementedException();
         }
 
-        PutPieceResult putPieceResult;
+        private readonly PutPieceResult putPieceResult;
     }
 }

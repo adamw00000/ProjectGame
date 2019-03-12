@@ -1,16 +1,12 @@
-﻿using GameLib;
-using System;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace ProjectGame
 {
-    class Program
+    public static class Program
     {
-        static void Main(string[] args)
+        private static void Main()
         {
             Console.WriteLine("Hello World!");
-
-            RandomGenerator.Initialize();
         }
     }
 }

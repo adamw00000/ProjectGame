@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GameLib.Actions
 {
-    class ActionPickPieceResponse : IActionResponse
+    internal class ActionPickPieceResponse : IActionResponse
     {
         public ActionPickPieceResponse(int waitUntilTime)
         {

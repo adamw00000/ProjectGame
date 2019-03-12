@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GameLib.Actions
+﻿namespace GameLib.Actions
 {
-    class ActionCommunicationRequest : IGameMasterAction
+    internal class ActionCommunicationRequest : IGameMasterAction
     {
         public ActionCommunicationRequest(int requesterId)
         {
@@ -16,6 +12,6 @@ namespace GameLib.Actions
             agent.ServeCommunicationRequest(requesterId);
         }
 
-        int requesterId;
+        private readonly int requesterId;
     }
 }

@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Shouldly;
+using System;
 using Xunit;
-using Shouldly;
-using Moq;
 
 namespace GameLib.Tests
 {
@@ -81,11 +78,11 @@ namespace GameLib.Tests
         }
 
         [Theory]
-        [InlineData(Direction.Up)]
-        [InlineData(Direction.Down)]
-        [InlineData(Direction.Left)]
-        [InlineData(Direction.Right)]
-        public void Move_WhenCalled_ChangesAgentsPosition(Direction direction)
+        [InlineData(MoveDirection.Up)]
+        [InlineData(MoveDirection.Down)]
+        [InlineData(MoveDirection.Left)]
+        [InlineData(MoveDirection.Right)]
+        public void Move_WhenCalled_ChangesAgentsPosition(MoveDirection direction)
         {
             var rules = GetDefaultRules();
             var state = GetSetUpState(rules);
@@ -97,16 +94,19 @@ namespace GameLib.Tests
             var expectedY = rules.AgentStartY;
             switch (direction)
             {
-                case Direction.Left:
+                case MoveDirection.Left:
                     expectedY--;
                     break;
-                case Direction.Right:
+
+                case MoveDirection.Right:
                     expectedY++;
                     break;
-                case Direction.Up:
+
+                case MoveDirection.Up:
                     expectedX--;
                     break;
-                case Direction.Down:
+
+                case MoveDirection.Down:
                     expectedX++;
                     break;
             }
@@ -115,9 +115,9 @@ namespace GameLib.Tests
         }
 
         [Theory]
-        [InlineData(Direction.Left)]
-        [InlineData(Direction.Up)]
-        public void Move_WhenMoveIsInvalid_ThrowsInvalidMoveException(Direction direction)
+        [InlineData(MoveDirection.Left)]
+        [InlineData(MoveDirection.Up)]
+        public void Move_WhenMoveIsInvalid_ThrowsInvalidMoveException(MoveDirection direction)
         {
             var rules = new GameRules(boardWidth: 8, boardHeight: 8, agentStartX: 0, agentStartY: 0);
             var state = GetSetUpState(rules);
@@ -136,7 +136,7 @@ namespace GameLib.Tests
             var state = GetSetUpState(rules);
 
             var callTime = DateTime.UtcNow.AddMilliseconds(-1);
-            state.Move(Direction.Up, distance);
+            state.Move(MoveDirection.Up, distance);
 
             var field = state.Board[state.Position.X, state.Position.Y];
             field.Distance.ShouldBe(distance);
@@ -301,7 +301,7 @@ namespace GameLib.Tests
             }
         }
 
-        private static void SetupCommunicationBoards(AgentBoard agentBoard, AgentBoard resultBoard, DateTime value, int distance)
+        private static void SetupCommunicationBoards(AgentBoard agentBoard, AgentBoard resultBoard, in DateTime value, int distance)
         {
             for (int i = 0; i < resultBoard.Height; i++)
             {

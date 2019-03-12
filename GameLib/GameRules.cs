@@ -25,10 +25,9 @@
 
         public GameRules(/*GameStartMessage gsm <- z tego czegoś zostaną odpakowane wartości pól*/)
         {
-
         }
 
-        public GameRules(int boardWidth = 8, int boardHeight = 8, int goalAreaHeight = 2, int goalCount = 4, 
+        public GameRules(int boardWidth = 8, int boardHeight = 8, int goalAreaHeight = 2, int goalCount = 4,
             int teamSize = 5, int pieceSpawnInterval = 500, int maxPiecesOnBoard = 10, double badPieceProbability = 0.5,
             int baseTimePenalty = 50, int moveMultiplier = 1, int discoverMultiplier = 2, int pickUpMultiplier = 2,
             int checkMultiplier = 4, int destroyMultiplier = 4, int putMultiplier = 4, int communicationMultiplier = 4,
@@ -55,6 +54,7 @@
             PutPieceMultiplier = putMultiplier;
             CommunicationMultiplier = communicationMultiplier;
         }
+
         public GameRules ReconstructWithAgentPosition(int x, int y)
         {
             return new GameRules(

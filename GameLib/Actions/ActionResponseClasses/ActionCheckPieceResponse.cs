@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GameLib.Actions
 {
-    class ActionCheckPieceResponse : IActionResponse
+    internal class ActionCheckPieceResponse : IActionResponse
     {
         public ActionCheckPieceResponse(int waitUntilTime, bool isCorrect)
         {
@@ -19,6 +17,6 @@ namespace GameLib.Actions
             throw new NotImplementedException();
         }
 
-        bool isCorrect;
+        private readonly bool isCorrect;
     }
 }
