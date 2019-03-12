@@ -21,17 +21,12 @@ namespace GameLib
             maxPiecesOnBoard = rules.MaxPiecesOnBoard;
         }
 
-        public void AddPlayer(int id, Team team, bool isLeader) //todo
-        {
-            throw new NotImplementedException();
-        }
-
-        public void InitializePlayerPositions(int width, int height, int teamSize) //todo
+        public void InitializePlayerPositions(int width, int height, int teamSize)
         {
             for (int i = 0; i < teamSize; i++)
             {
                 PlayerStates.Add(i, new PlayerState(i / width, width / 2 + Ceiling(i % width) * Power(i), Team.Blue, i == 0));
-                PlayerStates.Add(i + teamSize, new PlayerState(height - 1 - i / width, width / 2 + Ceiling(i % width) * Power(i + 1), Team.Red, i == 0));
+                PlayerStates.Add(i + teamSize, new PlayerState(height - 1 - i / width, width / 2 + Ceiling(i % width) * Power(i), Team.Red, i == 0));
             }
             int Ceiling(int n)
             {
@@ -56,13 +51,21 @@ namespace GameLib
             return rules;
         }
 
+        public void DelayPlayer(int playerId, int delayMultiplier)
+        {
+            var player = PlayerStates[playerId];
+            player.LastRequestTimestamp = DateTime.UtcNow;
+            player.LastActionDelay = delayMultiplier * gameRules.BaseTimePenalty;
+            PlayerStates[playerId] = player;
+        }
+
         public void GeneratePiece()
         {
             if (Board.PieceCount < maxPiecesOnBoard)
                 Board.GeneratePiece(validPieceProbability);
         }
 
-        public void GeneratePieceAt(int x, int y) //do testow!
+        public void GeneratePieceAt(int x, int y)
         {
             if (Board.PieceCount < maxPiecesOnBoard)
                 Board.GeneratePieceAt(x, y, validPieceProbability);
@@ -95,15 +98,20 @@ namespace GameLib
                     break;
             }
 
-            if (!IsOnBoard(newPosition) || IsAnyAgentOn(newPosition))
-                throw new InvalidMoveException();
+            if (!IsOnBoard(newPosition))
+                throw new InvalidMoveException("Agent tried to move out of board!");
+
+            if (IsAnyAgentOn(newPosition))
+                throw new InvalidMoveException("Agent tried to on the space occupied by another agent!");
 
             var enemyTeam = player.Team == Team.Blue ? Team.Red : Team.Blue;
             if (Board.IsAgentInGoalArea(newPosition.X, newPosition.Y, enemyTeam))
-                throw new InvalidMoveException();
+                throw new InvalidMoveException("Agent tried to move onto enemy goal area!");
 
             player.Position = newPosition;
             PlayerStates[playerId] = player;
+
+            DelayPlayer(playerId, gameRules.MoveMultiplier);
         }
 
         private bool IsOnBoard((int, int) newPosition)
@@ -143,9 +151,11 @@ namespace GameLib
 
             Board.RecalculateDistances();
             PlayerStates[playerId] = player;
+
+            DelayPlayer(playerId, gameRules.PickUpMultiplier);
         }
 
-        public bool? PutPiece(int playerId) //PutPieceResult zamiast bool? ?
+        public PutPieceResult PutPiece(int playerId) //PutPieceResult zamiast bool? ?
         {
             PlayerState player = PlayerStates[playerId];
 
@@ -160,44 +170,49 @@ namespace GameLib
             if (Board[x, y].HasPiece)
                 throw new PieceOperationException("Cannot put another piece on this field!");
 
+            DelayPlayer(playerId, gameRules.PutPieceMultiplier);
+
             if (Board.IsAgentInGoalArea(x, y, player.Team))
             {
-                return PutPieceInGoalArea(playerId, player, x, y);
+                return PutPieceInGoalArea(playerId, x, y);
             }
             else
             {
-                PutPieceInTaskArea(playerId, player, x, y);
-                return null;
+                PutPieceInTaskArea(playerId, x, y);
+                return PutPieceResult.PIECE_IN_TASK_AREA;
             }
         }
 
-        private bool? PutPieceInGoalArea(int playerId, PlayerState player, int x, int y)
+        private PutPieceResult PutPieceInGoalArea(int playerId, int x, int y)
         {
-            bool? result = null;
+            PlayerState player = PlayerStates[playerId];
+            PutPieceResult result = PutPieceResult.PIECE_WAS_FAKE;
             if (player.Piece.IsValid)
             {
-                result = Board[x, y].IsGoal;
+                result = Board[x, y].IsGoal ? PutPieceResult.PIECE_GOAL_REALIZED : PutPieceResult.PIECE_GOAL_UNREALIZED;
             }
-            DestroyPlayersPiece(playerId, player);
+            DestroyPlayersPiece(playerId);
 
             return result;
         }
 
-        private void DestroyPlayersPiece(int playerId, PlayerState player)
+        private void PutPieceInTaskArea(int playerId, int x, int y)
         {
-            player.Piece = null;
-            PlayerStates[playerId] = player;
-            Board.PieceCount--;
-        }
-
-        private void PutPieceInTaskArea(int playerId, PlayerState player, int x, int y)
-        {
+            PlayerState player = PlayerStates[playerId];
             Board.BoardTable[x, y].Piece = PlayerStates[playerId].Piece;
             Board.PiecesPositions.Add((x, y));
             player.Piece = null;
             PlayerStates[playerId] = player;
 
             Board.RecalculateDistances();
+        }
+
+        private void DestroyPlayersPiece(int playerId)
+        {
+            PlayerState player = PlayerStates[playerId];
+            player.Piece = null;
+            PlayerStates[playerId] = player;
+            Board.PieceCount--;
         }
 
         public void DestroyPiece(int playerId)
@@ -210,7 +225,9 @@ namespace GameLib
             if (player.Piece == null)
                 throw new PieceOperationException("Player doesn't have a piece!");
 
-            DestroyPlayersPiece(playerId, player);
+            DestroyPlayersPiece(playerId);
+
+            DelayPlayer(playerId, gameRules.DestroyPieceMultiplier);
         }
 
         public bool CheckPiece(int playerId)
@@ -223,17 +240,32 @@ namespace GameLib
             if (player.Piece == null)
                 throw new PieceOperationException("Player doesn't have a piece!");
 
+            DelayPlayer(playerId, gameRules.CheckMultiplier);
+
             return player.Piece.IsValid;
         }
 
-        public (int[,], (int x, int y)) DiscoverField(int playerId) //to be discussed
+        public int[,] Discover(int playerId)
         {
             PlayerState player = PlayerStates[playerId];
 
             if (!player.IsEligibleForAction)
                 throw new DelayException();
 
-            return (Board.GetDistancesAround(player.Position.X, player.Position.Y), (player.Position.X, player.Position.Y));
+            DelayPlayer(playerId, gameRules.DiscoverMultiplier);
+
+            return Board.GetDistancesAround(player.Position.X, player.Position.Y);
+        }
+
+        //communicate
+        public void Communicate(int playerId)
+        {
+            PlayerState player = PlayerStates[playerId];
+
+            if (!player.IsEligibleForAction)
+                throw new DelayException();
+
+            DelayPlayer(playerId, gameRules.CommunicationMultiplier);
         }
     }
 }

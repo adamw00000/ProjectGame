@@ -29,6 +29,18 @@ namespace GameLib
             }
         }
 
+        public async Task StartGame()
+        {
+            var generatePiecesTask = GeneratePieces();
+
+            while (!state.GameEnded)
+            {
+                //game
+            }
+
+            await generatePiecesTask;
+        }
+
         public void MoveAgent(int agentId, MoveDirection moveDirection)
         {
             throw new NotImplementedException();
@@ -67,18 +79,6 @@ namespace GameLib
         public void CommunicationAgreementWithData(int agentId, Object data)
         {
             throw new NotImplementedException();
-        }
-
-        public async Task StartGame()
-        {
-            var generatePiecesTask = GeneratePieces();
-
-            while (!state.GameEnded)
-            {
-                //game
-            }
-
-            await generatePiecesTask;
         }
     }
 }

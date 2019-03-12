@@ -5,6 +5,9 @@
         public static GameRules GetDefaultRules() =>
             new GameRules(boardWidth: 8, boardHeight: 8, goalAreaHeight: 2, agentStartX: 4, agentStartY: 5);
 
+        public static GameRules GetOddSizeBoardRules() =>
+            new GameRules(boardWidth: 7, boardHeight: 7, goalAreaHeight: 2, agentStartX: 4, agentStartY: 5); //odd-sized board
+
         public static GameRules GetStaticDefaultRules() =>
             new GameRules(boardWidth: 8, boardHeight: 8, goalAreaHeight: 2, agentStartX: 4, agentStartY: 5); //Nie ruszac
 
