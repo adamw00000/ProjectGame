@@ -8,19 +8,19 @@ namespace ConnectionLib
 {
     public class AgentLocalConnection: LocalConnection, IConnection
     {
-        public AgentLocalConnection(): base()
+        public AgentLocalConnection(LocalCommunicationServer communicationServer): base(communicationServer)
         {
-            LocalCommunicationServer.ConnectAgent(this);
+            CommunicationServer.ConnectAgent(this);
         }
 
-        public override void Send<M>(M message)
+        public override void Send(Message message)
         {
             if (!Connected)
             {
                 throw new Exception("Not connected");
             }
 
-            LocalCommunicationServer.SendMessage(this, message);
+            CommunicationServer.SendMessage(this, message);
         }
     }
 }

@@ -8,19 +8,19 @@ namespace ConnectionLib
 {
     public class GMLocalConnection: LocalConnection, IConnection
     {
-        public GMLocalConnection(): base()
+        public GMLocalConnection(LocalCommunicationServer communicationServer): base(communicationServer)
         {
-            LocalCommunicationServer.ConnectGM(this);
+            CommunicationServer.ConnectGM(this);
         }
 
-        public override void Send<M>(M message)
+        public override void Send(Message message)
         {
             if (!Connected)
             {
                 throw new Exception("Not connected");
             }
 
-            LocalCommunicationServer.SendMessage(this, message);
+            CommunicationServer.SendMessage(this, message);
         }
     }
 }

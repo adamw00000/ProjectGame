@@ -5,32 +5,31 @@ using System.Text;
 
 namespace ConnectionLib
 {
-    public static class LocalCommunicationServer
+    public class LocalCommunicationServer
     {
-        #region Private fields
-        private static int lastAgentId = 0;
+        #region Fields and properties
+        private int lastAgentId = 0;
 
-        private static GMLocalConnection gameMaster;
-        private static ConcurrentDictionary<AgentLocalConnection, int> agentToId = new ConcurrentDictionary<AgentLocalConnection, int>();
-        private static ConcurrentDictionary<int, AgentLocalConnection> idToAgent = new ConcurrentDictionary<int, AgentLocalConnection>();
+        private GMLocalConnection gameMaster;
+        private ConcurrentDictionary<AgentLocalConnection, int> agentToId = new ConcurrentDictionary<AgentLocalConnection, int>();
+        private ConcurrentDictionary<int, AgentLocalConnection> idToAgent = new ConcurrentDictionary<int, AgentLocalConnection>();
         #endregion
 
-        #region Public methods
-        public static void Clear()
+        #region Constructors
+        public LocalCommunicationServer()
         {
-            lastAgentId = 0;
-            gameMaster = null;
-            agentToId = new ConcurrentDictionary<AgentLocalConnection, int>();
-            idToAgent = new ConcurrentDictionary<int, AgentLocalConnection>();
-    }
 
-        public static void ConnectAgent(AgentLocalConnection agent)
+        }
+        #endregion
+
+        #region Methods
+        public void ConnectAgent(AgentLocalConnection agent)
         {
-            if (gameMaster == null)
-            {
-                // Tu powinno być wysłanie odpowiedniej wiadomości w odpowiedzi a nie Exception
-                throw new Exception("GM is not connected");
-            }
+            //if (GameMaster == null)
+            //{
+            //    // Tu powinno być wysłanie odpowiedniej wiadomości w odpowiedzi a nie Exception
+            //    throw new Exception("GM is not connected");
+            //}
             if (agentToId.ContainsKey(agent))
             {
                 throw new Exception("This agent is already connected");
@@ -41,17 +40,17 @@ namespace ConnectionLib
             idToAgent.GetOrAdd(id, agent);
         }
 
-        public static void ConnectGM(GMLocalConnection gameMaster)
+        public void ConnectGM(GMLocalConnection gameMaster)
         {
-            if (LocalCommunicationServer.gameMaster != null)
+            if (this.gameMaster != null)
             {
                 throw new Exception("GM is already connected");
             }
 
-            LocalCommunicationServer.gameMaster = gameMaster;
+            this.gameMaster = gameMaster;
         }
 
-        public static void DisconnectAgent(AgentLocalConnection agent)
+        public void DisconnectAgent(AgentLocalConnection agent)
         {
             if (!agentToId.ContainsKey(agent))
             {
@@ -62,32 +61,37 @@ namespace ConnectionLib
             idToAgent.Remove(id, out AgentLocalConnection a);
         }
 
-        public static void DisconnectGM(GMLocalConnection gameMaster)
+        public void DisconnectGM(GMLocalConnection gameMaster)
         {
-            if (LocalCommunicationServer.gameMaster != gameMaster)
+            if (this.gameMaster != gameMaster)
             {
                 throw new Exception("Different GM is connected");
             }
 
-            LocalCommunicationServer.gameMaster = null;
+            this.gameMaster = null;
         }
 
-        public static void SendMessage<M>(AgentLocalConnection agent, M message)
+        public void SendMessage(AgentLocalConnection agent, Message message)
         {
-            // tu CS musi dodawać Id żeby potem GM wiedział komu odsyłać
-            gameMaster.Messages.Add(message);
+            if (agentToId.TryGetValue(agent, out int id))
+            {
+                message.AgentId = id;
+                if (gameMaster != null)
+                {
+                    gameMaster.Messages.Add(message);
+                }
+                else
+                {
+                    throw new Exception("GM is not connected");
+                }
+            }
         }
 
-        public static void SendMessage<M>(GMLocalConnection gameMaster, M message)
+        public void SendMessage(GMLocalConnection gameMaster, Message message)
         {
-            // tutaj musimy jakoś wydobyć z message id agenta i tam przesłać
-            // i to poniżej jest pięknym rozwiązniem (nie)
-            //int id = ((dynamic)message).AgentId;
-            //int id = (int)message.GetType().GetProperty("AgentId").GetValue(message, null);
+            int id = message.AgentId;
+            // jeśli id jest złe to zgodnie ze specyfikacją jest wiadomość Invalid JSON... ale to będzie dopiero w "prawdziwym CSie"
 
-            int id = 1;
-
-            // jeśli id jest złe to co??? bo zgodnie ze specyfikacją jest wiadomość Invalid JSON... ale nie mamy jeszcze implementacji
             if (idToAgent.TryGetValue(id, out AgentLocalConnection agent))
             {
                 agent.Messages.Add(message);

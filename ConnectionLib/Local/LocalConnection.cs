@@ -8,43 +8,52 @@ namespace ConnectionLib
 {
     public abstract class LocalConnection: IConnection
     {
-        public BlockingCollection<object> Messages = new BlockingCollection<object>();
+        #region Fields and Properties
+        public BlockingCollection<Message> Messages = new BlockingCollection<Message>();
+    
+        protected LocalCommunicationServer CommunicationServer;
         public bool Connected { get; protected set; }
+        #endregion
 
-
-        public LocalConnection()
+        #region Constructors
+        public LocalConnection(LocalCommunicationServer communicationServer)
         {
             Connected = true;
+            this.CommunicationServer = communicationServer;
         }
+        #endregion
 
+        #region Methods
         public void Disconnect()
         {
             Connected = false;
+            CommunicationServer = null;
         }
 
-        public M Receive<M>()
+        public Message Receive()
         {
             if (!Connected)
             {
                 throw new Exception("Not connected");
             }
 
-            return (M)Messages.Take();
+            return Messages.Take();
         }
 
-        public Task<M> ReceiveAsync<M>()
+        public Task<Message> ReceiveAsync()
         {
-            TaskCompletionSource<M> taskCompletionSource = new TaskCompletionSource<M>();
-            taskCompletionSource.SetResult(Receive<M>());
+            TaskCompletionSource<Message> taskCompletionSource = new TaskCompletionSource<Message>();
+            taskCompletionSource.SetResult(Receive());
             return taskCompletionSource.Task;
         }
 
-        public abstract void Send<M>(M message);
+        public abstract void Send(Message message);
 
-        public Task SendAsync<M>(M message)
+        public Task SendAsync(Message message)
         {
             Send(message);
             return Task.CompletedTask;
         }
+        #endregion
     }
 }
