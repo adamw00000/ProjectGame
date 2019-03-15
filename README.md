@@ -3,7 +3,7 @@
 ----------
 ###About###
 
-Project purpose is to simulatate gameplay between two teams, Red and Blue. Each team's objective is to be the first one to dicsover all goals hidden on the rectangular bord by placing a piece on them.
+Project purpose is to simulate gameplay between two teams, Red and Blue. Each team's objective is to be the first one to discover all goals hidden on the rectangular bord by placing a piece on them.
 
 Project is divided into two types of modules:
 
@@ -22,7 +22,7 @@ Project is divided into two types of modules:
 
 ####~~Agent~~####
 
-~~Agent's application simulate a single member of a team, his movement, interaction with pieces and communication with his teammates.~~
+~~Agent's application simulates a single member of a team, his movement, interaction with pieces and communication with his teammates.~~
 
 ####~~Communication Server~~####
 
@@ -32,10 +32,10 @@ Project is divided into two types of modules:
 ----------
 ###Technology###
 
-Project is written using C# and Framework .Net Core 2.2, also following packages were used:
+Project is written using C# and .Net Core 2.2, also following packages were used:
 
  - Avalonia for GUI
- - NLog for loging
+ - NLog for logging
  - xUnit, ShouldLy and Moq for testing
 
 Architecture is divided into:
@@ -59,12 +59,12 @@ In the future our plan is to divide the project into three different types of ap
 ----------
 ###Methodology###
 
-Project is to be written using extreme programming. Each iteracion is one week long (Friday to Thursday). Team members work in pairs that can change between iterations.
+Project will be created using extreme programming. Each iteration is one week long (Friday to Thursday). Team members work in pairs that can change between iterations.
 
  1. Task assignment takes place at weekly meetings (Friday, 11am) where members decide together about next week's workplan.
  2. In case of disagreement between team members leader has the final word.
  3. Due to elastic work hours of each team member exact workplan has to be planned and put into [calendar](https://calendar.google.com/calendar/r?cid=lghicnplhaaijb1p1vac05nrkk@group.calendar.google.com) until the end of meeting day.
- 4. The person appointed ss [specification](https://bitbucket.org/filipiakk/io2_specyfikacja/src/master/) expert is Szymon Zelek. Every new problem we encounter will be reported to authors.
+ 4. The person appointed as [specification](https://bitbucket.org/filipiakk/io2_specyfikacja/src/master/) expert is Szymon Zelek. Every new problem we encounter will be reported to the authors.
  5. Because of deadlines of project stages delivery, components will meet all expectations after each iteration.
  6. Code will be developed using TDD methodology.
 
@@ -72,14 +72,14 @@ Project is to be written using extreme programming. Each iteracion is one week l
 ----------
 ###Team meeting###
 
-Objectives of each weekly meeting are as follow:
+Objectives of each weekly meeting are as follows:
 
  - Discussion about completed tasks and problems we encountered.
  - Debate on unfinished tasks.
- - Plan for upcoming iteracion that includes deadlines.
+ - Plan for upcoming iteration that includes deadlines.
  - Task assignment to pairs
 
-All current tasks and problems are listed on team's [board](https://trello.com/b/0hRi4Ogv/io-mawsk) that is main way of communication in team
+All current tasks and problems are listed on team's [board](https://trello.com/b/0hRi4Ogv/io-mawsk) that is the main way of communication in team
 
 
 ----------
@@ -87,7 +87,7 @@ All current tasks and problems are listed on team's [board](https://trello.com/b
 
 [Repository](https://bitbucket.org/iomawsk/project-the-game-repo/src/master/) follows few rules:
 
- - Each new functionality is created on non dev branch and added by pull request
+ - Each new functionality is created on feature/\[feature name\] branch and added by pull request
  - Delivery-ready versions are placed on release branch
  - Versions in stage of testing are placed on test branches
 
@@ -96,7 +96,7 @@ CI environment has already been initiated and first commits on dev branch have b
 ----------
 ###Iterations###
 
-We plan to create our project during 15 weeks devided into 15 iterations.
+We plan to create our project during 15 weeks divided into 15 iterations.
 
 ----------
 ###Issues###
