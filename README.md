@@ -1,45 +1,107 @@
-**Edit a file, create a new file, and clone from Bitbucket in under 2 minutes**
 
-When you're done, you can delete the content in this README and update the file with details for others getting started with your repository.
+## Project The Game ##
+----------
+###About###
 
-*We recommend that you open this README in another tab as you perform the tasks below. You can [watch our video](https://youtu.be/0ocf7u76WSo) for a full demo of all the steps in this tutorial. Open the video in a new tab to avoid leaving Bitbucket.*
+Project purpose is to simulate gameplay between two teams, Red and Blue. Each team's objective is to be the first one to discover all goals hidden on the rectangular bord by placing a piece on them.
 
----
+Project is divided into two types of modules:
 
-## Edit a file
+ - Game Master Module
+ - Agent Module
 
-You’ll start by editing this README file to learn how to edit a file in Bitbucket.
+~~Project is divided into three applications:~~
 
-1. Click **Source** on the left side.
-2. Click the README.md link from the list of files.
-3. Click the **Edit** button.
-4. Delete the following text: *Delete this line to make a change to the README from Bitbucket.*
-5. After making your change, click **Commit** and then **Commit** again in the dialog. The commit page will open and you’ll see the change you just made.
-6. Go back to the **Source** page.
+ - ~~Game Master~~
+ - ~~Agent~~
+ - ~~Communication Server~~
 
----
+####~~Game Master~~####
 
-## Create a file
+~~It is the main application that manages the entire game.~~
 
-Next, you’ll add a new file to this repository.
+####~~Agent~~####
 
-1. Click the **New file** button at the top of the **Source** page.
-2. Give the file a filename of **contributors.txt**.
-3. Enter your name in the empty file space.
-4. Click **Commit** and then **Commit** again in the dialog.
-5. Go back to the **Source** page.
+~~Agent's application simulates a single member of a team, his movement, interaction with pieces and communication with his teammates.~~
 
-Before you move on, go ahead and explore the repository. You've already seen the **Source** page, but check out the **Commits**, **Branches**, and **Settings** pages.
+####~~Communication Server~~####
 
----
+~~Handles entire communication between Agents and Game Master.~~
 
-## Clone a repository
 
-Use these steps to clone from SourceTree, our client for using the repository command-line free. Cloning allows you to work on your files locally. If you don't yet have SourceTree, [download and install first](https://www.sourcetreeapp.com/). If you prefer to clone from the command line, see [Clone a repository](https://confluence.atlassian.com/x/4whODQ).
+----------
+###Technology###
 
-1. You’ll see the clone button under the **Source** heading. Click that button.
-2. Now click **Check out in SourceTree**. You may need to create a SourceTree account or log in.
-3. When you see the **Clone New** dialog in SourceTree, update the destination path and name if you’d like to and then click **Clone**.
-4. Open the directory you just created to see your repository’s files.
+Project will be using C# and .Net Core 2.2, also following packages will be used:
 
-Now that you're more familiar with your Bitbucket repository, go ahead and add a new file locally. You can [push your change back to Bitbucket with SourceTree](https://confluence.atlassian.com/x/iqyBMg), or you can [add, commit,](https://confluence.atlassian.com/x/8QhODQ) and [push from the command line](https://confluence.atlassian.com/x/NQ0zDQ).
+ - Avalonia for GUI
+ - NLog for logging
+ - xUnit, ShouldLy and Moq for testing
+
+Architecture is divided into:
+
+ - Communication library and it's testing project
+ - Game logic library and it's testing project
+ - Console application
+
+In the future our plan is to divide the project into three different types of applications by separating Agent's Modules and moving messages transmission into a dedicated Communication Server.
+
+
+----------
+###Team###
+
+ - Krzysztof Więcław - developer/leader
+ - Marcin Zakrzewski - developer
+ - Adam Wawrzeńczyk - developer
+ - Wojciech Tobiasz - developer
+ - Szymon Zelek - developer
+
+----------
+###Methodology###
+
+Project will be created using extreme programming. Each iteration is one week long (Friday to Thursday). Team members work in pairs that can change between iterations.
+
+ 1. Task assignment takes place at weekly meetings (Friday, 11am) where members decide together about next week's workplan.
+ 2. In case of disagreement between team members leader has the final word.
+ 3. Due to elastic work hours of each team member exact workplan has to be planned and put into [calendar](https://calendar.google.com/calendar/r?cid=lghicnplhaaijb1p1vac05nrkk@group.calendar.google.com) until the end of meeting day.
+ 4. The person appointed as [specification](https://bitbucket.org/filipiakk/io2_specyfikacja/src/master/) expert is Szymon Zelek. Every new problem we encounter will be reported to the authors.
+ 5. Because of deadlines of project stages delivery, components will meet all expectations after each iteration.
+ 6. Code will be developed using TDD methodology.
+
+
+----------
+###Team meeting###
+
+Objectives of each weekly meeting are as follows:
+
+ - Discussion about completed tasks and problems we encountered.
+ - Debate on unfinished tasks.
+ - Plan for upcoming iteration that includes deadlines.
+ - Task assignment to pairs
+
+All current tasks and problems are listed on team's [board](https://trello.com/b/0hRi4Ogv/io-mawsk) that is the main way of communication in team
+
+
+----------
+###Repository###
+
+[Repository](https://bitbucket.org/iomawsk/project-the-game-repo/src/master/) follows few rules:
+
+ - Each new functionality is created on feature/\[feature name\] branch and added by pull request
+ - Delivery-ready versions are placed on release branch
+ - Versions in stage of testing are placed on test branches
+
+CI environment has already been initiated and first commits on dev branch have been made.
+
+----------
+###Iterations###
+
+We plan to create our project during 15 weeks divided into 15 iterations.
+
+----------
+###Issues###
+So far a few issues have been created or commented by the team:
+
+ 1. ["Komunikacja między graczami"](https://bitbucket.org/filipiakk/io2_specyfikacja/issues/34/komunikacja-mi-dzy-graczami-r-d-o-wiedzy?fbclid=IwAR0Of167dl1HGwO_7YdfKqrtb_2Yme99PAAG_T9PfGLxTYMZ4vIozDzdooI)
+ 2. ["Rozmiar JSONa"](https://bitbucket.org/filipiakk/io2_specyfikacja/issues/36/rozmiar-jsona-jak-dok-adnie-przesy-any?fbclid=IwAR1aR7rvY4GqFWigBs2XgsOX-PNjKh_3PsbyINKI34Ivk-7CVjRhf0VHn7M)
+ 3. ["Communication exchange"](https://bitbucket.org/filipiakk/io2_specyfikacja/issues/57/communication-exchange-nale-y-odpowiada)
