@@ -11,10 +11,10 @@ namespace ConnectionLib
 
         void Disconnect();
 
-        void Send<M>(M message);
-        Task SendAsync<M>(M message);
+        void Send(Message message);
+        Task SendAsync(Message message);
 
-        M Receive<M>();
-        Task<M> ReceiveAsync<M>();
+        Message Receive();
+        Task<Message> ReceiveAsync();
     }
 }
