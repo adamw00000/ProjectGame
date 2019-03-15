@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GameLib.Actions
 {
-    class ActionCommunicationResponseWithData : IActionResponse
+    internal class ActionCommunicationResponseWithData : IActionResponse
     {
         public ActionCommunicationResponseWithData(int waitUntilTime, object data)
         {
@@ -19,6 +17,6 @@ namespace GameLib.Actions
             throw new NotImplementedException();
         }
 
-        object data;
+        private readonly object data;
     }
 }

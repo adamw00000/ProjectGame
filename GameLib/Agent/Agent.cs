@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ConnectionLib;
+﻿using ConnectionLib;
+using System;
 
 namespace GameLib
 {
@@ -27,6 +25,12 @@ namespace GameLib
 
         public void Run()
         {
+            //bool gameEnded = false; //?
+            //while(!gameEnded)
+            //{
+            //    IAction nextAction = decisionModule.ChooseAction(state);
+            //    connection.Send(nextAction);//????
+            //}
             // loop decisionModule <-> connection.Send()
             throw new NotImplementedException();
         }

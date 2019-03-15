@@ -5,6 +5,7 @@ namespace GameLib
     public struct AgentField
     {
         private int distance;
+
         public int Distance
         {
             get => distance;
@@ -14,15 +15,8 @@ namespace GameLib
                 Timestamp = DateTime.UtcNow;
             }
         }
+
         public DateTime Timestamp { get; set; }
         public FieldState IsGoal { get; set; }
-    }
-
-    public enum FieldState: byte
-    {
-        DiscoveredGoal,
-        DiscoveredNotGoal,
-        Unknown,
-        NA
     }
 }

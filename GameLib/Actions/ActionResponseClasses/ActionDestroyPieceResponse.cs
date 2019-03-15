@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GameLib.Actions
 {
-    class ActionDestroyPieceResponse : IActionResponse
+    internal class ActionDestroyPieceResponse : IActionResponse
     {
         public ActionDestroyPieceResponse(int waitUntilTime)
         {

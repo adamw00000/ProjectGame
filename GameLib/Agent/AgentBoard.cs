@@ -1,28 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GameLib
 {
     public class AgentBoard
     {
-        public readonly AgentField[,] Board;
-        public int Height => Board.GetLength(0);
-        public int Width => Board.GetLength(1);
+        public readonly AgentField[,] BoardTable;
+        public int Height => BoardTable.GetLength(0);
+        public int Width => BoardTable.GetLength(1);
         public int GoalAreaHeight { get; }
 
         public AgentBoard(GameRules rules)
         {
-            // konstrukcja tablicy i wypełnienie AgentField.FieldState odpowiednimi wartościami
-            Board = new AgentField[rules.BoardHeight, rules.BoardWidth];
+            BoardTable = new AgentField[rules.BoardHeight, rules.BoardWidth];
             GoalAreaHeight = rules.GoalAreaHeight;
 
             void FillBoardRow(int i, bool isGoalArea)
             {
                 for (int j = 0; j < Width; j++)
                 {
-                    Board[i, j] = new AgentField() { Distance = int.MaxValue, Timestamp = DateTime.UtcNow,
-                        IsGoal = isGoalArea ? FieldState.Unknown : FieldState.NA };
+                    BoardTable[i, j] = new AgentField()
+                    {
+                        Distance = -1,
+                        Timestamp = DateTime.UtcNow,
+                        IsGoal = isGoalArea ? FieldState.Unknown : FieldState.NA
+                    };
                 }
             }
 
@@ -44,24 +45,24 @@ namespace GameLib
 
         public AgentField this[int x, int y]
         {
-            get => Board[x, y];
+            get => BoardTable[x, y];
             set
             {
-                Board[x, y] = value;
+                BoardTable[x, y] = value;
             }
         }
-        
+
         public void SetDistance(int x, int y, int distance)
         {
-            Board[x, y].Distance = distance;
+            BoardTable[x, y].Distance = distance;
         }
 
         public void SetFieldState(int x, int y, FieldState isGoal)
         {
-            Board[x, y].IsGoal = isGoal;
+            BoardTable[x, y].IsGoal = isGoal;
         }
 
-        internal void ApplyDiscoveryResult(DiscoveryResult discoveryResult)
+        internal void ApplyDiscoveryResult(AgentDiscoveryResult discoveryResult)
         {
             for (int i = -1; i <= 1; i++)
             {
@@ -69,14 +70,14 @@ namespace GameLib
                 {
                     if (!IsInBounds(discoveryResult, i, j))
                         continue;
-                    
-                    Board[discoveryResult.BasePosition.X + i, discoveryResult.BasePosition.Y + j].Distance =
+
+                    BoardTable[discoveryResult.BasePosition.X + i, discoveryResult.BasePosition.Y + j].Distance =
                         discoveryResult.Fields[i + 1, j + 1].Distance;
                 }
             }
         }
 
-        private bool IsInBounds(DiscoveryResult discoveryResult, int i, int j)
+        private bool IsInBounds(AgentDiscoveryResult discoveryResult, int i, int j)
         {
             return discoveryResult.BasePosition.X + i >= 0 &&
                 discoveryResult.BasePosition.X + i < Width &&
@@ -93,16 +94,16 @@ namespace GameLib
                     if (IsResultBoardOlder(resultBoard, i, j))
                         continue;
 
-                    Board[i, j].Distance = resultBoard[i, j].Distance;
-                    Board[i, j].IsGoal = resultBoard[i, j].IsGoal;
-                    Board[i, j].Timestamp = resultBoard[i, j].Timestamp;
+                    BoardTable[i, j].Distance = resultBoard[i, j].Distance;
+                    BoardTable[i, j].IsGoal = resultBoard[i, j].IsGoal;
+                    BoardTable[i, j].Timestamp = resultBoard[i, j].Timestamp;
                 }
             }
         }
 
         private bool IsResultBoardOlder(AgentBoard resultBoard, int i, int j)
         {
-            return Board[i, j].Timestamp >= resultBoard[i, j].Timestamp;
+            return BoardTable[i, j].Timestamp >= resultBoard[i, j].Timestamp;
         }
     }
 }

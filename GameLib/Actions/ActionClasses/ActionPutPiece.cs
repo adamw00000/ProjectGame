@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GameLib.Actions
+﻿namespace GameLib.Actions
 {
-    class ActionPutPiece : IAction
+    internal class ActionPutPiece : IAction
     {
         public ActionPutPiece(int agentId)
         {

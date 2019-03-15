@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GameLib
+﻿namespace GameLib
 {
     public class AgentState
     {
@@ -14,7 +10,6 @@ namespace GameLib
 
         public AgentState()
         {
-
         }
 
         // Ta metoda została wyodrębniona z konstruktora bo nie chcemy tworzyć całego obiektu w momencie rozpoczęcia gry
@@ -25,23 +20,26 @@ namespace GameLib
             Board = new AgentBoard(rules);
         }
 
-        public void Move(Direction direction, int distance)
+        public void Move(MoveDirection direction, int distance)
         {
             var oldPosition = Position;
 
-            switch(direction)
+            switch (direction)
             {
-                case Direction.Left:
-                    Position.X--;
-                    break;
-                case Direction.Right:
-                    Position.X++;
-                    break;
-                case Direction.Up:
+                case MoveDirection.Left:
                     Position.Y--;
                     break;
-                case Direction.Down:
+
+                case MoveDirection.Right:
                     Position.Y++;
+                    break;
+
+                case MoveDirection.Up:
+                    Position.X--;
+                    break;
+
+                case MoveDirection.Down:
+                    Position.X++;
                     break;
             }
 
@@ -78,7 +76,7 @@ namespace GameLib
             PieceState = PieceState.Unknown;
         }
 
-        public void Discover(DiscoveryResult discoveryResult)
+        public void Discover(AgentDiscoveryResult discoveryResult)
         {
             if (!discoveryResult.IsValid(Board))
                 throw new InvalidDiscoveryResultException();
@@ -93,28 +91,5 @@ namespace GameLib
 
             Board.ApplyCommunicationResult(communicationResult.Board);
         }
-    }
-
-    public enum PieceState
-    {
-        Valid,
-        Invalid,
-        Unknown
-    }
-
-    public enum Direction
-    {
-        Up,
-        Down,
-        Left,
-        Right
-    }
-
-    public class InvalidMoveException: Exception { }
-    public class InvalidDiscoveryResultException : Exception { }
-    public class InvalidCommunicationResultException : Exception { }
-    public class PieceOperationException : Exception
-    {
-        public PieceOperationException(string message = ""): base(message) {  }
     }
 }

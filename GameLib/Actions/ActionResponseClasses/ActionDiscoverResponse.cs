@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GameLib.Actions
 {
-    class ActionDiscoverResponse : IActionResponse
+    internal class ActionDiscoverResponse : IActionResponse
     {
         public ActionDiscoverResponse(int waitUntilTime, AgentField[,] closestPieces)
         {
@@ -19,6 +17,6 @@ namespace GameLib.Actions
             throw new NotImplementedException();
         }
 
-        AgentField[,] closestPieces;
+        private readonly AgentField[,] closestPieces;
     }
 }

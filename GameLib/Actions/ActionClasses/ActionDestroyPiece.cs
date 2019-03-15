@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GameLib.Actions
+﻿namespace GameLib.Actions
 {
-    class ActionDestroyPiece : IAction
+    internal class ActionDestroyPiece : IAction
     {
         public ActionDestroyPiece(int agentId)
         {
