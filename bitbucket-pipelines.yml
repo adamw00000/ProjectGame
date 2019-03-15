@@ -18,3 +18,4 @@ pipelines:
             - dotnet build GameLib
             - dotnet build ProjectGame
             - dotnet test GameLib.Tests
+            - dotnet test ConnectionLib.Tests
