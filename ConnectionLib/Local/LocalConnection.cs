@@ -9,7 +9,7 @@ namespace ConnectionLib
     public abstract class LocalConnection: IConnection
     {
         #region Fields and Properties
-        public BlockingCollection<Message> Messages = new BlockingCollection<Message>();
+        public BlockingCollection<Message> Messages { get; } = new BlockingCollection<Message>();
     
         protected LocalCommunicationServer CommunicationServer;
         public bool Connected { get; protected set; }
@@ -34,7 +34,7 @@ namespace ConnectionLib
         {
             if (!Connected)
             {
-                throw new Exception("Not connected");
+                throw new InvalidOperationException("Not connected");
             }
 
             return Messages.Take();

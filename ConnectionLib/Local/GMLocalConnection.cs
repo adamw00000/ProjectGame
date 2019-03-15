@@ -17,7 +17,7 @@ namespace ConnectionLib
         {
             if (!Connected)
             {
-                throw new Exception("Not connected");
+                throw new InvalidOperationException("Not connected");
             }
 
             CommunicationServer.SendMessage(this, message);

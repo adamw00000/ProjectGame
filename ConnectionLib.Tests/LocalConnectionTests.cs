@@ -15,8 +15,7 @@ namespace ConnectionLib.Tests
         }
     }
 
-    // W niektórych miejscach jest AgentId = int.MaxValue, chcê przez to pokazaæ ¿e wartoœæ wpisana w tamtym miejscu nie jest wa¿na.
-    // (Na etapie testów).
+    // I am setting AgentId = int.MaxValue to showcase that it does not matter when it comes to testing.
     public class LocalConnectionTests
     {
         [Fact]
@@ -47,7 +46,7 @@ namespace ConnectionLib.Tests
         }
 
         [Fact]
-        private void LocalConnection_WhenDisconnected_ThrowExceptionOnSend()
+        private void LocalConnection_WhenDisconnected_ThrowInvalidOperationExceptionOnSend()
         {
             LocalCommunicationServer communicationServer = new LocalCommunicationServer();
 
@@ -57,15 +56,15 @@ namespace ConnectionLib.Tests
             agentLocalConnection.Disconnect();
             gmLocalConnection.Disconnect();
 
-            Assert.Throws<Exception>(() => agentLocalConnection.Send(null));
-            Assert.Throws<Exception>(() => gmLocalConnection.Send(null));
+            Assert.Throws<InvalidOperationException>(() => agentLocalConnection.Send(null));
+            Assert.Throws<InvalidOperationException>(() => gmLocalConnection.Send(null));
 
-            Assert.ThrowsAsync<Exception>(() => agentLocalConnection.SendAsync(null));
-            Assert.ThrowsAsync<Exception>(() => gmLocalConnection.SendAsync(null));
+            Assert.ThrowsAsync<InvalidOperationException>(() => agentLocalConnection.SendAsync(null));
+            Assert.ThrowsAsync<InvalidOperationException>(() => gmLocalConnection.SendAsync(null));
         }
 
         [Fact]
-        private void LocalConnection_WhenDisconnected_ThrowExceptionOnReceive()
+        private void LocalConnection_WhenDisconnected_ThrowInvalidOperationExceptionOnReceive()
         {
             LocalCommunicationServer communicationServer = new LocalCommunicationServer();
 
@@ -75,15 +74,13 @@ namespace ConnectionLib.Tests
             agentLocalConnection.Disconnect();
             gmLocalConnection.Disconnect();
 
-            Assert.Throws<Exception>(() => agentLocalConnection.Receive());
-            Assert.Throws<Exception>(() => gmLocalConnection.Receive());
+            Assert.Throws<InvalidOperationException>(() => agentLocalConnection.Receive());
+            Assert.Throws<InvalidOperationException>(() => gmLocalConnection.Receive());
 
-            Assert.ThrowsAsync<Exception>(() => agentLocalConnection.ReceiveAsync());
-            Assert.ThrowsAsync<Exception>(() => gmLocalConnection.ReceiveAsync());
+            Assert.ThrowsAsync<InvalidOperationException>(() => agentLocalConnection.ReceiveAsync());
+            Assert.ThrowsAsync<InvalidOperationException>(() => gmLocalConnection.ReceiveAsync());
         }
 
-        // Te poni¿sze testy nie s¹ zbyt jednostkowe bo korzystaj¹ z LocalCommunicationServer...
-        // no ale tak czy siak je napisa³em bo pokazuj¹ ¿e implementacja dzia³a
         [Fact]
         private void AgentLocalConnection_WhenMessageSent_ItIsDelivered()
         {
@@ -108,7 +105,7 @@ namespace ConnectionLib.Tests
             AgentLocalConnection agentLocalConnection = new AgentLocalConnection(communicationServer);
             GMLocalConnection gmLocalConnection = new GMLocalConnection(communicationServer);
 
-            // to jest slaby test, bo ja z powodu determinizmu communicationServer wiem ¿e agent dostanie id 1 ale bêdzie problem jak siê np implementacja zmieni.
+            // Because of the determinism of LocalCommunicationServer i know that AgentId will be set to 1.
             Message message = new Message(1);
 
             gmLocalConnection.Send(message);
@@ -118,7 +115,7 @@ namespace ConnectionLib.Tests
         }
 
         [Fact]
-        private void LocalCommunicationServer_WhenSeveralMessagesSent_TheyAreDeliverdInRightOrder()
+        private void LocalCommunicationServer_WhenSeveralMessagesSent_TheyAreDeliveredInRightOrder()
         {
             LocalCommunicationServer communicationServer = new LocalCommunicationServer();
 

@@ -14,6 +14,6 @@ namespace ConnectionLib
             this.AgentId = agentId;
         }
 
-        // potem się zastanowimy nad resztą tej klasy
+        // TODO Think about the rest of the class
     }
 }
