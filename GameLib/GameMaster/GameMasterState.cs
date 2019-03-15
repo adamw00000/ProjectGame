@@ -25,14 +25,14 @@ namespace GameLib
         {
             for (int i = 0; i < teamSize; i++)
             {
-                PlayerStates.Add(i, new PlayerState(i / width, width / 2 + Ceiling(i % width) * Power(i), Team.Blue, i == 0));
-                PlayerStates.Add(i + teamSize, new PlayerState(height - 1 - i / width, width / 2 + Ceiling(i % width) * Power(i), Team.Red, i == 0));
+                PlayerStates.Add(i, new PlayerState(i / width, width / 2 + HalfCeiling(i % width) * Side(i), Team.Blue, i == 0));
+                PlayerStates.Add(i + teamSize, new PlayerState(height - 1 - i / width, width / 2 + HalfCeiling(i % width) * Side(i), Team.Red, i == 0));
             }
-            int Ceiling(int n)
+            int HalfCeiling(int n)
             {
                 return n % 2 == 0 ? n / 2 : n / 2 + 1;
             }
-            int Power(int n)
+            int Side(int n)
             {
                 return n % 2 == 0 ? 1 : -1;
             }
@@ -179,17 +179,17 @@ namespace GameLib
             else
             {
                 PutPieceInTaskArea(playerId, x, y);
-                return PutPieceResult.PIECE_IN_TASK_AREA;
+                return PutPieceResult.PieceInTaskArea;
             }
         }
 
         private PutPieceResult PutPieceInGoalArea(int playerId, int x, int y)
         {
             PlayerState player = PlayerStates[playerId];
-            PutPieceResult result = PutPieceResult.PIECE_WAS_FAKE;
+            PutPieceResult result = PutPieceResult.PieceWasFake;
             if (player.Piece.IsValid)
             {
-                result = Board[x, y].IsGoal ? PutPieceResult.PIECE_GOAL_REALIZED : PutPieceResult.PIECE_GOAL_UNREALIZED;
+                result = Board[x, y].IsGoal ? PutPieceResult.PieceGoalRealized : PutPieceResult.PieceGoalUnrealized;
             }
             DestroyPlayersPiece(playerId);
 
@@ -257,7 +257,6 @@ namespace GameLib
             return Board.GetDistancesAround(player.Position.X, player.Position.Y);
         }
 
-        //communicate
         public void Communicate(int playerId)
         {
             PlayerState player = PlayerStates[playerId];

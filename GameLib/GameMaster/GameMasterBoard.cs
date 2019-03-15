@@ -9,7 +9,7 @@ namespace GameLib
         public int Width => BoardTable.GetLength(1);
         public int GoalAreaHeight { get; }
 
-        public int PieceCount { get; set; } = 0; //wlacznie z kawalkami posiadanymi przez graczy
+        public int PieceCount { get; set; } = 0; //including ones possessed by agents
         public List<(int x, int y)> PiecesPositions = new List<(int x, int y)>();
 
         public GameMasterBoard(GameRules rules)
@@ -20,15 +20,15 @@ namespace GameLib
 
             GoalAreaHeight = rules.GoalAreaHeight;
 
-            GenerateGoals(rules.GoalCount);
-
             for (int x = 0; x < height; x++)
             {
                 for (int y = 0; y < width; y++)
                 {
-                    BoardTable[x, y] = new GameMasterField() { Distance = int.MaxValue }; //Niektore pola z goal area sa golami, trzeba to uswawiac
+                    BoardTable[x, y] = new GameMasterField() { Distance = int.MaxValue };
                 }
             }
+
+            GenerateGoals(rules.GoalCount);
         }
 
         private void GenerateGoals(int count)
@@ -48,7 +48,7 @@ namespace GameLib
             {
                 x = random.Next(GoalAreaHeight, Height - GoalAreaHeight);
                 y = random.Next(0, Width);
-            } while (BoardTable[x, y].IsGoal); //Madrzejsze losowanie? da sie o(1), todo
+            } while (BoardTable[x, y].IsGoal); //o(1) implementation is possible
         }
 
         public GameMasterField this[int x, int y]
@@ -148,7 +148,7 @@ namespace GameLib
 
         public void GeneratePiece(double probability)
         {
-            ChooseRandomFieldForPiece(out int x, out int y);
+            (int x, int y) = ChooseRandomFieldForPiece();
 
             BoardTable[x, y].Piece = new Piece(probability);
 
@@ -157,8 +157,11 @@ namespace GameLib
             RecalculateDistances();
         }
 
-        public void GeneratePieceAt(int x, int y, double probability) //do testow!!
+        public void GeneratePieceAt(int x, int y, double probability)
         {
+            if (BoardTable[x, y].HasPiece)
+                throw new PieceOperationException($"Cannot generate piece on the field ({x},{y}) - this field already has piece.");
+
             BoardTable[x, y].Piece = new Piece(probability);
 
             PiecesPositions.Add((x, y));
@@ -166,15 +169,19 @@ namespace GameLib
             RecalculateDistances();
         }
 
-        private void ChooseRandomFieldForPiece(out int x, out int y)
+        private (int x, int y) ChooseRandomFieldForPiece()
         {
             var random = RandomGenerator.GetGenerator();
+            int x;
+            int y;
 
             do
             {
                 x = random.Next(GoalAreaHeight, Height - GoalAreaHeight);
                 y = random.Next(0, Width);
-            } while (BoardTable[x, y].HasPiece); //Madrzejsze losowanie? da sie o(1), todo
+            } while (BoardTable[x, y].HasPiece); //o(1) implementation possible
+
+            return (x, y);
         }
 
         public int[,] GetDistancesAround(int x, int y)

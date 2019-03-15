@@ -14,10 +14,10 @@ namespace GameLib
 
     public enum PutPieceResult
     {
-        PIECE_IN_TASK_AREA = 0,
-        PIECE_GOAL_REALIZED = 1,
-        PIECE_GOAL_UNREALIZED = 2,
-        PIECE_WAS_FAKE = 3
+        PieceInTaskArea = 0,
+        PieceGoalRealized = 1,
+        PieceGoalUnrealized = 2,
+        PieceWasFake = 3
     }
 
     public enum Team

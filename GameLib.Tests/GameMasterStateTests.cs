@@ -439,7 +439,7 @@ namespace GameLib.Tests
 
             state.Board[0, 0] = new GameMasterField() { IsGoal = isGoal };
             state.PlayerStates.Add(agentId, new PlayerState(0, 0) { LastActionDelay = 0, Piece = new Piece(1) });
-            var expectedResult = isGoal ? PutPieceResult.PIECE_GOAL_REALIZED : PutPieceResult.PIECE_GOAL_UNREALIZED;
+            var expectedResult = isGoal ? PutPieceResult.PieceGoalRealized : PutPieceResult.PieceGoalUnrealized;
 
             var result = state.PutPiece(agentId);
 
@@ -459,7 +459,7 @@ namespace GameLib.Tests
 
             var result = state.PutPiece(agentId);
 
-            result.ShouldBe(PutPieceResult.PIECE_WAS_FAKE);
+            result.ShouldBe(PutPieceResult.PieceWasFake);
         }
 
         [Theory]
@@ -477,7 +477,7 @@ namespace GameLib.Tests
 
             var result = state.PutPiece(agentId);
 
-            result.ShouldBe(PutPieceResult.PIECE_IN_TASK_AREA);
+            result.ShouldBe(PutPieceResult.PieceInTaskArea);
             state.Board[x, y].HasPiece.ShouldBe(true);
             state.PlayerStates[agentId].Piece.ShouldBe(null);
         }
