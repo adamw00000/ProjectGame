@@ -32,7 +32,7 @@ Project is divided into two types of modules:
 ----------
 ###Technology###
 
-Project is written using C# and .Net Core 2.2, also following packages were used:
+Project will be using C# and .Net Core 2.2, also following packages will be used:
 
  - Avalonia for GUI
  - NLog for logging
@@ -100,7 +100,7 @@ We plan to create our project during 15 weeks divided into 15 iterations.
 
 ----------
 ###Issues###
-So far a few issues have been created of commented by the team:
+So far a few issues have been created or commented by the team:
 
  1. ["Komunikacja między graczami"](https://bitbucket.org/filipiakk/io2_specyfikacja/issues/34/komunikacja-mi-dzy-graczami-r-d-o-wiedzy?fbclid=IwAR0Of167dl1HGwO_7YdfKqrtb_2Yme99PAAG_T9PfGLxTYMZ4vIozDzdooI)
  2. ["Rozmiar JSONa"](https://bitbucket.org/filipiakk/io2_specyfikacja/issues/36/rozmiar-jsona-jak-dok-adnie-przesy-any?fbclid=IwAR1aR7rvY4GqFWigBs2XgsOX-PNjKh_3PsbyINKI34Ivk-7CVjRhf0VHn7M)
