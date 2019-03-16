@@ -437,7 +437,7 @@ namespace GameLib.Tests
 
             int agentId = 0;
 
-            state.Board[0, 0] = new GameMasterField() { IsGoal = isGoal };
+            state.Board[0, 0] = new GameMasterField() { IsGoal = GMFieldState.Goal };
             state.PlayerStates.Add(agentId, new PlayerState(0, 0) { LastActionDelay = 0, Piece = new Piece(1) });
             var expectedResult = isGoal ? PutPieceResult.PieceGoalRealized : PutPieceResult.PieceGoalUnrealized;
 
@@ -454,7 +454,7 @@ namespace GameLib.Tests
 
             int agentId = 0;
 
-            state.Board[0, 0] = new GameMasterField() { IsGoal = true };
+            state.Board[0, 0] = new GameMasterField() { IsGoal = GMFieldState.Goal };
             state.PlayerStates.Add(agentId, new PlayerState(0, 0) { LastActionDelay = 0, Piece = new Piece(0) });
 
             var result = state.PutPiece(agentId);

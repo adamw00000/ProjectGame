@@ -189,7 +189,7 @@ namespace GameLib
             PutPieceResult result = PutPieceResult.PieceWasFake;
             if (player.Piece.IsValid)
             {
-                result = Board[x, y].IsGoal ? PutPieceResult.PieceGoalRealized : PutPieceResult.PieceGoalUnrealized;
+                result = Board[x, y].IsGoal == GMFieldState.Goal ? PutPieceResult.PieceGoalRealized : PutPieceResult.PieceGoalUnrealized;
             }
             DestroyPlayersPiece(playerId);
 

@@ -33,11 +33,19 @@ namespace GameLib
         Unknown
     }
 
-    public enum FieldState //What agent knows about fields on the board
+    public enum AgentFieldState //What agent knows about fields on the board
     {
         DiscoveredGoal,
         DiscoveredNotGoal,
         Unknown,
         NA // Not Applicable (in task area)
+    }
+
+    public enum GMFieldState //What GM knows about fields on the board
+    {
+        NotGoal,
+        DiscoveredGoal,
+        Goal,
+        NA
     }
 }
