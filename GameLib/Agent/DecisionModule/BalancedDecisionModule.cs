@@ -8,7 +8,7 @@ namespace GameLib
     {
         // Tutaj jakiś inner state modułu, poprzednie decyzje itd, rzeczy które mogą wpłynąć na kolejny ruch
 
-        public IAction ChooseAction(AgentState agentState)
+        public IAction ChooseAction(int agentId, AgentState agentState)
         {
             throw new NotImplementedException();
         }

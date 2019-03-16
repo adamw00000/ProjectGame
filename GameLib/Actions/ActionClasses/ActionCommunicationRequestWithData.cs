@@ -4,19 +4,20 @@ namespace GameLib.Actions
 {
     internal class ActionCommunicationRequestWithData : IAction
     {
-        public ActionCommunicationRequestWithData(int agentId, Object data)
+        private readonly object data;
+
+        public int AgentId { get; }
+        public int TargetId { get; }
+
+        public ActionCommunicationRequestWithData(int agentId, int targetId, object data)
         {
             AgentId = agentId;
             this.data = data;
         }
 
-        public int AgentId { get; }
-
         public void Handle(GameMaster gameMaster)
         {
             gameMaster.CommunicationRequestWithData(AgentId, data);
         }
-
-        private readonly Object data;
     }
 }

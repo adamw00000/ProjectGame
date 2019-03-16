@@ -32,6 +32,13 @@ namespace GameLib
             //    connection.Send(nextAction);//????
             //}
             // loop decisionModule <-> connection.Send()
+            while (true)
+            {
+                decisionModule.ChooseAction(id, state);
+                System.Threading.Thread.Sleep(500);
+            }
+
+
             throw new NotImplementedException();
         }
 
