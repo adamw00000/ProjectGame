@@ -85,18 +85,18 @@ namespace GameLib
                 discoveryResult.BasePosition.Y + j < Height;
         }
 
-        internal void ApplyCommunicationResult(AgentBoard resultBoard)
+        internal void UpdateBoardWithCommunicationData(AgentBoard partnerBoard)
         {
             for (int i = 0; i < Height; i++)
             {
                 for (int j = 0; j < Width; j++)
                 {
-                    if (IsResultBoardOlder(resultBoard, i, j))
+                    if (IsResultBoardOlder(partnerBoard, i, j))
                         continue;
 
-                    BoardTable[i, j].Distance = resultBoard[i, j].Distance;
-                    BoardTable[i, j].IsGoal = resultBoard[i, j].IsGoal;
-                    BoardTable[i, j].Timestamp = resultBoard[i, j].Timestamp;
+                    BoardTable[i, j].Distance = partnerBoard[i, j].Distance;
+                    BoardTable[i, j].IsGoal = partnerBoard[i, j].IsGoal;
+                    BoardTable[i, j].Timestamp = partnerBoard[i, j].Timestamp;
                 }
             }
         }
