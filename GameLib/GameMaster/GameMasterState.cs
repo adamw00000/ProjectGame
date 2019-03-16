@@ -9,6 +9,7 @@ namespace GameLib
         private readonly double validPieceProbability;
         private readonly int maxPiecesOnBoard;
         private readonly GameRules gameRules;
+        private readonly Dictionary<(int senderId, int targetId), object> CommunicationData = new Dictionary<(int senderId, int targetId), object>();
 
         public readonly GameMasterBoard Board;
         public Dictionary<int, PlayerState> PlayerStates = new Dictionary<int, PlayerState>();
@@ -257,14 +258,46 @@ namespace GameLib
             return Board.GetDistancesAround(player.Position.X, player.Position.Y);
         }
 
-        public void Communicate(int playerId)
+        //Communication scheme:
+        //agent -> gm (gm saves data to the dictionary) //SaveCommunicationData
+        //gm -> ag2 (generic message, doesn't depend on gm state)
+        //ag2 -> gm (DelayException if target is delayed, adds delay to the sender (doesn't check)) //(GetCommunicationData to check if the communication exists) + DelayCommunicationPartners
+        //gm -> ag2 (gm reads data from the dictionary) //sends data obtained from GetCommunicationData
+        //gm -> ag1 (forwarding data, doesn't depend on gm state)
+
+        public void DelayCommunicationPartners(int senderId, int targetId)
         {
-            PlayerState player = PlayerStates[playerId];
+            PlayerState player = PlayerStates[targetId];
 
             if (!player.IsEligibleForAction)
                 throw new DelayException();
 
-            DelayPlayer(playerId, gameRules.CommunicationMultiplier);
+            DelayPlayer(targetId, gameRules.CommunicationMultiplier);
+            AddDelay(senderId, gameRules.CommunicationMultiplier);
+        }
+
+        private void AddDelay(int playerId, int delayMultiplier)
+        {
+            var player = PlayerStates[playerId];
+            player.LastActionDelay += delayMultiplier * gameRules.BaseTimePenalty;
+            PlayerStates[playerId] = player;
+        }
+
+        public void SaveCommunicationData(int senderId, int targetId, object data)
+        {
+            CommunicationData[(senderId, targetId)] = data;
+        }
+
+        public object GetCommunicationData(int senderId, int targetId)
+        {
+            if (CommunicationData.TryGetValue((senderId, targetId), out object data))
+            {
+                return data;
+            }
+            else
+            {
+                throw new CommunicationException($"Communication data for pair ({senderId}, {targetId}) doesn't exist!");
+            }
         }
     }
 }

@@ -740,33 +740,60 @@ namespace GameLib.Tests
         #region --Communicate--
 
         [Fact]
-        public void Communicate_WhenAgentHasDelay_ThrowsDelayException()
+        public void DelayCommunicationPartners_WhenTargetHasDelay_ThrowsDelayException()
         {
             var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
 
-            var agentId = 0;
-            state.PlayerStates.Add(agentId, new PlayerState() { LastRequestTimestamp = DateTime.UtcNow, LastActionDelay = 1000 * 3600 * 24 });
+            var senderId = 0;
+            var targetId = 1;
+            state.PlayerStates.Add(senderId, new PlayerState());
+            state.PlayerStates.Add(targetId, new PlayerState() { LastRequestTimestamp = DateTime.UtcNow, LastActionDelay = 1000 * 3600 * 24 });
 
-            Should.Throw<DelayException>(() => state.Communicate(agentId));
+            Should.Throw<DelayException>(() => state.DelayCommunicationPartners(senderId, targetId));
         }
 
         [Fact]
-        public void Communicate_WhenSucceeded_AppliesCommunicationDelay()
+        public void DelayCommunicationPartners_WhenTargetIsNotDelayed_AppliesCommunicationDelayToBothAgents()
         {
             var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
 
-            var agentId = 0;
-            state.PlayerStates.Add(agentId, new PlayerState());
+            var senderId = 0;
+            var targetId = 1;
+            var previousSenderDelay = 1000 * 3600 * 24;
+            state.PlayerStates.Add(senderId, new PlayerState() { LastRequestTimestamp = DateTime.UtcNow, LastActionDelay = 1000 * 3600 * 24 });
+            state.PlayerStates.Add(targetId, new PlayerState());
 
             var beforeTimestamp = DateTime.UtcNow.AddMilliseconds(-1);
 
-            state.Communicate(agentId);
+            state.DelayCommunicationPartners(senderId, targetId);
 
-            var expectedDelay = rules.BaseTimePenalty * rules.CommunicationMultiplier;
-            state.PlayerStates[0].LastRequestTimestamp.ShouldBeGreaterThan(beforeTimestamp);
-            state.PlayerStates[0].LastActionDelay.ShouldBe(expectedDelay);
+            var expectedTargetDelay = rules.BaseTimePenalty * rules.CommunicationMultiplier;
+            var expectedSenderDelay = previousSenderDelay + expectedTargetDelay;
+
+            state.PlayerStates[0].LastActionDelay.ShouldBe(expectedSenderDelay);
+            state.PlayerStates[1].LastRequestTimestamp.ShouldBeGreaterThan(beforeTimestamp);
+            state.PlayerStates[1].LastActionDelay.ShouldBe(expectedTargetDelay);
+        }
+
+        [Fact]
+        public void GetCommunicationData_WhenCalled_ReturnsMostRecentDataForThePair()
+        {
+            var rules = Helper.GetStaticDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            var senderId = 0;
+            var targetId = 1;
+
+            object message1 = 15;
+            object message2 = 125;
+
+            state.SaveCommunicationData(senderId, targetId, message1);
+            state.SaveCommunicationData(senderId, targetId, message2);
+
+            var result = state.GetCommunicationData(senderId, targetId);
+            result.ShouldBe(message2);
         }
 
         #endregion --Communicate--
