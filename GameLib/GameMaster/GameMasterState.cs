@@ -261,8 +261,8 @@ namespace GameLib
         //Communication scheme:
         //agent -> gm (gm saves data to the dictionary) //SaveCommunicationData
         //gm -> ag2 (generic message, doesn't depend on gm state)
-        //ag2 -> gm (DelayException if target is delayed, adds delay to the sender (doesn't check)) //DelayCommunicationPartners
-        //gm -> ag2 (gm reads data from the dictionary) //GetCommunicationData
+        //ag2 -> gm (DelayException if target is delayed, adds delay to the sender (doesn't check)) //(GetCommunicationData to check if the communication exists) + DelayCommunicationPartners
+        //gm -> ag2 (gm reads data from the dictionary) //sends data obtained from GetCommunicationData
         //gm -> ag1 (forwarding data, doesn't depend on gm state)
 
         public void DelayCommunicationPartners(int senderId, int targetId)
