@@ -33,7 +33,7 @@ namespace GameLib
         Unknown
     }
 
-    public enum FieldState //What agent knows about fields on the board
+    public enum AgentFieldState //What agent knows about fields on the board
     {
         DiscoveredGoal,
         DiscoveredNotGoal,
