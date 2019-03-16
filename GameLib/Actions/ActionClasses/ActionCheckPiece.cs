@@ -2,12 +2,12 @@
 {
     internal class ActionCheckPiece : IAction
     {
+        public int AgentId { get; }
+
         public ActionCheckPiece(int agentId)
         {
             AgentId = agentId;
         }
-
-        public int AgentId { get; }
 
         public void Handle(GameMaster gameMaster)
         {

@@ -2,12 +2,12 @@
 {
     internal class ActionDiscovery : IAction
     {
+        public int AgentId { get; }
+
         public ActionDiscovery(int agentId)
         {
             AgentId = agentId;
         }
-
-        public int AgentId { get; }
 
         public void Handle(GameMaster gameMaster)
         {

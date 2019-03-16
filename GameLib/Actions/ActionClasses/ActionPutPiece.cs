@@ -2,12 +2,12 @@
 {
     internal class ActionPutPiece : IAction
     {
+        public int AgentId { get; }
+
         public ActionPutPiece(int agentId)
         {
             AgentId = agentId;
         }
-
-        public int AgentId { get; }
 
         public void Handle(GameMaster gameMaster)
         {

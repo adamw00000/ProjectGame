@@ -2,8 +2,7 @@
 {
     public interface IAction
     {
-        void Handle(GameMaster gameMaster);
-
         int AgentId { get; }
+        void Handle(GameMaster gameMaster);
     }
 }
