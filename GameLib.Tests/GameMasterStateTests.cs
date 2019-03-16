@@ -426,6 +426,23 @@ namespace GameLib.Tests
             state.PlayerStates[agentId].Piece.ShouldBe(null);
             state.Board[0, 0].HasPiece.ShouldBe(false);
         }
+        [Fact]
+        public void PutPieceInGoalArea_WhenSucceeded_LowersNumberOfUndiscoveredGoals()
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            int undiscoveredRedGoals = state.undiscoveredRedGoalsLeft;
+
+            int agentId = 0;
+
+            state.Board[0, 0] = new GameMasterField() { IsGoal = true };
+            state.PlayerStates.Add(agentId, new PlayerState(0, 0, Team.Red) { LastActionDelay = 0, Piece = new Piece(1) });
+
+            state.PutPiece(agentId);
+
+            state.undiscoveredRedGoalsLeft.ShouldBe(undiscoveredRedGoals - 1);
+        }
 
         [Theory]
         [InlineData(true)]
@@ -460,6 +477,49 @@ namespace GameLib.Tests
             var result = state.PutPiece(agentId);
 
             result.ShouldBe(PutPieceResult.PieceWasFake);
+        }
+        [Fact]
+        public void DiscoveringAllGoals_EndsGame()
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            state.undiscoveredRedGoalsLeft.ShouldBe(rules.GoalCount);
+            state.undiscoveredBlueGoalsLeft.ShouldBe(rules.GoalCount);
+
+            int idCounter = 0;
+
+            for (int i = 0; i < state.Board.GoalAreaHeight; i++)
+            {
+                for (int j= 0; j < state.Board.Width; j++)
+                {
+                    if(state.Board[i,j].IsGoal)
+                    {
+                        state.PlayerStates.Add(idCounter++, new PlayerState(i, j, Team.Red) { LastActionDelay = 0, Piece = new Piece(1) });
+                    }
+                }
+            }
+            for (int i = state.Board.Height - state.Board.GoalAreaHeight; i < state.Board.Height; i++)
+            {
+                for (int j = 0; j < state.Board.Width; j++)
+                {
+                    if (state.Board[i, j].IsGoal)
+                    {
+                        state.PlayerStates.Add(idCounter++, new PlayerState(i, j, Team.Blue) { LastActionDelay = 0, Piece = new Piece(1) });
+                    }
+                }
+            }
+
+            for (int i=0;i<state.PlayerStates.Count;i++)
+            {
+                var result = state.PutPiece(i);
+                result.ShouldBe(PutPieceResult.PieceGoalRealized);
+                state.Board[state.PlayerStates[i].Position.X, state.PlayerStates[i].Position.Y].IsGoal.ShouldBe(false);
+            }
+
+            state.undiscoveredRedGoalsLeft.ShouldBe(0);
+            state.undiscoveredBlueGoalsLeft.ShouldBe(0);
+            state.GameEnded.ShouldBe(true);
         }
 
         [Theory]

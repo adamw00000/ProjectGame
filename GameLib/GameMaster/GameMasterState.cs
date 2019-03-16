@@ -9,8 +9,8 @@ namespace GameLib
         private readonly double validPieceProbability;
         private readonly int maxPiecesOnBoard;
         private readonly GameRules gameRules;
-        private int undiscoveredRedGoalsLeft;
-        private int undiscoveredBlueGoalsLeft;
+        public int undiscoveredRedGoalsLeft;
+        public int undiscoveredBlueGoalsLeft;
         private readonly Dictionary<(int senderId, int targetId), object> CommunicationData = new Dictionary<(int senderId, int targetId), object>();
 
         public readonly GameMasterBoard Board;
