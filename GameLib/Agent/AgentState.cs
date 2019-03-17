@@ -68,21 +68,41 @@
             PieceState = newState;
         }
 
-        public void PlaceOrDestroyPiece()
+        public void DestroyPiece()
         {
             if (!HoldsPiece)
-                throw new PieceOperationException("Placing or destroying piece when agent doesn't have it");
+                throw new PieceOperationException("Destroying piece when agent doesn't have it");
 
             HoldsPiece = false;
             PieceState = PieceState.Unknown;
         }
-
-        public void Discover(AgentDiscoveryResult discoveryResult)
+        
+        public void PlacePiece(PutPieceResult putResult)
         {
-            if (!discoveryResult.IsValid(Board))
-                throw new InvalidDiscoveryResultException();
+            if(!HoldsPiece)
+            {
+                throw new PieceOperationException("Agent is not holding a piece");
+            }
+            switch(putResult)
+            {
+                case PutPieceResult.PieceGoalRealized:
+                    Board.BoardTable[Position.X, Position.Y].IsGoal = FieldState.DiscoveredGoal;
+                    break;
+                case PutPieceResult.PieceGoalUnrealized:
+                    Board.BoardTable[Position.X, Position.Y].IsGoal = FieldState.DiscoveredNotGoal;
+                    break;
+                case PutPieceResult.PieceInTaskArea:
+                    break;
+                case PutPieceResult.PieceWasFake:
+                    break;
+            }
+            HoldsPiece = false;
+            PieceState = PieceState.Unknown;
+        }
 
-            Board.ApplyDiscoveryResult(discoveryResult);
+        public void Discover(DiscoveryResult discoveryResult, int timestamp)
+        {
+            Board.ApplyDiscoveryResult(discoveryResult, timestamp);
         }
 
         public void ApplyCommunicationResult(CommunicationResult communicationResult)

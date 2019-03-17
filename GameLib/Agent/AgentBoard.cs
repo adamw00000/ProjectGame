@@ -62,30 +62,18 @@ namespace GameLib
             BoardTable[x, y].IsGoal = isGoal;
         }
 
-        internal void ApplyDiscoveryResult(AgentDiscoveryResult discoveryResult)
+        public void ApplyDiscoveryResult(DiscoveryResult discoveryResult, int timestamp)
         {
-            for (int i = -1; i <= 1; i++)
+            foreach(var tuple in discoveryResult.Fields)
             {
-                for (int j = -1; j <= 1; j++)
-                {
-                    if (!IsInBounds(discoveryResult, i, j))
-                        continue;
-
-                    BoardTable[discoveryResult.BasePosition.X + i, discoveryResult.BasePosition.Y + j].Distance =
-                        discoveryResult.Fields[i + 1, j + 1].Distance;
-                }
+                if (!IsInBounds(tuple.x, tuple.y))
+                    throw new InvalidDiscoveryResultException($"({tuple.x},{tuple.y}) is outside the board");
+                BoardTable[tuple.x, tuple.y].Distance = tuple.dist;
+                BoardTable[tuple.x, tuple.y].Timestamp = (new DateTime()).AddMilliseconds(timestamp);
             }
         }
 
-        private bool IsInBounds(AgentDiscoveryResult discoveryResult, int i, int j)
-        {
-            return discoveryResult.BasePosition.X + i >= 0 &&
-                discoveryResult.BasePosition.X + i < Width &&
-                discoveryResult.BasePosition.Y + j >= 0 &&
-                discoveryResult.BasePosition.Y + j < Height;
-        }
-
-        internal void ApplyCommunicationResult(AgentBoard resultBoard)
+        public void ApplyCommunicationResult(AgentBoard resultBoard)
         {
             for (int i = 0; i < Height; i++)
             {
@@ -104,6 +92,11 @@ namespace GameLib
         private bool IsResultBoardOlder(AgentBoard resultBoard, int i, int j)
         {
             return BoardTable[i, j].Timestamp >= resultBoard[i, j].Timestamp;
+        }
+
+        private bool IsInBounds(int x, int y)
+        {
+            return x >= 0 && y >= 0 && x < Height && y < Width;
         }
     }
 }

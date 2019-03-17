@@ -8,16 +8,16 @@ namespace GameLib.Actions
 {
     class ActionMove : AgentMessage, IAction
     {
-        private readonly MoveDirection moveDirection;
+        public readonly MoveDirection MoveDirection;
 
         public ActionMove(int agentId, MoveDirection moveDirection) : base(agentId)
         {
-            this.moveDirection = moveDirection;
+            this.MoveDirection = moveDirection;
         }
 
         public void Handle(GameMaster gameMaster)
         {
-            gameMaster.MoveAgent(AgentId, moveDirection);
+            gameMaster.MoveAgent(AgentId, MoveDirection);
         }
         public override void Handle(object handler)
         {

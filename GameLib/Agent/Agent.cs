@@ -12,24 +12,105 @@ namespace GameLib
         private readonly int id;
         private readonly IDecisionModule decisionModule;
         private readonly AgentState state;
-        private readonly GameRules rules;
+        private GameRules rules;
         private Task loop;
         private bool waitForResponse;
         private Message awaitedForResponse;
 
-        internal void HandleJoinResponse(bool isConnected)
+        public void HandlePickPieceResponse(int timestamp, int waitUntilTime)
         {
-            throw new NotImplementedException();
+            if (awaitedForResponse is ActionPickPiece)
+            {
+                state.PickUpPiece();
+                state.waitUntilTime = waitUntilTime;
+                waitForResponse = false;
+            }
+            else
+                throw new InvalidOperationException("Wrong action result received");
         }
 
-        internal void StartGame(GameRules rules, int timestamp)
+        public void HandlePutPieceResponse(int timestamp, int waitUntilTime, PutPieceResult putPieceResult)
         {
-            throw new NotImplementedException();
+            if (awaitedForResponse is ActionPutPiece)
+            {
+                state.PlacePiece(putPieceResult);
+                state.waitUntilTime = waitUntilTime;
+                waitForResponse = false;
+            }
+            else
+                throw new InvalidOperationException("Wrong action result received");
         }
 
-        internal void EndGame(int winningTeam, int timestamp)
+        public void HandleDestroyPieceResponse(int timestamp, int waitUntilTime)
         {
-            throw new NotImplementedException();
+            if (awaitedForResponse is ActionDestroyPiece)
+            {
+                state.HoldsPiece = false;
+                state.waitUntilTime = waitUntilTime;
+                waitForResponse = false;
+            }
+            else
+                throw new InvalidOperationException("Wrong action result received");
+        }
+
+        public void HandleMoveResponse(int timestamp, int waitUntilTime, int distance)
+        {
+            if (awaitedForResponse is ActionMove move)
+            {
+                state.Move(move.MoveDirection, distance);
+                state.waitUntilTime = waitUntilTime;
+                waitForResponse = false;
+            }
+            else
+                throw new InvalidOperationException("Wrong action result received");
+        }
+
+        public void HandleDiscoverResponse(int timestamp, int waitUntilTime, DiscoveryResult closestPieces)
+        {
+            if (awaitedForResponse is ActionDiscovery)
+            {
+                state.Discover(closestPieces, timestamp);
+                state.waitUntilTime = waitUntilTime;
+                waitForResponse = false;
+
+            }
+            else
+                throw new InvalidOperationException("Wrong action result received");
+        }
+
+        public void HandleJoinResponse(bool isConnected)
+        {
+            if (!isConnected)
+                throw new InvalidOperationException();
+        }
+
+        public void HandleCheckPieceResponse(int timestamp, int waitUntilTime, bool isTrue)
+        {
+            if(awaitedForResponse is ActionCheckPiece)
+            {
+                state.waitUntilTime = waitUntilTime;
+                waitForResponse = false;
+                state.PieceState = isTrue ? PieceState.Valid : PieceState.Invalid;
+            }
+            else
+                throw new InvalidOperationException("Wrong action result received");
+        }
+
+        public void HandleCommunicationResponse(int timestamp, int waitUntilTime, int senderId, bool agreement, object data)
+        {
+            
+        }
+
+        public void StartGame(GameRules rules, int timestamp)
+        {
+            this.rules = rules;
+            start = (new DateTime()).AddMilliseconds(timestamp);
+            Run();
+        }
+
+        public void EndGame(int winningTeam, int timestamp)
+        {
+            gameEnded = true;
         }
 
         private bool gameEnded;

@@ -16,7 +16,7 @@ namespace GameLib.Actions
 
         public void Handle(Agent agent)
         {
-            throw new NotImplementedException();
+            agent.HandleMoveResponse(Timestamp, WaitUntilTime, closestPieceDistance);
         }
         public override void Handle(object handler)
         {

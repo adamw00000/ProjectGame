@@ -1,5 +1,7 @@
 ﻿using Shouldly;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace GameLib.Tests
@@ -23,28 +25,6 @@ namespace GameLib.Tests
             state.Setup(rules);
 
             return state;
-        }
-
-        private static AgentField[,] GetFields()
-        {
-            return new AgentField[3, 3]
-                {
-                    {
-                        new AgentField { Distance = 2, IsGoal = FieldState.Unknown, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
-                        new AgentField { Distance = 1, IsGoal = FieldState.DiscoveredGoal, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
-                        new AgentField { Distance = 2, IsGoal = FieldState.DiscoveredNotGoal, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
-                    },
-                    {
-                        new AgentField { Distance = 1, IsGoal = FieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
-                        new AgentField { Distance = 0, IsGoal = FieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
-                        new AgentField { Distance = 1, IsGoal = FieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
-                    },
-                    {
-                        new AgentField { Distance = 2, IsGoal = FieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
-                        new AgentField { Distance = 1, IsGoal = FieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
-                        new AgentField { Distance = 2, IsGoal = FieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
-                    }
-                };
         }
 
         [Theory]
@@ -177,66 +157,65 @@ namespace GameLib.Tests
         }
 
         [Fact]
-        public void PlaceOrDestroyPiece_WhenAgentHasPiece_UpdatesPieceState()
+        public void PlacePiece_WhenAgentHasPiece_UpdatesPieceState()
         {
             var state = GetState();
             state.HoldsPiece = true;
 
-            state.PlaceOrDestroyPiece();
+            state.PlacePiece(PutPieceResult.PieceInTaskArea);
 
             state.HoldsPiece.ShouldBe(false);
             state.PieceState.ShouldBe(PieceState.Unknown);
         }
 
         [Fact]
-        public void PlaceOrDestroyPiece_WhenAgentDoesntHavePiece_ThrowsPieceOperationException()
+        public void DestroyPiece_WhenAgentHasPiece_UpdatesPieceState()
+        {
+            var state = GetState();
+            state.HoldsPiece = true;
+
+            state.DestroyPiece();
+
+            state.HoldsPiece.ShouldBe(false);
+            state.PieceState.ShouldBe(PieceState.Unknown);
+        }
+
+        [Fact]
+        public void PutPiece_WhenAgentDoesntHavePiece_ThrowsPieceOperationException()
         {
             var state = GetState();
             state.HoldsPiece = false;
 
-            Should.Throw<PieceOperationException>(() => state.PlaceOrDestroyPiece(), "Placing or destroying piece when agent doesn't have it");
+            Should.Throw<PieceOperationException>(() => state.PlacePiece(PutPieceResult.PieceGoalRealized), "Placing piece when agent doesn't have it");
         }
 
         [Fact]
-        public void ApplyDiscoveryResult_WhenDiscoveryResultIsNot3x3_ThrowsInvalidDiscoveryResultException()
+        public void DestroyPiece_WhenAgentDoesntHavePiece_ThrowsPieceOperationException()
         {
             var state = GetState();
-            var fields = new AgentField[3, 4];
-            var discoveryResult = new AgentDiscoveryResult(1, 1, fields);
+            state.HoldsPiece = false;
 
-            Should.Throw<InvalidDiscoveryResultException>(() => state.Discover(discoveryResult));
+            Should.Throw<PieceOperationException>(() => state.DestroyPiece(), "Destroying piece when agent doesn't have it");
         }
 
         [Fact]
-        public void ApplyDiscoveryResult_WhenDiscoveryPositionIsNotOnTheBoard_ThrowsInvalidDiscoveryResultException()
+        public void ApplyDiscoveryResult_WhenDiscoveryResultIsValid_UpdatesBoard()
         {
             var rules = GetDefaultRules();
             var state = GetSetUpState(rules);
-            var fields = new AgentField[3, 3];
-            var discoveryResult = new AgentDiscoveryResult(-1, -1, fields);
+            List<(int x, int y, int dist)> fields = new List<(int x, int y, int dist)>
+            {(5,3,4),(5,4,3),(5,5,2),(4,3,3),(4,4,2),(4,5,1),(3,3,2),(3,4,1),(3,5,0)};
+            var discoveryResult = new DiscoveryResult(fields);
 
-            Should.Throw<InvalidDiscoveryResultException>(() => state.Discover(discoveryResult));
-        }
-
-        [Theory]
-        [InlineData(1, 3)]
-        [InlineData(7, 7)]
-        [InlineData(0, 0)]
-        public void ApplyDiscoveryResult_WhenDiscoveryResultIsValid_UpdatesBoard(int x, int y)
-        {
-            var rules = GetDefaultRules();
-            var state = GetSetUpState(rules);
-            AgentField[,] fields = GetFields();
-            var discoveryResult = new AgentDiscoveryResult(x, y, fields);
-
-            state.Discover(discoveryResult);
+            state.Discover(discoveryResult, 0);
 
             for (int i = -1; i <= 1; i++)
             {
                 for (int j = -1; j <= 1; j++)
                 {
-                    if (IsInBounds(state.Board, x + i, y + j))
-                        state.Board[x + i, y + j].Distance.ShouldBe(fields[i + 1, j + 1].Distance);
+                    if (IsInBounds(state.Board, 4 + i, 4 + j))
+                        state.Board[4 + i, 4 + j].Distance.ShouldBe(
+                            fields.First(t => t.x == 4 + i && t.y == 4 + j).dist);
                 }
             }
         }

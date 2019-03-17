@@ -689,7 +689,7 @@ namespace GameLib.Tests
             state.GeneratePieceAt(7, 3);
             state.PlayerStates.Add(agentId, new PlayerState(x, y) { LastActionDelay = 0 });
 
-            int[,] discoveryResult = state.Discover(agentId);
+            DiscoveryResult discoveryResult = state.Discover(agentId);
             int[,] distances = { {3,2,1,2,3,4,5,6},
                                  {2,1,0,1,2,3,4,5},
                                  {3,2,1,2,3,4,5,6},
@@ -705,11 +705,7 @@ namespace GameLib.Tests
                 {
                     if (x + i >= 0 && x + i < rules.BoardWidth && y + j >= 0 && y + j < rules.BoardHeight)
                     {
-                        discoveryResult[i + 1, j + 1].ShouldBe(distances[x + i, y + j]);
-                    }
-                    else
-                    {
-                        discoveryResult[i + 1, j + 1].ShouldBe(int.MaxValue);
+                        discoveryResult.Fields.Single(t => t.x == x + i && t.y == y + j).dist.ShouldBe(distances[x + i, y + j]);
                     }
                 }
             }

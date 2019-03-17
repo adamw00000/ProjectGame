@@ -14,7 +14,7 @@ namespace GameLib.Actions
 
         public void Handle(Agent agent)
         {
-            throw new NotImplementedException();
+            agent.HandlePickPieceResponse(Timestamp, WaitUntilTime);
         }
 
         public override void Handle(object handler)

@@ -6,7 +6,6 @@ namespace GameLib.Actions
     internal class ActionDestroyPieceResponse : GameMasterMessage, IActionResponse
     {
         public int WaitUntilTime { get; }
-
         public ActionDestroyPieceResponse(int agentId, int timestamp, int waitUntilTime) : base(agentId, timestamp)
         {
             this.WaitUntilTime = waitUntilTime;
@@ -14,7 +13,7 @@ namespace GameLib.Actions
 
         public void Handle(Agent agent)
         {
-            throw new NotImplementedException();
+            agent.HandleDestroyPieceResponse(Timestamp, WaitUntilTime);
         }
         public override void Handle(object handler)
         {

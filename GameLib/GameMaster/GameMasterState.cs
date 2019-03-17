@@ -252,7 +252,7 @@ namespace GameLib
             return player.Piece.IsValid;
         }
 
-        public int[,] Discover(int playerId)
+        public DiscoveryResult Discover(int playerId)
         {
             PlayerState player = PlayerStates[playerId];
 
@@ -261,7 +261,19 @@ namespace GameLib
 
             DelayPlayer(playerId, gameRules.DiscoverMultiplier);
 
-            return Board.GetDistancesAround(player.Position.X, player.Position.Y);
+            int[,] ar = Board.GetDistancesAround(player.Position.X, player.Position.Y);
+            List<(int x, int y, int dist)> fields = new List<(int x, int y, int dist)>();
+            for(int i = 0; i < 3; ++i)
+            {
+                for(int j = 0; j < 3; ++j)
+                {
+                    if(ar[i,j] != int.MaxValue)
+                    {
+                        fields.Add((player.Position.X + i - 1, player.Position.Y + j - 1, ar[i, j]));
+                    }
+                }
+            }
+            return new DiscoveryResult(fields);
         }
 
         //Communication scheme:

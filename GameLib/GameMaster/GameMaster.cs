@@ -155,9 +155,9 @@ namespace GameLib
             Message response;
             try
             {
-                int[,] result = state.Discover(agentId);
+                DiscoveryResult discoveryResult = state.Discover(agentId);
                 (int timestamp, int waitUntil) = calcDelay(agentId);
-                response = new ActionDiscoverResponse(agentId, timestamp, waitUntil, result);
+                response = new ActionDiscoverResponse(agentId, timestamp, waitUntil, discoveryResult);
             }
             catch (DelayException e)
             {
@@ -230,7 +230,7 @@ namespace GameLib
             if(agreement == false)
             {
                 int timestamp = currectTimestamp();
-                Message response = new ActionCommunicationResponseWithData(requesterAgentId, timestamp, timestamp, false, null);
+                Message response = new ActionCommunicationResponseWithData(requesterAgentId, timestamp, timestamp, targetAgentId, false, null);
                 connection.Send(response);
             }
             else
@@ -239,8 +239,8 @@ namespace GameLib
                 state.DelayCommunicationPartners(requesterAgentId, targetAgentId);
                 (int timestamp1, int waitUntil1) = calcDelay(requesterAgentId);
                 (int timestamp2, int waitUntil2) = calcDelay(targetAgentId);
-                responseToSender = new ActionCommunicationResponseWithData(requesterAgentId, timestamp1, waitUntil1, true, data);
-                responseToTarget = new ActionCommunicationResponseWithData(targetAgentId, timestamp2, waitUntil2, true, state.GetCommunicationData(requesterAgentId,targetAgentId));
+                responseToSender = new ActionCommunicationResponseWithData(requesterAgentId, timestamp1, waitUntil1, targetAgentId, true, data);
+                responseToTarget = new ActionCommunicationResponseWithData(targetAgentId, timestamp2, waitUntil2, requesterAgentId, true, state.GetCommunicationData(requesterAgentId,targetAgentId));
                 connection.Send(responseToSender);
                 connection.Send(responseToTarget);
             }
