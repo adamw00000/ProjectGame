@@ -35,18 +35,30 @@ namespace GameLib
         {
             for (int i = 0; i < count; i++)
             {
-                ChooseRandomFieldForGoal(out int x, out int y);
+                ChooseRandomFieldForGoal(out int x, out int y, Team.Red);
+                BoardTable[x, y].IsGoal = true;
+            }
+            for (int i = 0; i < count; i++)
+            {
+                ChooseRandomFieldForGoal(out int x, out int y, Team.Blue);
                 BoardTable[x, y].IsGoal = true;
             }
         }
 
-        private void ChooseRandomFieldForGoal(out int x, out int y)
+        private void ChooseRandomFieldForGoal(out int x, out int y, Team team)
         {
             var random = RandomGenerator.GetGenerator();
 
             do
             {
-                x = random.Next(GoalAreaHeight, Height - GoalAreaHeight);
+                if (team == Team.Red)
+                {
+                    x = random.Next(0, GoalAreaHeight);
+                }
+                else
+                {
+                    x = random.Next(Height - GoalAreaHeight, Height);
+                }
                 y = random.Next(0, Width);
             } while (BoardTable[x, y].IsGoal); //o(1) implementation is possible
         }
@@ -64,11 +76,11 @@ namespace GameLib
         {
             if (team == Team.Blue)
             {
-                return x >= 0 && x < GoalAreaHeight;
+                return x >= Height - GoalAreaHeight && x < Height;
             }
             else
             {
-                return x >= Height - GoalAreaHeight && x < Height;
+                return x >= 0 && x < GoalAreaHeight;
             }
         }
 
@@ -80,9 +92,9 @@ namespace GameLib
             }
             else
             {
-                for (int x = 0; x < Width; x++)
+                for (int x = 0; x < Height; x++)
                 {
-                    for (int y = 0; y < Height; y++)
+                    for (int y = 0; y < Width; y++)
                     {
                         BoardTable[x, y].Distance = int.MaxValue;
                     }
@@ -97,9 +109,9 @@ namespace GameLib
 
         private void SetEmptyBoardDistances()
         {
-            for (int x = 0; x < Width; x++)
+            for (int x = 0; x < Height; x++)
             {
-                for (int y = 0; y < Height; y++)
+                for (int y = 0; y < Width; y++)
                 {
                     BoardTable[x, y].Distance = -1;
                 }
@@ -108,7 +120,7 @@ namespace GameLib
 
         private void CalculateDistancesFromPiece(int x, int y, int distance) //a la flood fill
         {
-            bool[,] visited = new bool[Width, Height];
+            bool[,] visited = new bool[Height, Width];
 
             Stack<(int px, int py, int dist)> stack = new Stack<(int x, int y, int dist)>();
 
@@ -127,17 +139,17 @@ namespace GameLib
                             BoardTable[px, py].Distance = dist;
                         }
 
-                        if (px + i <= Width - 1 && px + i >= 0 && !visited[px + i, py])
+                        if (px + i <= Height - 1 && px + i >= 0 && !visited[px + i, py])
                         {
                             stack.Push((px + i, py, dist + 1));
                         }
 
-                        if (py + j <= Height - 1 && py + j >= 0 && !visited[px, py + j])
+                        if (py + j <= Width - 1 && py + j >= 0 && !visited[px, py + j])
                         {
                             stack.Push((px, py + j, dist + 1));
                         }
 
-                        if (py + j <= Height - 1 && py + j >= 0 && px + i <= Width - 1 && px + i >= 0 && !visited[px + i, py + j])
+                        if (py + j <= Width - 1 && py + j >= 0 && px + i <= Height - 1 && px + i >= 0 && !visited[px + i, py + j])
                         {
                             stack.Push((px + i, py + j, dist + 2));
                         }

@@ -17,6 +17,6 @@ namespace GameLib
         }
 
         public DateTime Timestamp { get; set; }
-        public FieldState IsGoal { get; set; }
+        public AgentFieldState IsGoal { get; set; }
     }
 }
