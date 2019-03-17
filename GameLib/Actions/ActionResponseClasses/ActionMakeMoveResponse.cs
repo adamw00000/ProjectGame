@@ -1,13 +1,14 @@
 ﻿using System;
+using GameLib.GameMessages;
 
 namespace GameLib.Actions
 {
-    internal class ActionMakeMoveResponse : IActionResponse
+    internal class ActionMakeMoveResponse : GameMasterMessage, IActionResponse
     {
         public int WaitUntilTime { get; }
         private readonly int closestPieceDistance;
 
-        public ActionMakeMoveResponse(int waitUntilTime, int closestPieceDistance)
+        public ActionMakeMoveResponse(int agentId, int timestamp, int waitUntilTime, int closestPieceDistance) : base(agentId, timestamp)
         {
             this.closestPieceDistance = closestPieceDistance;
             this.WaitUntilTime = waitUntilTime;
@@ -16,6 +17,10 @@ namespace GameLib.Actions
         public void Handle(Agent agent)
         {
             throw new NotImplementedException();
+        }
+        public override void Handle(object handler)
+        {
+            Handle((Agent)handler);
         }
     }
 }

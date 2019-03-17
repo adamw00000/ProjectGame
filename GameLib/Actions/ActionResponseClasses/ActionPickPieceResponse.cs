@@ -1,12 +1,13 @@
 ﻿using System;
+using GameLib.GameMessages;
 
 namespace GameLib.Actions
 {
-    internal class ActionPickPieceResponse : IActionResponse
+    internal class ActionPickPieceResponse : GameMasterMessage, IActionResponse
     {
         public int WaitUntilTime { get; }
 
-        public ActionPickPieceResponse(int waitUntilTime)
+        public ActionPickPieceResponse(int agentId, int timestamp, int waitUntilTime) : base(agentId, timestamp)
         {
             this.WaitUntilTime = waitUntilTime;
         }
@@ -14,6 +15,11 @@ namespace GameLib.Actions
         public void Handle(Agent agent)
         {
             throw new NotImplementedException();
+        }
+
+        public override void Handle(object handler)
+        {
+            Handle((Agent)handler);
         }
     }
 }

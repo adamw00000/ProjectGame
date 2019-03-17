@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GameLib
 {
@@ -24,10 +25,16 @@ namespace GameLib
 
         public void InitializePlayerPositions(int width, int height, int teamSize)
         {
+            List<PlayerState> reds = new List<PlayerState>(PlayerStates.Values.Where(player => player.Team == Team.Red));
+            List<PlayerState> blues = new List<PlayerState>(PlayerStates.Values.Where(player => player.Team == Team.Blue));
             for (int i = 0; i < teamSize; i++)
             {
-                PlayerStates.Add(i, new PlayerState(i / width, width / 2 + HalfCeiling(i % width) * Side(i), Team.Blue, i == 0));
-                PlayerStates.Add(i + teamSize, new PlayerState(height - 1 - i / width, width / 2 + HalfCeiling(i % width) * Side(i), Team.Red, i == 0));
+                /*PlayerStates.Add(i, new PlayerState(i / width, width / 2 + HalfCeiling(i % width) * Side(i), Team.Blue, i == 0));
+                PlayerStates.Add(i + teamSize, new PlayerState(height - 1 - i / width, width / 2 + HalfCeiling(i % width) * Side(i), Team.Red, i == 0));*/
+                PlayerState redPlayer = reds[i];
+                PlayerState bluePlayer = blues[i];
+                redPlayer.Position = (i / width, width / 2 + HalfCeiling(i % width) * Side(i));
+                bluePlayer.Position = (height - 1 - i / width, width / 2 + HalfCeiling(i % width) * Side(i));
             }
             int HalfCeiling(int n)
             {
@@ -193,7 +200,6 @@ namespace GameLib
                 result = Board[x, y].IsGoal ? PutPieceResult.PieceGoalRealized : PutPieceResult.PieceGoalUnrealized;
             }
             DestroyPlayersPiece(playerId);
-
             return result;
         }
 
@@ -269,22 +275,26 @@ namespace GameLib
         {
             PlayerState player = PlayerStates[targetId];
 
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
-
-            DelayPlayer(targetId, gameRules.CommunicationMultiplier);
+            AddDelay(targetId, gameRules.CommunicationMultiplier);
             AddDelay(senderId, gameRules.CommunicationMultiplier);
         }
 
         private void AddDelay(int playerId, int delayMultiplier)
         {
             var player = PlayerStates[playerId];
-            player.LastActionDelay += delayMultiplier * gameRules.BaseTimePenalty;
+            int lastPenaltyDurationLeftTime = Math.Max(0, player.LastActionDelay - (int)(DateTime.UtcNow - player.LastRequestTimestamp).TotalMilliseconds);
+            player.LastActionDelay = delayMultiplier * gameRules.BaseTimePenalty + lastPenaltyDurationLeftTime;
+            player.LastRequestTimestamp = DateTime.UtcNow;
             PlayerStates[playerId] = player;
         }
 
         public void SaveCommunicationData(int senderId, int targetId, object data)
         {
+            PlayerState player = PlayerStates[targetId];
+
+            if (!player.IsEligibleForAction)
+                throw new DelayException();
+
             CommunicationData[(senderId, targetId)] = data;
         }
 
@@ -299,5 +309,44 @@ namespace GameLib
                 throw new CommunicationException($"Communication data for pair ({senderId}, {targetId}) doesn't exist!");
             }
         }
-    }
+
+        public void JoinGame(int agentId, int teamId, bool wantToBeLeader)
+        {
+            if (PlayerStates.ContainsKey(agentId))
+                throw new GameSetupException($"Agent with Id {agentId} is already connected.");
+
+            if (teamId != 0 && teamId != 1)
+                throw new GameSetupException($"No team with Id {teamId}");
+
+            Team team = (Team)teamId;
+
+            int teamMembers = PlayerStates.Count(p => p.Value.Team == team);
+
+            if (teamMembers >= gameRules.TeamSize)
+                throw new GameSetupException($"Team ${teamId} is full");
+
+            bool isLeaderInTeam = PlayerStates.Any(p => p.Value.IsLeader);
+
+            bool willBeLeader;
+            if(isLeaderInTeam)
+            {
+                willBeLeader = false;
+            }
+            else if (teamMembers == gameRules.TeamSize - 1)
+            {
+                willBeLeader = true;
+            }
+            else
+            {
+                willBeLeader = wantToBeLeader;
+            }
+
+            PlayerStates.Add(agentId, new PlayerState(-1, -1, team, willBeLeader));
+        }
+
+        public void Co(int senderId, int targetId, object data)
+        {
+            CommunicationData[(senderId, targetId)] = data;
+        }
+}
 }

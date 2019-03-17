@@ -2,7 +2,7 @@
 
 namespace GameLib
 {
-    public struct PlayerState
+    public class PlayerState
     {
         public (int X, int Y) Position { get; set; }
         public bool IsLeader { get; }

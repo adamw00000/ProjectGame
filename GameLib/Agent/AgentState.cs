@@ -7,6 +7,7 @@
         public bool HoldsPiece = false;
         public PieceState PieceState = PieceState.Unknown;
         public (int X, int Y) Position;
+        public int waitUntilTime;
 
         public AgentState()
         {

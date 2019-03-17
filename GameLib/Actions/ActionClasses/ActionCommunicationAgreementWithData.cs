@@ -1,18 +1,17 @@
-﻿using System;
+﻿using GameLib.GameMessages;
+using System;
 
 namespace GameLib.Actions
 {
-    internal class ActionCommunicationAgreementWithData : IAction
+    internal class ActionCommunicationAgreementWithData : AgentMessage, IAction
     {
         private readonly object data;
 
-        public int AgentId { get; }
         public int TargetId { get; }
         public bool AcceptsCommunication { get; }
 
-        public ActionCommunicationAgreementWithData(int agentId, int targetId, bool acceptsCommunication, object data = null)
+        public ActionCommunicationAgreementWithData(int agentId, int targetId, bool acceptsCommunication, object data = null) : base(agentId)
         {
-            AgentId = agentId;
             TargetId = targetId;
             AcceptsCommunication = acceptsCommunication;
             this.data = data;
@@ -20,7 +19,12 @@ namespace GameLib.Actions
 
         public void Handle(GameMaster gameMaster)
         {
-            gameMaster.CommunicationAgreementWithData(AgentId, data);
+            gameMaster.CommunicationAgreementWithData(AgentId, TargetId, AcceptsCommunication, data);
+        }
+
+        public override void Handle(object handler)
+        {
+            Handle((GameMaster)handler);
         }
     }
 }
