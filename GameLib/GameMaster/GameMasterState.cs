@@ -9,8 +9,8 @@ namespace GameLib
         private readonly double validPieceProbability;
         private readonly int maxPiecesOnBoard;
         private readonly GameRules gameRules;
-        public int undiscoveredRedGoalsLeft;
-        public int undiscoveredBlueGoalsLeft;
+        public int UndiscoveredRedGoalsLeft;
+        public int UndiscoveredBlueGoalsLeft;
         private readonly Dictionary<(int senderId, int targetId), object> CommunicationData = new Dictionary<(int senderId, int targetId), object>();
 
         public readonly GameMasterBoard Board;
@@ -22,8 +22,8 @@ namespace GameLib
             Board = new GameMasterBoard(gameRules);
             validPieceProbability = 1 - rules.BadPieceProbability;
             maxPiecesOnBoard = rules.MaxPiecesOnBoard;
-            undiscoveredRedGoalsLeft = rules.GoalCount;
-            undiscoveredBlueGoalsLeft = rules.GoalCount;
+            UndiscoveredRedGoalsLeft = rules.GoalCount;
+            UndiscoveredBlueGoalsLeft = rules.GoalCount;
         }
 
         public void InitializePlayerPositions(int width, int height, int teamSize) 
@@ -204,13 +204,13 @@ namespace GameLib
                     result = PutPieceResult.PieceGoalRealized; 
                     if(player.Team == Team.Red)
                     {
-                        undiscoveredRedGoalsLeft--;
+                        UndiscoveredRedGoalsLeft--;
                     }
                     else
                     {
-                        undiscoveredBlueGoalsLeft--;
+                        UndiscoveredBlueGoalsLeft--;
                     }
-                    if (undiscoveredRedGoalsLeft == 0 || undiscoveredBlueGoalsLeft == 0)
+                    if (UndiscoveredRedGoalsLeft == 0 || UndiscoveredBlueGoalsLeft == 0)
                     {
                         GameEnded = true;
                     }

@@ -432,7 +432,7 @@ namespace GameLib.Tests
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);
 
-            int undiscoveredRedGoals = state.undiscoveredRedGoalsLeft;
+            int undiscoveredRedGoals = state.UndiscoveredRedGoalsLeft;
 
             int agentId = 0;
 
@@ -441,7 +441,7 @@ namespace GameLib.Tests
 
             state.PutPiece(agentId);
 
-            state.undiscoveredRedGoalsLeft.ShouldBe(undiscoveredRedGoals - 1);
+            state.UndiscoveredRedGoalsLeft.ShouldBe(undiscoveredRedGoals - 1);
         }
 
         [Theory]
@@ -484,12 +484,12 @@ namespace GameLib.Tests
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);
 
-            state.undiscoveredRedGoalsLeft.ShouldBe(rules.GoalCount);
-            state.undiscoveredBlueGoalsLeft.ShouldBe(rules.GoalCount);
+            state.UndiscoveredRedGoalsLeft.ShouldBe(rules.GoalCount);
+            state.UndiscoveredBlueGoalsLeft.ShouldBe(rules.GoalCount);
 
             int idCounter = 0;
 
-            for (int i = 0; i < state.Board.GoalAreaHeight; i++)
+            for (int i = 0; i < state.Board.GoalAreaHeight; i++) //sets red players where red goals are
             {
                 for (int j= 0; j < state.Board.Width; j++)
                 {
@@ -499,7 +499,7 @@ namespace GameLib.Tests
                     }
                 }
             }
-            for (int i = state.Board.Height - state.Board.GoalAreaHeight; i < state.Board.Height; i++)
+            for (int i = state.Board.Height - state.Board.GoalAreaHeight; i < state.Board.Height; i++) //sets blue players where blue goals are
             {
                 for (int j = 0; j < state.Board.Width; j++)
                 {
@@ -510,15 +510,15 @@ namespace GameLib.Tests
                 }
             }
 
-            for (int i=0;i<state.PlayerStates.Count;i++)
+            for (int i = 0; i < state.PlayerStates.Count; i++) //every player puts valid piece on goal
             {
                 var result = state.PutPiece(i);
                 result.ShouldBe(PutPieceResult.PieceGoalRealized);
                 state.Board[state.PlayerStates[i].Position.X, state.PlayerStates[i].Position.Y].IsGoal.ShouldBe(false);
             }
 
-            state.undiscoveredRedGoalsLeft.ShouldBe(0);
-            state.undiscoveredBlueGoalsLeft.ShouldBe(0);
+            state.UndiscoveredRedGoalsLeft.ShouldBe(0);
+            state.UndiscoveredBlueGoalsLeft.ShouldBe(0);
             state.GameEnded.ShouldBe(true);
         }
 
