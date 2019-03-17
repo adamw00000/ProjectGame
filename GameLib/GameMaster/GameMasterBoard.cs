@@ -24,7 +24,7 @@ namespace GameLib
             {
                 for (int y = 0; y < width; y++)
                 {
-                    BoardTable[x, y] = new GameMasterField() { Distance = int.MaxValue};
+                    BoardTable[x, y] = new GameMasterField() { Distance = int.MaxValue };
                 }
             }
 
@@ -35,20 +35,32 @@ namespace GameLib
         {
             for (int i = 0; i < count; i++)
             {
-                ChooseRandomFieldForGoal(out int x, out int y);
-                BoardTable[x, y].IsGoal = GMFieldState.Goal;
+                ChooseRandomFieldForGoal(out int x, out int y, Team.Red);
+                BoardTable[x, y].IsGoal = true;
+            }
+            for (int i = 0; i < count; i++)
+            {
+                ChooseRandomFieldForGoal(out int x, out int y, Team.Blue);
+                BoardTable[x, y].IsGoal = true;
             }
         }
 
-        private void ChooseRandomFieldForGoal(out int x, out int y)
+        private void ChooseRandomFieldForGoal(out int x, out int y, Team team)
         {
             var random = RandomGenerator.GetGenerator();
 
             do
             {
-                x = random.Next(GoalAreaHeight, Height - GoalAreaHeight);
+                if (team == Team.Red)
+                {
+                    x = random.Next(0, GoalAreaHeight);
+                }
+                else
+                {
+                    x = random.Next(Height - GoalAreaHeight, Height);
+                }
                 y = random.Next(0, Width);
-            } while (BoardTable[x, y].IsGoal == GMFieldState.Goal); //o(1) implementation is possible
+            } while (BoardTable[x, y].IsGoal); //o(1) implementation is possible
         }
 
         public GameMasterField this[int x, int y]
@@ -64,11 +76,11 @@ namespace GameLib
         {
             if (team == Team.Blue)
             {
-                return x >= 0 && x < GoalAreaHeight;
+                return x >= Height - GoalAreaHeight && x < Height;
             }
             else
             {
-                return x >= Height - GoalAreaHeight && x < Height;
+                return x >= 0 && x < GoalAreaHeight;
             }
         }
 

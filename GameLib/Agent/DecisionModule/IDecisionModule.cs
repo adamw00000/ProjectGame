@@ -4,6 +4,6 @@ namespace GameLib
 {
     public interface IDecisionModule
     {
-        IAction ChooseAction(AgentState agentState);
+        IAction ChooseAction(int agentId, AgentState agentState);
     }
 }
