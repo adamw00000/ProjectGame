@@ -9,6 +9,6 @@
         public bool HasPiece => Piece != null;
         public bool HasValidPiece => Piece?.IsValid == true;
 
-        public GMFieldState IsGoal { get; set; }
+        public bool IsGoal { get; set; }
     }
 }

@@ -23,12 +23,12 @@ namespace ProjectGameGUI
 
         public readonly float NormalFieldOpacityFactor = 0.2F;
         public readonly float GoalFieldOpacityFactor = 0.4F;
-        public readonly float DiscoveredGoalFieldOpacityFactor = 0.3F;
 
         public readonly float PieceWidthFactor = 0.8F;
         public readonly float PieceHeightFactor = 0.8F;
         public readonly float PlayerPieceFactor = 0.5F;
-        public readonly ISolidColorBrush PieceColor = Brushes.YellowGreen;
+        public readonly ISolidColorBrush ValidPieceColor = Brushes.Gold;
+        public readonly ISolidColorBrush InvalidPieceColor = Brushes.YellowGreen;
 
 
         public Rectangle GetPlayer(ISolidColorBrush teamColor)
@@ -46,47 +46,32 @@ namespace ProjectGameGUI
             border.BorderBrush = BorderBrush;
             border.BorderThickness = BorderThickness;
             border.Background = backgound;
-            switch (field.IsGoal)
+            if(field.IsGoal)
             {
-                case GameLib.GMFieldState.Goal:
-                    {
-                        border.Opacity = GoalFieldOpacityFactor;
-                        break;
-                    }
-                case GameLib.GMFieldState.DiscoveredGoal:
-                    {
-                        border.Opacity = DiscoveredGoalFieldOpacityFactor;
-                        break;
-                    }
-                case GameLib.GMFieldState.NotGoal:
-                    {
-                        border.Opacity = NormalFieldOpacityFactor;
-                        break;
-                    }
-                case GameLib.GMFieldState.NA:
-                    {
-                        border.Opacity = 1;
-                        break;
-                    }
+                border.Opacity = GoalFieldOpacityFactor;
+            }
+            else
+            {
+                border.Opacity = NormalFieldOpacityFactor;
             }
             return border;
         }
 
-        public Ellipse GetPlayerPiece()
+        public Ellipse GetPlayerPiece(bool valid)
         {
             Ellipse ellipse = new Ellipse();
             ellipse.Width = PieceWidthFactor * FieldWidth * PlayerPieceFactor;
             ellipse.Height = PieceHeightFactor * FieldHeight * PlayerPieceFactor;
-            ellipse.Fill = PieceColor;
+            ellipse.Fill = valid ? ValidPieceColor : InvalidPieceColor;
             return ellipse;
         }
 
-        public Ellipse GetPiece()
+        public Ellipse GetPiece(bool valid)
         {
             Ellipse ellipse = new Ellipse();
             ellipse.Width = PieceWidthFactor * FieldWidth;
             ellipse.Height = PieceHeightFactor * FieldHeight;
-            ellipse.Fill = PieceColor;
+            ellipse.Fill = valid ? ValidPieceColor : InvalidPieceColor;
             return ellipse;
         }
 
