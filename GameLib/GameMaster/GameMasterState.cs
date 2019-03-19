@@ -150,6 +150,9 @@ namespace GameLib
             if (!player.IsEligibleForAction)
                 throw new DelayException();
 
+            if (player.Piece != null)
+                throw new PieceOperationException("Cannot pick up piece if you already have one!");
+
             (int x, int y) = player.Position;
 
             if (!Board[x, y].HasPiece)
