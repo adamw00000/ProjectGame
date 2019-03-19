@@ -227,6 +227,22 @@ namespace GameLib.Tests
             Should.Throw<DelayException>(() => state.PickUpPiece(agentId));
         }
 
+        [Fact]
+        public void PickUpPiece_WhenPlayerAlreadyHasPiece_ThrowsPieceOperationException()
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            int pieceX = 3;
+            int pieceY = 4;
+            state.GeneratePieceAt(pieceX, pieceY);
+
+            var agentId = 0;
+
+            state.PlayerStates.Add(agentId, new PlayerState(pieceX, pieceY) { Piece = new Piece(0.5) });
+            Should.Throw<PieceOperationException>(() => state.PickUpPiece(agentId), "Cannot pick up piece if you already have one!");
+        }
+
         [Theory]
         [InlineData(3, 5)]
         [InlineData(4, 4)]
