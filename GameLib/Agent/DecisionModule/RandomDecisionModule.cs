@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using GameLib.Actions;
 
 namespace GameLib
@@ -29,7 +30,7 @@ namespace GameLib
             }
         }
 
-        public IAction ChooseAction(int agentId, AgentState agentState)
+        public Task<IAction> ChooseAction(int agentId, AgentState agentState)
         {
             IAction action;
             Random random = RandomGenerator.GetGenerator();
@@ -39,7 +40,7 @@ namespace GameLib
             {
                 action = new ActionCheckPiece(agentId);
             }
-            else if(value <= prefixSumArray[1])
+            else if (value <= prefixSumArray[1])
             {
                 action = new ActionDestroyPiece(agentId);
             }
@@ -67,10 +68,10 @@ namespace GameLib
             {
                 action = new ActionCommunicationAgreementWithData(agentId, agentId, random.Next(2) == 1 ? true : false, agentState);
             }
-            
+
             Console.WriteLine(action.ToString());
-            
-            return action;
+
+            return Task.FromResult(action);
         }
     }
 }
