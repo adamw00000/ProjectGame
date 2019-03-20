@@ -6,10 +6,12 @@ namespace GameLib
 {
     public class GameMasterState
     {
-        public bool GameEnded { get; private set; } = false;
+        public bool GameEnded = false;
         private readonly double validPieceProbability;
         private readonly int maxPiecesOnBoard;
         private readonly GameRules gameRules;
+        public int UndiscoveredRedGoalsLeft;
+        public int UndiscoveredBlueGoalsLeft;
         private readonly Dictionary<(int senderId, int targetId), object> CommunicationData = new Dictionary<(int senderId, int targetId), object>();
 
         public readonly GameMasterBoard Board;
@@ -21,22 +23,25 @@ namespace GameLib
             Board = new GameMasterBoard(gameRules);
             validPieceProbability = 1 - rules.BadPieceProbability;
             maxPiecesOnBoard = rules.MaxPiecesOnBoard;
+            UndiscoveredRedGoalsLeft = rules.GoalCount;
+            UndiscoveredBlueGoalsLeft = rules.GoalCount;
         }
 
-        public void InitializePlayerPositions(int width, int height, int teamSize)
+        public void InitializePlayerPositions(int width, int height, int teamSize) 
         {
             List<PlayerState> reds = new List<PlayerState>(PlayerStates.Values.Where(player => player.Team == Team.Red));
             List<PlayerState> blues = new List<PlayerState>(PlayerStates.Values.Where(player => player.Team == Team.Blue));
             for (int i = 0; i < teamSize; i++)
             {
-                /*PlayerStates.Add(i, new PlayerState(i / width, width / 2 + HalfCeiling(i % width) * Side(i), Team.Blue, i == 0));
-                PlayerStates.Add(i + teamSize, new PlayerState(height - 1 - i / width, width / 2 + HalfCeiling(i % width) * Side(i), Team.Red, i == 0));*/
                 PlayerState redPlayer = reds[i];
                 PlayerState bluePlayer = blues[i];
-                redPlayer.Position = (i / width, width / 2 + HalfCeiling(i % width) * Side(i));
-                bluePlayer.Position = (height - 1 - i / width, width / 2 + HalfCeiling(i % width) * Side(i));
+                int rowRed = i / width; //top
+                int rowBlue = height - 1 - i / width; //bottom
+                int column = width / 2 + Distance(i % width) * Side(i); //from center, outwards
+                redPlayer.Position = (rowRed, column);
+                bluePlayer.Position = (rowBlue, column);
             }
-            int HalfCeiling(int n)
+            int Distance(int n)
             {
                 return n % 2 == 0 ? n / 2 : n / 2 + 1;
             }
@@ -150,6 +155,9 @@ namespace GameLib
             if (!player.IsEligibleForAction)
                 throw new DelayException();
 
+            if (player.Piece != null)
+                throw new PieceOperationException("Cannot pick up piece if you already have one!");
+
             (int x, int y) = player.Position;
 
             if (!Board[x, y].HasPiece)
@@ -165,7 +173,7 @@ namespace GameLib
             DelayPlayer(playerId, gameRules.PickUpMultiplier);
         }
 
-        public PutPieceResult PutPiece(int playerId) //PutPieceResult zamiast bool? ?
+        public PutPieceResult PutPiece(int playerId)
         {
             PlayerState player = PlayerStates[playerId];
 
@@ -199,7 +207,29 @@ namespace GameLib
             PutPieceResult result = PutPieceResult.PieceWasFake;
             if (player.Piece.IsValid)
             {
-                result = Board[x, y].IsGoal ? PutPieceResult.PieceGoalRealized : PutPieceResult.PieceGoalUnrealized;
+                if (Board[x, y].IsGoal)
+                {
+                    result = PutPieceResult.PieceGoalRealized; 
+                    if(player.Team == Team.Red)
+                    {
+                        UndiscoveredRedGoalsLeft--;
+                    }
+                    else
+                    {
+                        UndiscoveredBlueGoalsLeft--;
+                    }
+                    if (UndiscoveredRedGoalsLeft == 0 || UndiscoveredBlueGoalsLeft == 0)
+                    {
+                        GameEnded = true;
+                    }
+                    GameMasterField discoveredGoal = Board[x, y];
+                    discoveredGoal.IsGoal = false;
+                    Board[x, y] = discoveredGoal;
+                }
+                else
+                {
+                    result = PutPieceResult.PieceGoalUnrealized;
+                }
             }
             DestroyPlayersPiece(playerId);
             return result;
@@ -357,10 +387,5 @@ namespace GameLib
 
             PlayerStates.Add(agentId, new PlayerState(-1, -1, team, willBeLeader));
         }
-
-        /*public void Co(int senderId, int targetId, object data)
-        {
-            CommunicationData[(senderId, targetId)] = data;
-        }*/
     }
 }

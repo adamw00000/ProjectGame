@@ -14,13 +14,14 @@ namespace GameLib
         private readonly IDecisionModule decisionModule;
         private readonly AgentState state;
         private GameRules rules;
-        private Task loop;
+        private DateTime start;
         private bool waitForResponse;
+        private bool gameStarted = false;
+        private bool gameEnded = false;
         private Message awaitedForResponse;
         private int isWinning = -1;
         private bool wantsToBeLeader;
         private bool isLeader;
-        private bool gameStarted = false;
         private int[] teamIds;
         private Team team;
 
@@ -101,6 +102,11 @@ namespace GameLib
             else
                 throw new InvalidOperationException("Wrong action result received");
         }
+        public void HandleCommunicationRequest(int requesterId, int timestamp)
+        {
+            Message response = new ActionCommunicationAgreementWithData(requesterId, id, false, null);
+            //Needs to be developed
+        }
 
         public void HandleCommunicationResponse(int timestamp, int waitUntilTime, int senderId, bool agreement, object data)
         {
@@ -128,10 +134,9 @@ namespace GameLib
             gameEnded = true;
         }
 
-        private bool gameEnded;
-        private DateTime start;
-        public Agent(IDecisionModule decisionModule, IConnection connection)
+        public Agent(int id, IDecisionModule decisionModule, IConnection connection)
         {
+            this.id = id;
             this.decisionModule = decisionModule;
             this.state = new AgentState();
             this.connection = connection;
@@ -151,26 +156,21 @@ namespace GameLib
             Run();
         }
 
-        public void Run()
+        public async Task Run()
         {
-            if (loop != null)
-            {
-                //Loop already running
-                throw new InvalidOperationException("Agent is already running");
-            }
-            mainLoop();
-        }
-
-        public void HandleCommunicationRequest(int requesterId, int timestamp)
-        {
-            Message response = new ActionCommunicationAgreementWithData(requesterId, id, false, null);
-            connection.Send(response);
-            //TODO: Develop way to handle this kind of request
+            //bool gameEnded = false; //?
+            //while(!gameEnded)
+            //{
+            //    IAction nextAction = decisionModule.ChooseAction(state);
+            //    connection.Send(nextAction);//????
+            //}
+            // loop decisionModule <-> connection.Send()
+            MainLoopAsync();
         }
 
         public void HandleTimePenaltyError(int timestamp, int waitUntilTime)
         {
-            this.state.WaitUntilTime = waitUntilTime;
+            state.WaitUntilTime = waitUntilTime;
             waitForResponse = false;
         }
 
@@ -184,11 +184,11 @@ namespace GameLib
             waitForResponse = false;
         }
 
-        private void mainLoop()
+        private async Task MainLoopAsync()
         {
             while (!gameEnded)
             {
-                Message action = (Message)decisionModule.ChooseAction(id, state);
+                Message action = (Message) (await decisionModule.ChooseAction(id, state));
                 connection.Send(action);
 
                 if (action is ActionCommunicationRequestWithData)

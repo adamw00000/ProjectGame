@@ -93,6 +93,21 @@ namespace GameLib
         }
     }
 
+    public class InteractiveModuleException : Exception
+    {
+        public InteractiveModuleException() : base()
+        {
+        }
+
+        public InteractiveModuleException(string message = "") : base(message)
+        {
+        }
+
+        public InteractiveModuleException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
+
     public class GameSetupException : Exception
     {
         public GameSetupException()

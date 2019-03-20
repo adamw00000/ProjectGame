@@ -84,10 +84,10 @@
             switch(putResult)
             {
                 case PutPieceResult.PieceGoalRealized:
-                    Board.BoardTable[Position.X, Position.Y].IsGoal = FieldState.DiscoveredGoal;
+                    Board.BoardTable[Position.X, Position.Y].IsGoal = AgentFieldState.DiscoveredGoal;
                     break;
                 case PutPieceResult.PieceGoalUnrealized:
-                    Board.BoardTable[Position.X, Position.Y].IsGoal = FieldState.DiscoveredNotGoal;
+                    Board.BoardTable[Position.X, Position.Y].IsGoal = AgentFieldState.DiscoveredNotGoal;
                     break;
                 case PutPieceResult.PieceInTaskArea:
                     break;
