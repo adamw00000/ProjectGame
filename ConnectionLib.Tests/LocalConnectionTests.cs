@@ -195,7 +195,7 @@ namespace ConnectionLib.Tests
             GMLocalConnection gm = new GMLocalConnection(communicationServer);
             bool res = gm.TryReceive(out Message m, waitTime);
             res.ShouldBe(false);
-            m.ShouldBe(null);
+            m.ShouldBeNull();
         }
 
         [Theory]

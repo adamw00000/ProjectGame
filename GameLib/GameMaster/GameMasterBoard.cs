@@ -110,7 +110,7 @@ namespace GameLib
         {
             bool[,] visited = new bool[Width, Height];
 
-            Stack<(int px, int py, int dist)> stack = new Stack<(int x, int y, int dist)>();
+            Stack<(int px, int py, int distance)> stack = new Stack<(int x, int y, int distance)>();
 
             for (int i = -1; i <= 1; i += 2)
             {
@@ -119,27 +119,27 @@ namespace GameLib
                     stack.Push((x, y, distance));
                     while (stack.Count > 0)
                     {
-                        (int px, int py, int dist) = stack.Pop();
+                        (int px, int py, int pdistance) = stack.Pop();
                         visited[px, py] = true;
 
-                        if (BoardTable[px, py].Distance > dist)
+                        if (BoardTable[px, py].Distance > pdistance)
                         {
-                            BoardTable[px, py].Distance = dist;
+                            BoardTable[px, py].Distance = pdistance;
                         }
 
                         if (px + i <= Width - 1 && px + i >= 0 && !visited[px + i, py])
                         {
-                            stack.Push((px + i, py, dist + 1));
+                            stack.Push((px + i, py, pdistance + 1));
                         }
 
                         if (py + j <= Height - 1 && py + j >= 0 && !visited[px, py + j])
                         {
-                            stack.Push((px, py + j, dist + 1));
+                            stack.Push((px, py + j, pdistance + 1));
                         }
 
                         if (py + j <= Height - 1 && py + j >= 0 && px + i <= Width - 1 && px + i >= 0 && !visited[px + i, py + j])
                         {
-                            stack.Push((px + i, py + j, dist + 2));
+                            stack.Push((px + i, py + j, pdistance + 2));
                         }
                     }
                 }

@@ -6,7 +6,7 @@ namespace GameLib
 {
     public class GameMasterState
     {
-        public readonly bool GameEnded = false;
+        public bool GameEnded { get; private set; } = false;
         private readonly double validPieceProbability;
         private readonly int maxPiecesOnBoard;
         private readonly GameRules gameRules;
@@ -52,7 +52,9 @@ namespace GameLib
 
             foreach (var (id, playerState) in PlayerStates)
             {
-                var privateRules = gameRules.ReconstructWithAgentPosition(playerState.Position.X, playerState.Position.Y);
+                int[] teamIds = PlayerStates.Where(pair => pair.Value.Team == playerState.Team).Select(pair => pair.Key).ToArray();
+                int leaderId = PlayerStates.Single(pair => pair.Value.IsLeader && pair.Value.Team == playerState.Team).Key;
+                var privateRules = gameRules.ReconstructWithAgentPosition(playerState.Position.X, playerState.Position.Y, teamIds, leaderId);
                 rules.Add(id, privateRules);
             }
 
@@ -261,15 +263,15 @@ namespace GameLib
 
             DelayPlayer(playerId, gameRules.DiscoverMultiplier);
 
-            int[,] ar = Board.GetDistancesAround(player.Position.X, player.Position.Y);
-            List<(int x, int y, int dist)> fields = new List<(int x, int y, int dist)>();
+            int[,] array = Board.GetDistancesAround(player.Position.X, player.Position.Y);
+            List<(int x, int y, int distance)> fields = new List<(int x, int y, int distance)>();
             for(int i = 0; i < 3; ++i)
             {
                 for(int j = 0; j < 3; ++j)
                 {
-                    if(ar[i,j] != int.MaxValue)
+                    if(array[i,j] != int.MaxValue)
                     {
-                        fields.Add((player.Position.X + i - 1, player.Position.Y + j - 1, ar[i, j]));
+                        fields.Add((player.Position.X + i - 1, player.Position.Y + j - 1, array[i, j]));
                     }
                 }
             }
@@ -337,7 +339,7 @@ namespace GameLib
             if (teamMembers >= gameRules.TeamSize)
                 throw new GameSetupException($"Team ${teamId} is full");
 
-            bool isLeaderInTeam = PlayerStates.Any(p => p.Value.IsLeader);
+            bool isLeaderInTeam = PlayerStates.Any(p => p.Value.IsLeader && p.Value.Team == team);
 
             bool willBeLeader;
             if(isLeaderInTeam)
@@ -356,9 +358,9 @@ namespace GameLib
             PlayerStates.Add(agentId, new PlayerState(-1, -1, team, willBeLeader));
         }
 
-        public void Co(int senderId, int targetId, object data)
+        /*public void Co(int senderId, int targetId, object data)
         {
             CommunicationData[(senderId, targetId)] = data;
-        }
-}
+        }*/
+    }
 }

@@ -5,18 +5,18 @@ namespace GameLib.Actions
 {
     internal class ActionCheckPieceResponse : GameMasterMessage, IActionResponse
     {
-        private readonly bool IsTrue;
+        private readonly bool IsValid;
         public int WaitUntilTime { get; }
 
-        public ActionCheckPieceResponse(int agentId, int timestamp, int waitUntilTime, bool isTrue) : base(agentId, timestamp)
+        public ActionCheckPieceResponse(int agentId, int timestamp, int waitUntilTime, bool isValid) : base(agentId, timestamp)
         {
             this.WaitUntilTime = waitUntilTime;
-            this.IsTrue = isTrue;
+            this.IsValid = isValid;
         }
         
         public void Handle(Agent agent)
         {
-            agent.HandleCheckPieceResponse(Timestamp, WaitUntilTime, IsTrue);
+            agent.HandleCheckPieceResponse(Timestamp, WaitUntilTime, IsValid);
         }
         public override void Handle(object handler)
         {

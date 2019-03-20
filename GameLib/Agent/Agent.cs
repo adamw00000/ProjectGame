@@ -1,5 +1,6 @@
 ﻿using ConnectionLib;
 using GameLib.Actions;
+using GameLib.GameMessages;
 using System;
 using System.Threading.Tasks;
 
@@ -9,20 +10,26 @@ namespace GameLib
     {
         private readonly IConnection connection;
 
-        private readonly int id;
+        private int id;
         private readonly IDecisionModule decisionModule;
         private readonly AgentState state;
         private GameRules rules;
         private Task loop;
         private bool waitForResponse;
         private Message awaitedForResponse;
+        private int isWinning = -1;
+        private bool wantsToBeLeader;
+        private bool isLeader;
+        private bool gameStarted = false;
+        private int[] teamIds;
+        private Team team;
 
         public void HandlePickPieceResponse(int timestamp, int waitUntilTime)
         {
             if (awaitedForResponse is ActionPickPiece)
             {
                 state.PickUpPiece();
-                state.waitUntilTime = waitUntilTime;
+                state.WaitUntilTime = waitUntilTime;
                 waitForResponse = false;
             }
             else
@@ -34,7 +41,7 @@ namespace GameLib
             if (awaitedForResponse is ActionPutPiece)
             {
                 state.PlacePiece(putPieceResult);
-                state.waitUntilTime = waitUntilTime;
+                state.WaitUntilTime = waitUntilTime;
                 waitForResponse = false;
             }
             else
@@ -46,7 +53,7 @@ namespace GameLib
             if (awaitedForResponse is ActionDestroyPiece)
             {
                 state.HoldsPiece = false;
-                state.waitUntilTime = waitUntilTime;
+                state.WaitUntilTime = waitUntilTime;
                 waitForResponse = false;
             }
             else
@@ -58,7 +65,7 @@ namespace GameLib
             if (awaitedForResponse is ActionMove move)
             {
                 state.Move(move.MoveDirection, distance);
-                state.waitUntilTime = waitUntilTime;
+                state.WaitUntilTime = waitUntilTime;
                 waitForResponse = false;
             }
             else
@@ -70,9 +77,8 @@ namespace GameLib
             if (awaitedForResponse is ActionDiscovery)
             {
                 state.Discover(closestPieces, timestamp);
-                state.waitUntilTime = waitUntilTime;
+                state.WaitUntilTime = waitUntilTime;
                 waitForResponse = false;
-
             }
             else
                 throw new InvalidOperationException("Wrong action result received");
@@ -84,13 +90,13 @@ namespace GameLib
                 throw new InvalidOperationException();
         }
 
-        public void HandleCheckPieceResponse(int timestamp, int waitUntilTime, bool isTrue)
+        public void HandleCheckPieceResponse(int timestamp, int waitUntilTime, bool isValid)
         {
-            if(awaitedForResponse is ActionCheckPiece)
+            if (awaitedForResponse is ActionCheckPiece)
             {
-                state.waitUntilTime = waitUntilTime;
+                state.WaitUntilTime = waitUntilTime;
                 waitForResponse = false;
-                state.PieceState = isTrue ? PieceState.Valid : PieceState.Invalid;
+                state.PieceState = isValid ? PieceState.Valid : PieceState.Invalid;
             }
             else
                 throw new InvalidOperationException("Wrong action result received");
@@ -98,14 +104,23 @@ namespace GameLib
 
         public void HandleCommunicationResponse(int timestamp, int waitUntilTime, int senderId, bool agreement, object data)
         {
-            
+            if (agreement)
+            {
+                throw new NotImplementedException();
+            }
+            //TODO: Response handling
+            //This can't throw exception, because it's called in case of rejected communication.
         }
 
-        public void StartGame(GameRules rules, int timestamp)
+        public void StartGame(int agentId, GameRules rules, int timestamp)
         {
+            this.id = agentId;
+            this.isLeader = this.id == rules.TeamLiderId;
+            this.teamIds = (int[])rules.AgentIdsFromTeam.Clone();
             this.rules = rules;
-            start = (new DateTime()).AddMilliseconds(timestamp);
-            Run();
+            state.Setup(rules);
+            start = DateTime.UtcNow;
+            gameStarted = true;
         }
 
         public void EndGame(int winningTeam, int timestamp)
@@ -122,67 +137,76 @@ namespace GameLib
             this.connection = connection;
         }
 
-        public void JoinGame(string serverAddress, int port)
+        public async void JoinGame(Team choosenTeam, bool wantsToBeLeader = false)
         {
-            throw new NotImplementedException();
+            this.team = choosenTeam;
+            this.wantsToBeLeader = wantsToBeLeader;
+            Message joinMessage = new JoinGameMessage(id, (int)choosenTeam, wantsToBeLeader);
+            connection.Send(joinMessage);
+            while (!gameStarted)
+            {
+                Message message = connection.Receive();
+                message.Handle(this);
+            }
+            Run();
         }
 
         public void Run()
         {
-            //bool gameEnded = false; //?
-            //while(!gameEnded)
-            //{
-            //    IAction nextAction = decisionModule.ChooseAction(state);
-            //    connection.Send(nextAction);//????
-            //}
-            // loop decisionModule <-> connection.Send()
-            if(loop != null)
+            if (loop != null)
             {
-                //Loop alraedy running
+                //Loop already running
                 throw new InvalidOperationException("Agent is already running");
             }
-            loop = new Task(mainLoop);
+            mainLoop();
         }
 
-        public void ServeCommunicationRequest(int requesterId)
+        public void HandleCommunicationRequest(int requesterId, int timestamp)
         {
-            throw new NotImplementedException();
+            Message response = new ActionCommunicationAgreementWithData(requesterId, id, false, null);
+            connection.Send(response);
+            //TODO: Develop way to handle this kind of request
         }
 
         public void HandleTimePenaltyError(int timestamp, int waitUntilTime)
         {
-            throw new NotImplementedException();
+            this.state.WaitUntilTime = waitUntilTime;
+            waitForResponse = false;
         }
 
         public void HandleInvalidMoveDirectionError(int timestamp)
         {
-            throw new NotImplementedException();
+            waitForResponse = false;
         }
 
         public void HandleInvalidActionError(int timestamp)
         {
-            throw new NotImplementedException();
+            waitForResponse = false;
         }
 
         private void mainLoop()
         {
-            while (gameEnded)
+            while (!gameEnded)
             {
-                Message action = (Message) decisionModule.ChooseAction(id, state);
+                Message action = (Message)decisionModule.ChooseAction(id, state);
                 connection.Send(action);
+
                 if (action is ActionCommunicationRequestWithData)
                     continue;
+
                 waitForResponse = true;
                 awaitedForResponse = action;
+
                 do
                 {
                     Message msg = connection.Receive();
                     msg.Handle(this);
                 } while (waitForResponse);
-                while((DateTime.UtcNow - start).TotalMilliseconds < state.waitUntilTime)
+
+                while ((DateTime.UtcNow - start).TotalMilliseconds < state.WaitUntilTime)
                 {
                     bool res = connection.TryReceive(out Message m, (int)(DateTime.UtcNow - start).TotalMilliseconds);
-                    if(res)
+                    if (res)
                     {
                         m.Handle(this);
                     }

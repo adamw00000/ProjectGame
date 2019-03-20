@@ -5,7 +5,7 @@ namespace GameLib.Actions
 {
     internal class ActionPutPieceResponse : GameMasterMessage, IActionResponse
     {
-        private readonly PutPieceResult PutPieceResult;
+        public readonly PutPieceResult PutPieceResult;
         public int WaitUntilTime { get; }
 
         public ActionPutPieceResponse(int agentId, int timestamp, int waitUntilTime, PutPieceResult putPieceResult) : base(agentId, timestamp)

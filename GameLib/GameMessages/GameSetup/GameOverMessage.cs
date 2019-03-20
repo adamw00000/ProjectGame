@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GameLib.GameMessages.GameSetup
+namespace GameLib.GameMessages
 {
     class GameOverMessage : GameMasterMessage
     {

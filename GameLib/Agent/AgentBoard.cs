@@ -64,12 +64,12 @@ namespace GameLib
 
         public void ApplyDiscoveryResult(DiscoveryResult discoveryResult, int timestamp)
         {
-            foreach(var tuple in discoveryResult.Fields)
+            foreach(var (x,y,distance) in discoveryResult.Fields)
             {
-                if (!IsInBounds(tuple.x, tuple.y))
-                    throw new InvalidDiscoveryResultException($"({tuple.x},{tuple.y}) is outside the board");
-                BoardTable[tuple.x, tuple.y].Distance = tuple.dist;
-                BoardTable[tuple.x, tuple.y].Timestamp = (new DateTime()).AddMilliseconds(timestamp);
+                if (!IsInBounds(x, y))
+                    throw new InvalidDiscoveryResultException($"({x},{y}) is outside the board");
+                BoardTable[x, y].Distance = distance;
+                BoardTable[x, y].Timestamp = (new DateTime()).AddMilliseconds(timestamp);
             }
         }
 

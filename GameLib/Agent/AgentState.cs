@@ -7,14 +7,12 @@
         public bool HoldsPiece = false;
         public PieceState PieceState = PieceState.Unknown;
         public (int X, int Y) Position;
-        public int waitUntilTime;
+        public int WaitUntilTime;
 
         public AgentState()
         {
         }
 
-        // Ta metoda została wyodrębniona z konstruktora bo nie chcemy tworzyć całego obiektu w momencie rozpoczęcia gry
-        // tylko uzupełnić planszę (która zależy od infromacji otrzymanych na początku gry.
         public void Setup(GameRules rules)
         {
             Position = (rules.AgentStartX, rules.AgentStartY);

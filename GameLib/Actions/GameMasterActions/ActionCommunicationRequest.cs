@@ -13,7 +13,7 @@ namespace GameLib.Actions
 
         public void Handle(Agent agent)
         {
-            agent.ServeCommunicationRequest(requesterId);
+            agent.HandleCommunicationRequest(requesterId, Timestamp);
         }
         public override void Handle(object handler)
         {

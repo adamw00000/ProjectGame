@@ -203,7 +203,7 @@ namespace GameLib.Tests
         {
             var rules = GetDefaultRules();
             var state = GetSetUpState(rules);
-            List<(int x, int y, int dist)> fields = new List<(int x, int y, int dist)>
+            List<(int x, int y, int distance)> fields = new List<(int x, int y, int distance)>
             {(5,3,4),(5,4,3),(5,5,2),(4,3,3),(4,4,2),(4,5,1),(3,3,2),(3,4,1),(3,5,0)};
             var discoveryResult = new DiscoveryResult(fields);
 
@@ -215,7 +215,7 @@ namespace GameLib.Tests
                 {
                     if (IsInBounds(state.Board, 4 + i, 4 + j))
                         state.Board[4 + i, 4 + j].Distance.ShouldBe(
-                            fields.First(t => t.x == 4 + i && t.y == 4 + j).dist);
+                            fields.First(t => t.x == 4 + i && t.y == 4 + j).distance);
                 }
             }
         }

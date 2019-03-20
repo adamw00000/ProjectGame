@@ -705,7 +705,7 @@ namespace GameLib.Tests
                 {
                     if (x + i >= 0 && x + i < rules.BoardWidth && y + j >= 0 && y + j < rules.BoardHeight)
                     {
-                        discoveryResult.Fields.Single(t => t.x == x + i && t.y == y + j).dist.ShouldBe(distances[x + i, y + j]);
+                        discoveryResult.Fields.Single(t => t.x == x + i && t.y == y + j).distance.ShouldBe(distances[x + i, y + j]);
                     }
                 }
             }
@@ -744,7 +744,7 @@ namespace GameLib.Tests
             var senderId = 0;
             var targetId = 1;
             var previousSenderDelay = 1000 * 3600 * 24;
-            state.PlayerStates.Add(senderId, new PlayerState(-1,-1) { LastRequestTimestamp = DateTime.UtcNow, LastActionDelay = 1000 * 3600 * 24 });
+            state.PlayerStates.Add(senderId, new PlayerState(-1,-1) { LastRequestTimestamp = DateTime.UtcNow, LastActionDelay = previousSenderDelay});
             state.PlayerStates.Add(targetId, new PlayerState(-1,-1));
 
             var beforeTimestamp = DateTime.UtcNow.AddMilliseconds(-1);
@@ -896,7 +896,7 @@ namespace GameLib.Tests
 
         [Theory]
         [InlineData(0, 0, 0)]
-        public void JoinAgent_WithAlreadyConnectedId_ThrowsGameSetupException(int agent1Id, int agent2Id, int teamId)
+        public void JoinGame_WithAlreadyConnectedId_ThrowsGameSetupException(int agent1Id, int agent2Id, int teamId)
         {
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);
@@ -930,7 +930,7 @@ namespace GameLib.Tests
         [Theory]
         [InlineData(0, 1, 2, 0, false)]
         [InlineData(0, 1, 2, 0, true)]
-        public void JoinAgent_AllAgentsSuccesfulyConnected_SameWantToBeLeaderState(int agent1Id, int agent2Id, int agent3Id, int teamId, bool wantToBeLeader)
+        public void JoinAgent_WhenNotExactlyOneAgentWantsToBeLeader_ConnectsAllAgentsAndChoosesOneLeader(int agent1Id, int agent2Id, int agent3Id, int teamId, bool wantToBeLeader)
         {
             var rules = Helper.GetRulesWithMediumTeamSize();
             var state = Helper.GetGameMasterState(rules);

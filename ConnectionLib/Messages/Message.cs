@@ -14,6 +14,5 @@ namespace ConnectionLib
         }
 
         public abstract void Handle(object handler);
-        // TODO Think about the rest of the class
     }
 }

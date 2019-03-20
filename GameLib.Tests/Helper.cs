@@ -32,9 +32,6 @@ namespace GameLib.Tests
 
         public static void AddPlayers(GameMasterState state, GameRules rules)
         {
-            //rules = new GameRules(rules.BoardWidth, rules.BoardHeight, rules.GoalAreaHeight, rules.GoalCount, teamSize, rules.PieceSpawnInterval, rules.MaxPiecesOnBoard,
-            //    rules.BadPieceProbability, rules.BaseTimePenalty, rules.MoveMultiplier, rules.DiscoverMultiplier, rules.PickUpMultiplier,
-            //    rules.CheckMultiplier, rules.DestroyPieceMultiplier, rules.PutPieceMultiplier, rules.CommunicationMultiplier, rules.AgentStartX, rules.AgentStartY);
             for (int i = 0; i < rules.TeamSize; ++i)
             {
                 state.JoinGame(i, 0, false);

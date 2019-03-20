@@ -1,6 +1,6 @@
 ﻿using ConnectionLib;
 using GameLib.Actions;
-using GameLib.GameMessages.GameSetup;
+using GameLib.GameMessages;
 using System;
 using System.Threading.Tasks;
 
@@ -13,11 +13,13 @@ namespace GameLib
         private GameMasterState state;
         private readonly GameRules rules;
         private DateTime start;
+        private bool gameStarted = false;
 
         public GameMaster(GameRules rules, IConnection connection)
         {
             this.connection = connection;
             this.rules = rules;
+            state = new GameMasterState(rules);
         }
 
         public void GenerateBoard()
@@ -25,17 +27,17 @@ namespace GameLib
             state = new GameMasterState(rules);
         }
 
-        public void JoinToGame(int agentId, int teamId, bool wantToBeLeader)
+        public void JoinGame(int agentId, int teamId, bool wantToBeLeader)
         {
             Message response;
             try
             {
                 state.JoinGame(agentId, teamId, wantToBeLeader);
-                response = new JoinToGameResponseMessage(agentId,teamId,true);
+                response = new JoinGameResponseMessage(agentId, teamId, true);
             }
             catch(GameSetupException e)
             {
-                response = new JoinToGameResponseMessage(agentId, teamId, false);
+                response = new JoinGameResponseMessage(agentId, teamId, false);
             }
             connection.Send(response);
             if(state.PlayerStates.Count == rules.TeamSize * 2)
@@ -43,31 +45,53 @@ namespace GameLib
                 start = DateTime.UtcNow;
                 state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, rules.TeamSize);
                 var rulesDict = state.GetAgentGameRules();
-                foreach(var pair in state.PlayerStates)
+                gameStarted = true;
+                foreach (var (playerId, state) in state.PlayerStates)
                 {
-                    Message startGameMessage = new GameStartMessage(pair.Key, (int)(start - new DateTime()).TotalMilliseconds, rulesDict[pair.Key]);
-                    connection.SendAsync(startGameMessage);
+                    Message startGameMessage = new GameStartMessage(playerId, 0, rulesDict[playerId]); //0 stands for start of the game
+                    connection.Send(startGameMessage);
                 }
-                StartGame();
             }
         }
 
         public async Task GeneratePieces()
         {
-            while (!state.GameEnded)
+            state.GeneratePiece();
+            /*while (!state.GameEnded)
             {
                 state.GeneratePiece();
                 await Task.Delay(rules.PieceSpawnInterval).ConfigureAwait(false);
+            }*/
+        }
+
+        public async Task ListenJoiningAndStart()
+        {
+            while(!gameStarted)
+            {
+                Message message = await connection.ReceiveAsync();
+                message.Handle(this);
             }
+            StartGame();
         }
 
         public async Task StartGame()
         {
-            var generatePiecesTask = GeneratePieces();
-            //await generatePiecesTask;
+            while(!state.GameEnded)
+            {
+                await GeneratePieces();
+                DateTime nextPieceGeneratingTime = DateTime.UtcNow.AddMilliseconds(rules.PieceSpawnInterval);
+                while(DateTime.UtcNow < nextPieceGeneratingTime)
+                {
+                    int timespan = Math.Max(0, (int)(nextPieceGeneratingTime - DateTime.UtcNow).TotalMilliseconds);
+                    if(connection.TryReceive(out Message message, timespan))
+                    {
+                        message.Handle(this);
+                    }                 
+                }
+            }
         }
 
-        private (int timestamp, int waitUntil) calcDelay(int agentId)
+        private (int timestamp, int waitUntil) CalculateDelay(int agentId)
         {
             PlayerState agentPlayerState = state.PlayerStates[agentId];
             DateTime timestamp = DateTime.UtcNow;
@@ -75,13 +99,13 @@ namespace GameLib
             return ((int)(timestamp - start).TotalMilliseconds, (int)(waitUntil - start).TotalMilliseconds);
         }
 
-        private int closestPiece(int agentId)
+        private int ClosestPieceDistance(int agentId)
         {
             PlayerState agentPlayerState = state.PlayerStates[agentId];
             return state.Board[agentPlayerState.Position.X, agentPlayerState.Position.Y].Distance;
         }
 
-        private int currectTimestamp()
+        private int CurrentTimestamp()
         {
             return (int)(DateTime.UtcNow - start).TotalMilliseconds;
         }
@@ -91,18 +115,18 @@ namespace GameLib
             try
             {
                 state.Move(agentId, moveDirection);
-                int distance = closestPiece(agentId);
-                (int timestamp, int waitUntil) = calcDelay(agentId);
+                int distance = ClosestPieceDistance(agentId);
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 response = new ActionMakeMoveResponse(agentId, timestamp, waitUntil, distance);
             }
             catch(DelayException e)
             {
-                (int timestamp, int waitUntil) = calcDelay(agentId);
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 response = new RequestTimePenaltyError(agentId, timestamp, waitUntil);
             }
             catch(InvalidMoveException e)
             {
-                response = new InvalidMoveDirectionError(agentId, currectTimestamp());
+                response = new InvalidMoveDirectionError(agentId, CurrentTimestamp());
             }
             connection.Send(response);
         }
@@ -113,17 +137,17 @@ namespace GameLib
             try
             {
                 state.PickUpPiece(agentId);
-                (int timestamp, int waitUntil) = calcDelay(agentId);
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 response = new ActionPickPieceResponse(agentId, timestamp, waitUntil);
             }
             catch (DelayException e)
             {
-                (int timestamp, int waitUntil) = calcDelay(agentId);
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 response = new RequestTimePenaltyError(agentId, timestamp, waitUntil);
             }
             catch (PieceOperationException e)
             {
-                response = new InvalidAction(agentId, currectTimestamp());
+                response = new InvalidAction(agentId, CurrentTimestamp());
             }
             connection.Send(response);
         }
@@ -134,17 +158,17 @@ namespace GameLib
             try
             {
                 PutPieceResult result = state.PutPiece(agentId);
-                (int timestamp, int waitUntil) = calcDelay(agentId);
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 response = new ActionPutPieceResponse(agentId, timestamp, waitUntil, result);
             }
             catch (DelayException e)
             {
-                (int timestamp, int waitUntil) = calcDelay(agentId);
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 response = new RequestTimePenaltyError(agentId, timestamp, waitUntil);
             }
             catch (PieceOperationException e)
             {
-                response = new InvalidAction(agentId, currectTimestamp());
+                response = new InvalidAction(agentId, CurrentTimestamp());
             }
             connection.Send(response);
             //TODO: Check for game end
@@ -156,12 +180,12 @@ namespace GameLib
             try
             {
                 DiscoveryResult discoveryResult = state.Discover(agentId);
-                (int timestamp, int waitUntil) = calcDelay(agentId);
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 response = new ActionDiscoverResponse(agentId, timestamp, waitUntil, discoveryResult);
             }
             catch (DelayException e)
             {
-                (int timestamp, int waitUntil) = calcDelay(agentId);
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 response = new RequestTimePenaltyError(agentId, timestamp, waitUntil);
             }
             connection.Send(response);
@@ -173,17 +197,17 @@ namespace GameLib
             try
             {
                 bool result = state.CheckPiece(agentId);
-                (int timestamp, int waitUntil) = calcDelay(agentId);
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 response = new ActionCheckPieceResponse(agentId, timestamp, waitUntil, result);
             }
             catch (DelayException e)
             {
-                (int timestamp, int waitUntil) = calcDelay(agentId);
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 response = new RequestTimePenaltyError(agentId, timestamp, waitUntil);
             }
             catch (PieceOperationException e)
             {
-                response = new InvalidAction(agentId, currectTimestamp());
+                response = new InvalidAction(agentId, CurrentTimestamp());
             }
             connection.Send(response);
         }
@@ -194,17 +218,17 @@ namespace GameLib
             try
             {
                 state.DestroyPiece(agentId);
-                (int timestamp, int waitUntil) = calcDelay(agentId);
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 response = new ActionDestroyPieceResponse(agentId, timestamp, waitUntil);
             }
             catch (DelayException e)
             {
-                (int timestamp, int waitUntil) = calcDelay(agentId);
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 response = new RequestTimePenaltyError(agentId, timestamp, waitUntil);
             }
             catch (PieceOperationException e)
             {
-                response = new InvalidAction(agentId, currectTimestamp());
+                response = new InvalidAction(agentId, CurrentTimestamp());
             }
             connection.Send(response);
         }
@@ -214,12 +238,12 @@ namespace GameLib
             try
             {
                 state.SaveCommunicationData(requesterAgentId, targetAgentId, data);
-                Message request = new ActionCommunicationRequest(requesterAgentId, targetAgentId, currectTimestamp());
+                Message request = new ActionCommunicationRequest(requesterAgentId, targetAgentId, CurrentTimestamp());
                 connection.Send(request);
             }
             catch (DelayException e)
             {
-                (int timestamp, int waitUntil) = calcDelay(requesterAgentId);
+                (int timestamp, int waitUntil) = CalculateDelay(requesterAgentId);
                 Message response = new RequestTimePenaltyError(requesterAgentId, timestamp, waitUntil);
                 connection.Send(response);
             }
@@ -229,18 +253,24 @@ namespace GameLib
         {
             if(agreement == false)
             {
-                int timestamp = currectTimestamp();
+                int timestamp = CurrentTimestamp();
                 Message response = new ActionCommunicationResponseWithData(requesterAgentId, timestamp, timestamp, targetAgentId, false, null);
                 connection.Send(response);
             }
             else
             {
+                if (state.GetCommunicationData(requesterAgentId, targetAgentId) == null)
+                {
+                    throw new NotImplementedException();
+                }
                 Message responseToSender, responseToTarget;
                 state.DelayCommunicationPartners(requesterAgentId, targetAgentId);
-                (int timestamp1, int waitUntil1) = calcDelay(requesterAgentId);
-                (int timestamp2, int waitUntil2) = calcDelay(targetAgentId);
+                (int timestamp1, int waitUntil1) = CalculateDelay(requesterAgentId);
+                (int timestamp2, int waitUntil2) = CalculateDelay(targetAgentId);
                 responseToSender = new ActionCommunicationResponseWithData(requesterAgentId, timestamp1, waitUntil1, targetAgentId, true, data);
                 responseToTarget = new ActionCommunicationResponseWithData(targetAgentId, timestamp2, waitUntil2, requesterAgentId, true, state.GetCommunicationData(requesterAgentId,targetAgentId));
+                state.SaveCommunicationData(requesterAgentId, targetAgentId, null);
+                //Needs to be moved to state ^
                 connection.Send(responseToSender);
                 connection.Send(responseToTarget);
             }

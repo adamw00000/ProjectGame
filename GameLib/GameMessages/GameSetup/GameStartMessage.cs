@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GameLib.GameMessages.GameSetup
+namespace GameLib.GameMessages
 {
     class GameStartMessage : GameMasterMessage
     {
@@ -14,7 +14,7 @@ namespace GameLib.GameMessages.GameSetup
         }
         public override void Handle(object handler)
         {
-            ((Agent)handler).StartGame(Rules, Timestamp);
+            ((Agent)handler).StartGame(AgentId, Rules, Timestamp);
         }
     }
 }
