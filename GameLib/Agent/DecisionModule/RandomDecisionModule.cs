@@ -65,12 +65,12 @@ namespace GameLib
             else if (value <= prefixSumArray[6])
             {
                 action = new ActionCommunicationRequestWithData(agentId, agentId, 
-                    DataProcessor.CreateCommunicationData(agentState));
+                    DataProcessor.CreateCommunicationDataForCommunicationWith(agentId, agentState));
             }
             else
             {
                 action = new ActionCommunicationAgreementWithData(agentId, agentId, 
-                    random.Next(2) == 1 ? true : false, DataProcessor.CreateCommunicationData(agentState));
+                    random.Next(2) == 1 ? true : false, DataProcessor.CreateCommunicationDataForCommunicationWith(agentId, agentState));
             }
 
             Console.WriteLine(action.ToString());

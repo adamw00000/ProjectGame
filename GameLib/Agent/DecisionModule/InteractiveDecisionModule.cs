@@ -60,11 +60,11 @@ namespace GameLib
                     break;
                 case ConsoleKey.A:
                     action = new ActionCommunicationRequestWithData(agentId, agentId, 
-                        DataProcessor.CreateCommunicationData(agentState));
+                        DataProcessor.CreateCommunicationDataForCommunicationWith(agentId, agentState));
                     break;
                 case ConsoleKey.S:
                     action = new ActionCommunicationAgreementWithData(agentId, agentId, 
-                        random.Next(2) == 1 ? true : false, DataProcessor.CreateCommunicationData(agentState));
+                        random.Next(2) == 1 ? true : false, DataProcessor.CreateCommunicationDataForCommunicationWith(agentId, agentState));
                     break;
                 case ConsoleKey.D:
                     action = new ActionDiscovery(agentId);
