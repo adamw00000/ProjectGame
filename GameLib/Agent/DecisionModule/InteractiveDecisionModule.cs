@@ -9,6 +9,7 @@ namespace GameLib
     public class InteractiveDecisionModule : IDecisionModule
     {
         private bool registered = false;
+        public CommunicationDataProcessor DataProcessor { get; } = new CommunicationDataProcessor();
 
         public async Task<IAction> ChooseAction(int agentId, AgentState agentState)
         {
@@ -58,10 +59,12 @@ namespace GameLib
                     action = new ActionDestroyPiece(agentId);
                     break;
                 case ConsoleKey.A:
-                    action = new ActionCommunicationRequestWithData(agentId, agentId, agentState);
+                    action = new ActionCommunicationRequestWithData(agentId, agentId, 
+                        DataProcessor.CreateCommunicationData(agentState));
                     break;
                 case ConsoleKey.S:
-                    action = new ActionCommunicationAgreementWithData(agentId, agentId, random.Next(2) == 1 ? true : false, agentState);
+                    action = new ActionCommunicationAgreementWithData(agentId, agentId, 
+                        random.Next(2) == 1 ? true : false, DataProcessor.CreateCommunicationData(agentState));
                     break;
                 case ConsoleKey.D:
                     action = new ActionDiscovery(agentId);
@@ -71,6 +74,11 @@ namespace GameLib
             }
 
             return action;
+        }
+
+        public void SaveCommunicationResult(int senderId, bool agreement, DateTime timestamp, object data, AgentState agentState)
+        {
+            DataProcessor.ExtractCommunicationData(senderId, agreement, timestamp, data, agentState);
         }
     }
 }
