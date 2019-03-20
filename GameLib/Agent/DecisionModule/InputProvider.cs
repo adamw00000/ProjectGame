@@ -19,7 +19,7 @@ namespace GameLib
 
         private static int agentCount = 0;
 
-        private readonly static Dictionary<int, ConcurrentQueue<ConsoleKey>> queues = new Dictionary<int, ConcurrentQueue<ConsoleKey>>();
+        private readonly static Dictionary<int, BlockingCollection<ConsoleKey>> queues = new Dictionary<int, BlockingCollection<ConsoleKey>>();
 
         public static void Register(int id)
         {
@@ -28,23 +28,13 @@ namespace GameLib
 
             char agentChar = (char)(agentCount + '0');
             registeredAgents.Add(id, agentChar);
-            queues.Add(id, new ConcurrentQueue<ConsoleKey>());
+            queues.Add(id, new BlockingCollection<ConsoleKey>());
             agentCount++;
         }
 
         public static async Task<ConsoleKey> GetKey(int id)
         {
-            ConsoleKey c;
-
-            bool res;
-            do
-            {
-                (res, c) = await Task.Run(() =>
-                {
-                    bool result = queues[id].TryDequeue(out ConsoleKey key); 
-                    return (result, key);
-                });
-            } while (!res);
+            ConsoleKey c = await Task.Run(() => queues[id].Take());
 
             return c;
         }
@@ -77,7 +67,7 @@ namespace GameLib
                 {
                     if (activeAgents.Contains(agentChar))
                     {
-                        queues[id].Enqueue(consoleKey);
+                        queues[id].Add(consoleKey);
                     }
                 }
             }
