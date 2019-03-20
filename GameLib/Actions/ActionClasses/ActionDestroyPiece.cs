@@ -2,12 +2,12 @@
 {
     internal class ActionDestroyPiece : IAction
     {
+        public int AgentId { get; }
+
         public ActionDestroyPiece(int agentId)
         {
             AgentId = agentId;
         }
-
-        public int AgentId { get; }
 
         public void Handle(GameMaster gameMaster)
         {

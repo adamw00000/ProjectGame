@@ -1,9 +1,10 @@
 ﻿using GameLib.Actions;
+using System.Threading.Tasks;
 
 namespace GameLib
 {
     public interface IDecisionModule
     {
-        IAction ChooseAction(AgentState agentState);
+        Task<IAction> ChooseAction(int agentId, AgentState agentState);
     }
 }

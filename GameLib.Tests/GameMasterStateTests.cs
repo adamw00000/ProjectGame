@@ -97,7 +97,7 @@ namespace GameLib.Tests
             var state = Helper.GetGameMasterState(rules);
             var agentId = 0;
 
-            state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY));
+            state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY, Team.Red));
 
             state.Move(agentId, direction);
 
@@ -181,8 +181,8 @@ namespace GameLib.Tests
         }
 
         [Theory]
-        [InlineData(5, 0, Team.Blue, MoveDirection.Down)]
-        [InlineData(2, 2, Team.Red, MoveDirection.Up)]
+        [InlineData(6, 0, Team.Red, MoveDirection.Down)]
+        [InlineData(2, 2, Team.Blue, MoveDirection.Up)]
         public void Move_WhenAgentMovesToEnemyGoalArea_ThrowsInvalidMoveException(int agentX, int agentY, Team team, MoveDirection direction)
         {
             var rules = Helper.GetDefaultRules();
@@ -225,6 +225,22 @@ namespace GameLib.Tests
             state.PlayerStates.Add(agentId, new PlayerState(0, 0) { LastRequestTimestamp = DateTime.MaxValue, LastActionDelay = 0 });
 
             Should.Throw<DelayException>(() => state.PickUpPiece(agentId));
+        }
+
+        [Fact]
+        public void PickUpPiece_WhenPlayerAlreadyHasPiece_ThrowsPieceOperationException()
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            int pieceX = 3;
+            int pieceY = 4;
+            state.GeneratePieceAt(pieceX, pieceY);
+
+            var agentId = 0;
+
+            state.PlayerStates.Add(agentId, new PlayerState(pieceX, pieceY) { Piece = new Piece(0.5) });
+            Should.Throw<PieceOperationException>(() => state.PickUpPiece(agentId), "Cannot pick up piece if you already have one!");
         }
 
         [Theory]
@@ -419,12 +435,29 @@ namespace GameLib.Tests
 
             int agentId = 0;
 
-            state.PlayerStates.Add(agentId, new PlayerState(0, 0) { LastActionDelay = 0, Piece = new Piece(0.5) });
+            state.PlayerStates.Add(agentId, new PlayerState(0, 0, Team.Red) { LastActionDelay = 0, Piece = new Piece(0.5) });
 
             state.PutPiece(agentId);
 
             state.PlayerStates[agentId].Piece.ShouldBe(null);
             state.Board[0, 0].HasPiece.ShouldBe(false);
+        }
+        [Fact]
+        public void PutPieceInGoalArea_WhenSucceeded_LowersNumberOfUndiscoveredGoals()
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            int undiscoveredRedGoals = state.UndiscoveredRedGoalsLeft;
+
+            int agentId = 0;
+
+            state.Board[0, 0] = new GameMasterField() { IsGoal = true };
+            state.PlayerStates.Add(agentId, new PlayerState(0, 0, Team.Red) { LastActionDelay = 0, Piece = new Piece(1) });
+
+            state.PutPiece(agentId);
+
+            state.UndiscoveredRedGoalsLeft.ShouldBe(undiscoveredRedGoals - 1);
         }
 
         [Theory]
@@ -438,7 +471,7 @@ namespace GameLib.Tests
             int agentId = 0;
 
             state.Board[0, 0] = new GameMasterField() { IsGoal = isGoal };
-            state.PlayerStates.Add(agentId, new PlayerState(0, 0) { LastActionDelay = 0, Piece = new Piece(1) });
+            state.PlayerStates.Add(agentId, new PlayerState(0, 0, Team.Red) { LastActionDelay = 0, Piece = new Piece(1) });
             var expectedResult = isGoal ? PutPieceResult.PieceGoalRealized : PutPieceResult.PieceGoalUnrealized;
 
             var result = state.PutPiece(agentId);
@@ -455,11 +488,54 @@ namespace GameLib.Tests
             int agentId = 0;
 
             state.Board[0, 0] = new GameMasterField() { IsGoal = true };
-            state.PlayerStates.Add(agentId, new PlayerState(0, 0) { LastActionDelay = 0, Piece = new Piece(0) });
+            state.PlayerStates.Add(agentId, new PlayerState(0, 0, Team.Red) { LastActionDelay = 0, Piece = new Piece(0) });
 
             var result = state.PutPiece(agentId);
 
             result.ShouldBe(PutPieceResult.PieceWasFake);
+        }
+        [Fact]
+        public void DiscoveringAllGoals_EndsGame()
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            state.UndiscoveredRedGoalsLeft.ShouldBe(rules.GoalCount);
+            state.UndiscoveredBlueGoalsLeft.ShouldBe(rules.GoalCount);
+
+            int idCounter = 0;
+
+            for (int i = 0; i < state.Board.GoalAreaHeight; i++) //sets red players where red goals are
+            {
+                for (int j= 0; j < state.Board.Width; j++)
+                {
+                    if(state.Board[i,j].IsGoal)
+                    {
+                        state.PlayerStates.Add(idCounter++, new PlayerState(i, j, Team.Red) { LastActionDelay = 0, Piece = new Piece(1) });
+                    }
+                }
+            }
+            for (int i = state.Board.Height - state.Board.GoalAreaHeight; i < state.Board.Height; i++) //sets blue players where blue goals are
+            {
+                for (int j = 0; j < state.Board.Width; j++)
+                {
+                    if (state.Board[i, j].IsGoal)
+                    {
+                        state.PlayerStates.Add(idCounter++, new PlayerState(i, j, Team.Blue) { LastActionDelay = 0, Piece = new Piece(1) });
+                    }
+                }
+            }
+
+            for (int i = 0; i < state.PlayerStates.Count; i++) //every player puts valid piece on goal
+            {
+                var result = state.PutPiece(i);
+                result.ShouldBe(PutPieceResult.PieceGoalRealized);
+                state.Board[state.PlayerStates[i].Position.X, state.PlayerStates[i].Position.Y].IsGoal.ShouldBe(false);
+            }
+
+            state.UndiscoveredRedGoalsLeft.ShouldBe(0);
+            state.UndiscoveredBlueGoalsLeft.ShouldBe(0);
+            state.GameEnded.ShouldBe(true);
         }
 
         [Theory]
@@ -740,33 +816,60 @@ namespace GameLib.Tests
         #region --Communicate--
 
         [Fact]
-        public void Communicate_WhenAgentHasDelay_ThrowsDelayException()
+        public void DelayCommunicationPartners_WhenTargetHasDelay_ThrowsDelayException()
         {
             var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
 
-            var agentId = 0;
-            state.PlayerStates.Add(agentId, new PlayerState() { LastRequestTimestamp = DateTime.UtcNow, LastActionDelay = 1000 * 3600 * 24 });
+            var senderId = 0;
+            var targetId = 1;
+            state.PlayerStates.Add(senderId, new PlayerState());
+            state.PlayerStates.Add(targetId, new PlayerState() { LastRequestTimestamp = DateTime.UtcNow, LastActionDelay = 1000 * 3600 * 24 });
 
-            Should.Throw<DelayException>(() => state.Communicate(agentId));
+            Should.Throw<DelayException>(() => state.DelayCommunicationPartners(senderId, targetId));
         }
 
         [Fact]
-        public void Communicate_WhenSucceeded_AppliesCommunicationDelay()
+        public void DelayCommunicationPartners_WhenTargetIsNotDelayed_AppliesCommunicationDelayToBothAgents()
         {
             var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
 
-            var agentId = 0;
-            state.PlayerStates.Add(agentId, new PlayerState());
+            var senderId = 0;
+            var targetId = 1;
+            var previousSenderDelay = 1000 * 3600 * 24;
+            state.PlayerStates.Add(senderId, new PlayerState() { LastRequestTimestamp = DateTime.UtcNow, LastActionDelay = 1000 * 3600 * 24 });
+            state.PlayerStates.Add(targetId, new PlayerState());
 
             var beforeTimestamp = DateTime.UtcNow.AddMilliseconds(-1);
 
-            state.Communicate(agentId);
+            state.DelayCommunicationPartners(senderId, targetId);
 
-            var expectedDelay = rules.BaseTimePenalty * rules.CommunicationMultiplier;
-            state.PlayerStates[0].LastRequestTimestamp.ShouldBeGreaterThan(beforeTimestamp);
-            state.PlayerStates[0].LastActionDelay.ShouldBe(expectedDelay);
+            var expectedTargetDelay = rules.BaseTimePenalty * rules.CommunicationMultiplier;
+            var expectedSenderDelay = previousSenderDelay + expectedTargetDelay;
+
+            state.PlayerStates[0].LastActionDelay.ShouldBe(expectedSenderDelay);
+            state.PlayerStates[1].LastRequestTimestamp.ShouldBeGreaterThan(beforeTimestamp);
+            state.PlayerStates[1].LastActionDelay.ShouldBe(expectedTargetDelay);
+        }
+
+        [Fact]
+        public void GetCommunicationData_WhenCalled_ReturnsMostRecentDataForThePair()
+        {
+            var rules = Helper.GetStaticDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            var senderId = 0;
+            var targetId = 1;
+
+            object message1 = 15;
+            object message2 = 125;
+
+            state.SaveCommunicationData(senderId, targetId, message1);
+            state.SaveCommunicationData(senderId, targetId, message2);
+
+            var result = state.GetCommunicationData(senderId, targetId);
+            result.ShouldBe(message2);
         }
 
         #endregion --Communicate--
@@ -781,7 +884,7 @@ namespace GameLib.Tests
 
             state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, rules.BoardWidth);
 
-            bool[,] positions = new bool[rules.BoardWidth, rules.BoardHeight];
+            bool[,] positions = new bool[rules.BoardHeight, rules.BoardWidth];
 
             for (int i = 0; i < state.PlayerStates.Count; i++)
             {
@@ -803,7 +906,7 @@ namespace GameLib.Tests
 
             state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, rules.BoardWidth);
 
-            bool[,] positions = new bool[rules.BoardWidth, rules.BoardHeight];
+            bool[,] positions = new bool[rules.BoardHeight, rules.BoardWidth];
 
             for (int i = 0; i < state.PlayerStates.Count; i++)
             {
@@ -820,12 +923,12 @@ namespace GameLib.Tests
         [Fact]
         public void InitializingPositionsWithWeirdNumberOfPlayers_WhenCalled_SetsInitialPositions()
         {
-            var rules = Helper.GetDefaultRules();
+            var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
 
             state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, 12);
 
-            bool[,] positions = new bool[rules.BoardWidth, rules.BoardHeight];
+            bool[,] positions = new bool[rules.BoardHeight, rules.BoardWidth];
 
             for (int i = 0; i < state.PlayerStates.Count; i++)
             {
@@ -862,7 +965,7 @@ namespace GameLib.Tests
 
             state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, 2 * rules.BoardWidth);
 
-            bool[,] positions = new bool[rules.BoardWidth, rules.BoardHeight];
+            bool[,] positions = new bool[rules.BoardHeight, rules.BoardWidth];
 
             for (int i = 0; i < state.PlayerStates.Count; i++)
             {

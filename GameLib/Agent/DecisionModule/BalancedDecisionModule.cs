@@ -1,5 +1,6 @@
 ﻿using GameLib.Actions;
 using System;
+using System.Threading.Tasks;
 
 namespace GameLib
 {
@@ -8,7 +9,7 @@ namespace GameLib
     {
         // Tutaj jakiś inner state modułu, poprzednie decyzje itd, rzeczy które mogą wpłynąć na kolejny ruch
 
-        public IAction ChooseAction(AgentState agentState)
+        public Task<IAction> ChooseAction(int agentId, AgentState agentState)
         {
             throw new NotImplementedException();
         }

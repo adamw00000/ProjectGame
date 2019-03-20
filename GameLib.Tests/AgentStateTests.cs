@@ -30,19 +30,19 @@ namespace GameLib.Tests
             return new AgentField[3, 3]
                 {
                     {
-                        new AgentField { Distance = 2, IsGoal = FieldState.Unknown, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
-                        new AgentField { Distance = 1, IsGoal = FieldState.DiscoveredGoal, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
-                        new AgentField { Distance = 2, IsGoal = FieldState.DiscoveredNotGoal, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
+                        new AgentField { Distance = 2, IsGoal = AgentFieldState.Unknown, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
+                        new AgentField { Distance = 1, IsGoal = AgentFieldState.DiscoveredGoal, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
+                        new AgentField { Distance = 2, IsGoal = AgentFieldState.DiscoveredNotGoal, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
                     },
                     {
-                        new AgentField { Distance = 1, IsGoal = FieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
-                        new AgentField { Distance = 0, IsGoal = FieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
-                        new AgentField { Distance = 1, IsGoal = FieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
+                        new AgentField { Distance = 1, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
+                        new AgentField { Distance = 0, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
+                        new AgentField { Distance = 1, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
                     },
                     {
-                        new AgentField { Distance = 2, IsGoal = FieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
-                        new AgentField { Distance = 1, IsGoal = FieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
-                        new AgentField { Distance = 2, IsGoal = FieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
+                        new AgentField { Distance = 2, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
+                        new AgentField { Distance = 1, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
+                        new AgentField { Distance = 2, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
                     }
                 };
         }

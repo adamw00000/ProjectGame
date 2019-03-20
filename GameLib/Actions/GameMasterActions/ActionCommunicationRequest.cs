@@ -2,6 +2,8 @@
 {
     internal class ActionCommunicationRequest : IGameMasterAction
     {
+        private readonly int requesterId;
+
         public ActionCommunicationRequest(int requesterId)
         {
             this.requesterId = requesterId;
@@ -11,7 +13,5 @@
         {
             agent.ServeCommunicationRequest(requesterId);
         }
-
-        private readonly int requesterId;
     }
 }

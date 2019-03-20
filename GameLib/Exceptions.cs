@@ -76,4 +76,34 @@ namespace GameLib
         {
         }
     }
+
+    public class CommunicationException : Exception
+    {
+        public CommunicationException() : base()
+        {
+        }
+
+        public CommunicationException(string message = "") : base(message)
+        {
+        }
+
+        public CommunicationException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
+
+    public class InteractiveModuleException : Exception
+    {
+        public InteractiveModuleException() : base()
+        {
+        }
+
+        public InteractiveModuleException(string message = "") : base(message)
+        {
+        }
+
+        public InteractiveModuleException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
 }

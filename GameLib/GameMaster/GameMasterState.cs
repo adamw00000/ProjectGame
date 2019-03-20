@@ -5,10 +5,13 @@ namespace GameLib
 {
     public class GameMasterState
     {
-        public readonly bool GameEnded = false;
+        public bool GameEnded = false;
         private readonly double validPieceProbability;
         private readonly int maxPiecesOnBoard;
         private readonly GameRules gameRules;
+        public int UndiscoveredRedGoalsLeft;
+        public int UndiscoveredBlueGoalsLeft;
+        private readonly Dictionary<(int senderId, int targetId), object> CommunicationData = new Dictionary<(int senderId, int targetId), object>();
 
         public readonly GameMasterBoard Board;
         public Dictionary<int, PlayerState> PlayerStates = new Dictionary<int, PlayerState>();
@@ -19,16 +22,23 @@ namespace GameLib
             Board = new GameMasterBoard(gameRules);
             validPieceProbability = 1 - rules.BadPieceProbability;
             maxPiecesOnBoard = rules.MaxPiecesOnBoard;
+            UndiscoveredRedGoalsLeft = rules.GoalCount;
+            UndiscoveredBlueGoalsLeft = rules.GoalCount;
         }
 
-        public void InitializePlayerPositions(int width, int height, int teamSize)
+        public void InitializePlayerPositions(int width, int height, int teamSize) 
         {
             for (int i = 0; i < teamSize; i++)
             {
-                PlayerStates.Add(i, new PlayerState(i / width, width / 2 + HalfCeiling(i % width) * Side(i), Team.Blue, i == 0));
-                PlayerStates.Add(i + teamSize, new PlayerState(height - 1 - i / width, width / 2 + HalfCeiling(i % width) * Side(i), Team.Red, i == 0));
+
+                int rowRed = i / width; //top
+                int rowBlue = height - 1 - i / width; //bottom
+                int column = width / 2 + Distance(i % width) * Side(i); //from center, outwards
+
+                PlayerStates.Add(i, new PlayerState(rowRed, column, Team.Red, i == 0));
+                PlayerStates.Add(i + teamSize, new PlayerState(rowBlue, column, Team.Blue, i == 0));
             }
-            int HalfCeiling(int n)
+            int Distance(int n)
             {
                 return n % 2 == 0 ? n / 2 : n / 2 + 1;
             }
@@ -140,6 +150,9 @@ namespace GameLib
             if (!player.IsEligibleForAction)
                 throw new DelayException();
 
+            if (player.Piece != null)
+                throw new PieceOperationException("Cannot pick up piece if you already have one!");
+
             (int x, int y) = player.Position;
 
             if (!Board[x, y].HasPiece)
@@ -189,7 +202,29 @@ namespace GameLib
             PutPieceResult result = PutPieceResult.PieceWasFake;
             if (player.Piece.IsValid)
             {
-                result = Board[x, y].IsGoal ? PutPieceResult.PieceGoalRealized : PutPieceResult.PieceGoalUnrealized;
+                if (Board[x, y].IsGoal)
+                {
+                    result = PutPieceResult.PieceGoalRealized; 
+                    if(player.Team == Team.Red)
+                    {
+                        UndiscoveredRedGoalsLeft--;
+                    }
+                    else
+                    {
+                        UndiscoveredBlueGoalsLeft--;
+                    }
+                    if (UndiscoveredRedGoalsLeft == 0 || UndiscoveredBlueGoalsLeft == 0)
+                    {
+                        GameEnded = true;
+                    }
+                    GameMasterField discoveredGoal = Board[x, y];
+                    discoveredGoal.IsGoal = false;
+                    Board[x, y] = discoveredGoal;
+                }
+                else
+                {
+                    result = PutPieceResult.PieceGoalUnrealized;
+                }
             }
             DestroyPlayersPiece(playerId);
 
@@ -257,14 +292,46 @@ namespace GameLib
             return Board.GetDistancesAround(player.Position.X, player.Position.Y);
         }
 
-        public void Communicate(int playerId)
+        //Communication scheme:
+        //agent -> gm (gm saves data to the dictionary) //SaveCommunicationData
+        //gm -> ag2 (generic message, doesn't depend on gm state)
+        //ag2 -> gm (DelayException if target is delayed, adds delay to the sender (doesn't check)) //(GetCommunicationData to check if the communication exists) + DelayCommunicationPartners
+        //gm -> ag2 (gm reads data from the dictionary) //sends data obtained from GetCommunicationData
+        //gm -> ag1 (forwarding data, doesn't depend on gm state)
+
+        public void DelayCommunicationPartners(int senderId, int targetId)
         {
-            PlayerState player = PlayerStates[playerId];
+            PlayerState player = PlayerStates[targetId];
 
             if (!player.IsEligibleForAction)
                 throw new DelayException();
 
-            DelayPlayer(playerId, gameRules.CommunicationMultiplier);
+            DelayPlayer(targetId, gameRules.CommunicationMultiplier);
+            AddDelay(senderId, gameRules.CommunicationMultiplier);
+        }
+
+        private void AddDelay(int playerId, int delayMultiplier)
+        {
+            var player = PlayerStates[playerId];
+            player.LastActionDelay += delayMultiplier * gameRules.BaseTimePenalty;
+            PlayerStates[playerId] = player;
+        }
+
+        public void SaveCommunicationData(int senderId, int targetId, object data)
+        {
+            CommunicationData[(senderId, targetId)] = data;
+        }
+
+        public object GetCommunicationData(int senderId, int targetId)
+        {
+            if (CommunicationData.TryGetValue((senderId, targetId), out object data))
+            {
+                return data;
+            }
+            else
+            {
+                throw new CommunicationException($"Communication data for pair ({senderId}, {targetId}) doesn't exist!");
+            }
         }
     }
 }

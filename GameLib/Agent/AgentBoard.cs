@@ -22,7 +22,7 @@ namespace GameLib
                     {
                         Distance = -1,
                         Timestamp = DateTime.UtcNow,
-                        IsGoal = isGoalArea ? FieldState.Unknown : FieldState.NA
+                        IsGoal = isGoalArea ? AgentFieldState.Unknown : AgentFieldState.NA
                     };
                 }
             }
@@ -57,7 +57,7 @@ namespace GameLib
             BoardTable[x, y].Distance = distance;
         }
 
-        public void SetFieldState(int x, int y, FieldState isGoal)
+        public void SetFieldState(int x, int y, AgentFieldState isGoal)
         {
             BoardTable[x, y].IsGoal = isGoal;
         }

@@ -7,6 +7,9 @@ namespace GameLib.Actions
 {
     class ActionMove : IAction
     {
+        private readonly MoveDirection moveDirection;
+        public int AgentId { get; }
+
         public ActionMove(int agentId, MoveDirection moveDirection)
         {
             AgentId = agentId;
@@ -17,9 +20,5 @@ namespace GameLib.Actions
         {
             gameMaster.MoveAgent(AgentId, moveDirection);
         }
-
-        public int AgentId { get; }
-
-        MoveDirection moveDirection;
     }
 }

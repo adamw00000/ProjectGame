@@ -4,19 +4,18 @@ namespace GameLib.Actions
 {
     internal class ActionMakeMoveResponse : IActionResponse
     {
+        public int WaitUntilTime { get; }
+        private readonly int closestPieceDistance;
+
         public ActionMakeMoveResponse(int waitUntilTime, int closestPieceDistance)
         {
             this.closestPieceDistance = closestPieceDistance;
             this.WaitUntilTime = waitUntilTime;
         }
 
-        public int WaitUntilTime { get; }
-
         public void Handle(Agent agent)
         {
             throw new NotImplementedException();
         }
-
-        private readonly int closestPieceDistance;
     }
 }

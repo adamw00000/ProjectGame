@@ -1,5 +1,6 @@
 ﻿using ConnectionLib;
 using System;
+using System.Threading.Tasks;
 
 namespace GameLib
 {
@@ -12,8 +13,9 @@ namespace GameLib
         private readonly AgentState state;
         private readonly GameRules rules;
 
-        public Agent(IDecisionModule decisionModule)
+        public Agent(int id, IDecisionModule decisionModule) // id - temporary (to be changed when Agent receives JoinGameResponseMessage)
         {
+            this.id = id;
             this.decisionModule = decisionModule;
             this.state = new AgentState();
         }
@@ -23,7 +25,7 @@ namespace GameLib
             throw new NotImplementedException();
         }
 
-        public void Run()
+        public async Task Run()
         {
             //bool gameEnded = false; //?
             //while(!gameEnded)
@@ -32,6 +34,13 @@ namespace GameLib
             //    connection.Send(nextAction);//????
             //}
             // loop decisionModule <-> connection.Send()
+            while (true)
+            {
+                await decisionModule.ChooseAction(id, state);
+                await Task.Delay(500);
+            }
+
+
             throw new NotImplementedException();
         }
 
