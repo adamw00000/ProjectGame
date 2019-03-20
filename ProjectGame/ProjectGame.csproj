@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GameLib\GameLib.csproj" />
+    <ProjectReference Include="..\ProjectGameGUI\ProjectGameGUI.csproj" />
   </ItemGroup>
 
 </Project>

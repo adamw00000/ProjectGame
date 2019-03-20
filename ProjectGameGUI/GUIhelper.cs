@@ -11,7 +11,7 @@ namespace ProjectGameGUI
             new GameRules(boardWidth: 8, boardHeight: 8, goalAreaHeight: 2, agentStartX: 4, agentStartY: 5);
 
         public static GameRules GetOddSizeBoardRules() =>
-            new GameRules(boardWidth: 10, boardHeight: 7, goalAreaHeight: 2, agentStartX: 4, agentStartY: 5); //odd-sized board
+            new GameRules(boardWidth: 8, boardHeight: 5, teamSize:5, goalAreaHeight: 1, agentStartX: 4, agentStartY: 5); //odd-sized board
 
         public static GameRules GetStaticDefaultRules() =>
             new GameRules(boardWidth: 8, boardHeight: 8, goalAreaHeight: 2, agentStartX: 4, agentStartY: 5); //Nie ruszac

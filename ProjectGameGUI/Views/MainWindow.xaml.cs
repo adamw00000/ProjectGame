@@ -30,20 +30,14 @@ namespace ProjectGameGUI.Views
             this.Height = height * displaySettings.FieldHeight;
 
             InitializeBoard();
-            TestUpdateLoop();
+        //    TestUpdateLoop();
         }
 
         private void InitializeDummyGM()
         {
-            var rules = GUIhelper.GetOddSizeBoardRules();
+            GameRules rules = GUIhelper.GetOddSizeBoardRules();
             gameMasterState = GUIhelper.GetGameMasterState(rules);
-            gameMasterState.InitializePlayerPositions(width, height, 12);
-
-            gameMasterState.PlayerStates.TryGetValue(0, out PlayerState playerState);
-            playerState.Piece = new Piece(0.4);
-            gameMasterState.PlayerStates[0] = playerState;
-
-            //gameMasterState.GeneratePiece();
+            gameMasterState.InitializePlayerPositions(width, height, rules.TeamSize);
         }
 
         private async Task TestUpdateLoop()
@@ -190,6 +184,16 @@ namespace ProjectGameGUI.Views
                     ellipse.ZIndex = 3;
                     MainGrid.Children.Add(ellipse);
                 }
+                TextBlock textId = new TextBlock();
+                textId.Text = player.Key.ToString();
+                textId.Foreground = Avalonia.Media.Brushes.Black;
+                textId.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
+                textId.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
+                textId.Foreground = Avalonia.Media.Brushes.White;
+                Grid.SetColumn(textId, player.Value.Position.Y);
+                Grid.SetRow(textId, player.Value.Position.X);
+                textId.ZIndex = 4;
+                MainGrid.Children.Add(textId);
             }
         }
 

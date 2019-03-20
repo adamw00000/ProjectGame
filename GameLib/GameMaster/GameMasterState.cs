@@ -33,10 +33,11 @@ namespace GameLib
 
                 int rowRed = i / width; //top
                 int rowBlue = height - 1 - i / width; //bottom
-                int column = width / 2 + Distance(i % width) * Side(i); //from center, outwards
+                int columnRed = width / 2 + Distance(i % width) * Side(i); //from center, outwards
+                int columnBlue = (width-1) / 2 + Distance(i % width) * Side(i+1);
 
-                PlayerStates.Add(i, new PlayerState(rowRed, column, Team.Red, i == 0));
-                PlayerStates.Add(i + teamSize, new PlayerState(rowBlue, column, Team.Blue, i == 0));
+                PlayerStates.Add(i, new PlayerState(rowRed, columnRed, Team.Red, i == 0));
+                PlayerStates.Add(i + teamSize, new PlayerState(rowBlue, columnBlue, Team.Blue, i == 0));
             }
             int Distance(int n)
             {

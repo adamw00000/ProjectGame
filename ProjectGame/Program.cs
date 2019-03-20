@@ -1,5 +1,13 @@
-﻿using GameLib;
+﻿using Avalonia;
+using Avalonia.Logging.Serilog;
+using Avalonia.Threading;
+using GameLib;
+using ProjectGameGUI;
+using ProjectGameGUI.ViewModels;
+using ProjectGameGUI.Views;
+using SharpDX.Direct2D1;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ProjectGame
@@ -19,6 +27,14 @@ namespace ProjectGame
             Agent interactiveAgent2 = new Agent(1, new InteractiveDecisionModule());
             Task interactiveAgentTask1 = interactiveAgent1.Run();
             Task interactiveAgentTask2 = interactiveAgent2.Run();
+
+            var rules = new GameRules(boardWidth: 6, boardHeight: 9, goalAreaHeight: 2, agentStartX: 4, agentStartY: 5);
+
+            MainWindowViewModel mainWindowViewModel = new MainWindowViewModel();
+
+            var app = AppBuilder.Configure<App>().UsePlatformDetect();
+            app.Start<MainWindow>();
+
 
             //await randomAgentTask;
             await interactiveAgentTask1;
