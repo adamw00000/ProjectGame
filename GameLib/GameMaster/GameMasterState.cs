@@ -346,6 +346,10 @@ namespace GameLib
         {
             if (CommunicationData.TryGetValue((senderId, targetId), out object data))
             {
+                if (data == null)
+                    throw new CommunicationException($"Communication data for pair ({senderId}, {targetId}) doesn't exist!");
+
+                CommunicationData[(senderId, targetId)] = null;
                 return data;
             }
             else
