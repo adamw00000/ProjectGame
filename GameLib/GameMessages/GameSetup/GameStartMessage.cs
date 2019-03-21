@@ -14,7 +14,7 @@ namespace GameLib.GameMessages
         }
         public override void Handle(object handler)
         {
-            ((Agent)handler).StartGame(AgentId, Rules, Timestamp);
+            ((Agent)handler).HandleStartGameMessage(AgentId, Rules, Timestamp);
         }
     }
 }

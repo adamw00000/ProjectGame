@@ -2,6 +2,7 @@
 using GameLib.Actions;
 using GameLib.GameMessages;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GameLib
@@ -24,7 +25,12 @@ namespace GameLib
         private bool isLeader;
         private int[] teamIds;
         private Team team;
+        private bool isInGame = false;
 
+        private int CurrentTimestamp()
+        {
+            return (int)(DateTime.UtcNow - start).TotalMilliseconds;
+        }
         public void HandlePickPieceResponse(int timestamp, int waitUntilTime)
         {
             if (awaitedForResponse is ActionPickPiece)
@@ -87,8 +93,7 @@ namespace GameLib
 
         public void HandleJoinResponse(bool isConnected)
         {
-            if (!isConnected)
-                throw new InvalidOperationException();
+            isInGame = isConnected;
         }
 
         public void HandleCheckPieceResponse(int timestamp, int waitUntilTime, bool isValid)
@@ -105,6 +110,7 @@ namespace GameLib
         public void HandleCommunicationRequest(int requesterId, int timestamp)
         {
             Message response = new ActionCommunicationAgreementWithData(requesterId, id, false, null);
+            connection.Send(response);
             //Needs to be developed
         }
 
@@ -118,7 +124,7 @@ namespace GameLib
             //This can't throw exception, because it's called in case of rejected communication.
         }
 
-        public void StartGame(int agentId, GameRules rules, int timestamp)
+        public void HandleStartGameMessage(int agentId, GameRules rules, int timestamp)
         {
             this.id = agentId;
             this.isLeader = this.id == rules.TeamLiderId;
@@ -142,7 +148,7 @@ namespace GameLib
             this.connection = connection;
         }
 
-        public async void JoinGame(Team choosenTeam, bool wantsToBeLeader = false)
+        private void JoinGame(Team choosenTeam, bool wantsToBeLeader)
         {
             this.team = choosenTeam;
             this.wantsToBeLeader = wantsToBeLeader;
@@ -153,19 +159,23 @@ namespace GameLib
                 Message message = connection.Receive();
                 message.Handle(this);
             }
-            Run();
         }
 
-        public async Task Run()
+        public async Task Run(Team choosenTeam, bool wantsToBeLeader = false)
         {
-            //bool gameEnded = false; //?
-            //while(!gameEnded)
-            //{
-            //    IAction nextAction = decisionModule.ChooseAction(state);
-            //    connection.Send(nextAction);//????
-            //}
-            // loop decisionModule <-> connection.Send()
-            MainLoopAsync();
+            JoinGame(choosenTeam, wantsToBeLeader);
+            if(isInGame)
+            {
+                try
+                {
+                    await MainLoopAsync();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
+
         }
 
         public void HandleTimePenaltyError(int timestamp, int waitUntilTime)
@@ -189,8 +199,8 @@ namespace GameLib
             while (!gameEnded)
             {
                 Message action = (Message) (await decisionModule.ChooseAction(id, state));
+                Thread.Sleep(Math.Max(1, state.WaitUntilTime - CurrentTimestamp()));
                 connection.Send(action);
-
                 if (action is ActionCommunicationRequestWithData)
                     continue;
 
@@ -203,9 +213,10 @@ namespace GameLib
                     msg.Handle(this);
                 } while (waitForResponse);
 
-                while ((DateTime.UtcNow - start).TotalMilliseconds < state.WaitUntilTime)
+                while (CurrentTimestamp() < state.WaitUntilTime)
                 {
-                    bool res = connection.TryReceive(out Message m, (int)(DateTime.UtcNow - start).TotalMilliseconds);
+
+                    bool res = connection.TryReceive(out Message m, state.WaitUntilTime - CurrentTimestamp());
                     if (res)
                     {
                         m.Handle(this);
