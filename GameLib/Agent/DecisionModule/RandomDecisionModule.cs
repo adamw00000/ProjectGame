@@ -68,6 +68,7 @@ namespace GameLib
             {
                 action = new ActionCommunicationAgreementWithData(agentId, agentId, random.Next(2) == 1 ? true : false, agentState);
             }
+            System.Threading.Thread.Sleep(1000); //necessary for GUI
             Console.WriteLine(action.ToString());
 
             return Task.FromResult(action);

@@ -10,10 +10,10 @@ namespace GameLib
     {
         private readonly IConnection connection;
 
-        private GameMasterState state;
+        public GameMasterState state; //GUI needs it
         private readonly GameRules rules;
         private DateTime start;
-        private bool gameStarted = false;
+        public bool gameStarted = false;
 
         public GameMaster(GameRules rules, IConnection connection)
         {

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GameLib
 {
     public class GameMasterState
     {
         public bool GameEnded = false;
+        public Team? Winner = null;
         private readonly double validPieceProbability;
         private readonly int maxPiecesOnBoard;
         private readonly GameRules gameRules;
@@ -26,18 +28,20 @@ namespace GameLib
             UndiscoveredBlueGoalsLeft = rules.GoalCount;
         }
 
-        public void InitializePlayerPositions(int width, int height, int teamSize) 
+        public void InitializePlayerPositions(int width, int height, int teamSize)
         {
+            List<PlayerState> reds = new List<PlayerState>(PlayerStates.Values.Where(player => player.Team == Team.Red));
+            List<PlayerState> blues = new List<PlayerState>(PlayerStates.Values.Where(player => player.Team == Team.Blue));
             for (int i = 0; i < teamSize; i++)
             {
-
+                PlayerState redPlayer = reds[i];
+                PlayerState bluePlayer = blues[i];
                 int rowRed = i / width; //top
                 int rowBlue = height - 1 - i / width; //bottom
                 int columnRed = width / 2 + Distance(i % width) * Side(i); //from center, outwards
-                int columnBlue = (width-1) / 2 + Distance(i % width) * Side(i+1);
-
-                PlayerStates.Add(i, new PlayerState(rowRed, columnRed, Team.Red, i == 0));
-                PlayerStates.Add(i + teamSize, new PlayerState(rowBlue, columnBlue, Team.Blue, i == 0));
+                int columnBlue = (width - 1) / 2 + Distance(i % width) * Side(i + 1);
+                redPlayer.Position = (rowRed, columnRed);
+                bluePlayer.Position = (rowBlue, columnBlue);
             }
             int Distance(int n)
             {
@@ -55,7 +59,9 @@ namespace GameLib
 
             foreach (var (id, playerState) in PlayerStates)
             {
-                var privateRules = gameRules.ReconstructWithAgentPosition(playerState.Position.X, playerState.Position.Y);
+                int[] teamIds = PlayerStates.Where(pair => pair.Value.Team == playerState.Team).Select(pair => pair.Key).ToArray();
+                int leaderId = PlayerStates.Single(pair => pair.Value.IsLeader && pair.Value.Team == playerState.Team).Key;
+                var privateRules = gameRules.ReconstructWithAgentPosition(playerState.Position.X, playerState.Position.Y, teamIds, leaderId);
                 rules.Add(id, privateRules);
             }
 
@@ -169,7 +175,7 @@ namespace GameLib
             DelayPlayer(playerId, gameRules.PickUpMultiplier);
         }
 
-        public PutPieceResult PutPiece(int playerId) //PutPieceResult zamiast bool? ?
+        public PutPieceResult PutPiece(int playerId)
         {
             PlayerState player = PlayerStates[playerId];
 
@@ -205,8 +211,8 @@ namespace GameLib
             {
                 if (Board[x, y].IsGoal)
                 {
-                    result = PutPieceResult.PieceGoalRealized; 
-                    if(player.Team == Team.Red)
+                    result = PutPieceResult.PieceGoalRealized;
+                    if (player.Team == Team.Red)
                     {
                         UndiscoveredRedGoalsLeft--;
                     }
@@ -217,6 +223,7 @@ namespace GameLib
                     if (UndiscoveredRedGoalsLeft == 0 || UndiscoveredBlueGoalsLeft == 0)
                     {
                         GameEnded = true;
+                        Winner = UndiscoveredBlueGoalsLeft == 0 ? Team.Blue : Team.Red;
                     }
                     GameMasterField discoveredGoal = Board[x, y];
                     discoveredGoal.IsGoal = false;
@@ -228,7 +235,6 @@ namespace GameLib
                 }
             }
             DestroyPlayersPiece(playerId);
-
             return result;
         }
 
@@ -281,7 +287,7 @@ namespace GameLib
             return player.Piece.IsValid;
         }
 
-        public int[,] Discover(int playerId)
+        public DiscoveryResult Discover(int playerId)
         {
             PlayerState player = PlayerStates[playerId];
 
@@ -290,7 +296,19 @@ namespace GameLib
 
             DelayPlayer(playerId, gameRules.DiscoverMultiplier);
 
-            return Board.GetDistancesAround(player.Position.X, player.Position.Y);
+            int[,] array = Board.GetDistancesAround(player.Position.X, player.Position.Y);
+            List<(int x, int y, int distance)> fields = new List<(int x, int y, int distance)>();
+            for (int i = 0; i < 3; ++i)
+            {
+                for (int j = 0; j < 3; ++j)
+                {
+                    if (array[i, j] != int.MaxValue)
+                    {
+                        fields.Add((player.Position.X + i - 1, player.Position.Y + j - 1, array[i, j]));
+                    }
+                }
+            }
+            return new DiscoveryResult(fields);
         }
 
         //Communication scheme:
@@ -304,22 +322,26 @@ namespace GameLib
         {
             PlayerState player = PlayerStates[targetId];
 
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
-
-            DelayPlayer(targetId, gameRules.CommunicationMultiplier);
+            AddDelay(targetId, gameRules.CommunicationMultiplier);
             AddDelay(senderId, gameRules.CommunicationMultiplier);
         }
 
         private void AddDelay(int playerId, int delayMultiplier)
         {
             var player = PlayerStates[playerId];
-            player.LastActionDelay += delayMultiplier * gameRules.BaseTimePenalty;
+            int lastPenaltyDurationLeftTime = Math.Max(0, player.LastActionDelay - (int)(DateTime.UtcNow - player.LastRequestTimestamp).TotalMilliseconds);
+            player.LastActionDelay = delayMultiplier * gameRules.BaseTimePenalty + lastPenaltyDurationLeftTime;
+            player.LastRequestTimestamp = DateTime.UtcNow;
             PlayerStates[playerId] = player;
         }
 
         public void SaveCommunicationData(int senderId, int targetId, object data)
         {
+            PlayerState player = PlayerStates[targetId];
+
+            if (!player.IsEligibleForAction)
+                throw new DelayException();
+
             CommunicationData[(senderId, targetId)] = data;
         }
 
@@ -333,6 +355,40 @@ namespace GameLib
             {
                 throw new CommunicationException($"Communication data for pair ({senderId}, {targetId}) doesn't exist!");
             }
+        }
+
+        public void JoinGame(int agentId, int teamId, bool wantToBeLeader)
+        {
+            if (PlayerStates.ContainsKey(agentId))
+                throw new GameSetupException($"Agent with Id {agentId} is already connected.");
+
+            if (teamId != 0 && teamId != 1)
+                throw new GameSetupException($"No team with Id {teamId}");
+
+            Team team = (Team)teamId;
+
+            int teamMembers = PlayerStates.Count(p => p.Value.Team == team);
+
+            if (teamMembers >= gameRules.TeamSize)
+                throw new GameSetupException($"Team ${teamId} is full");
+
+            bool isLeaderInTeam = PlayerStates.Any(p => p.Value.IsLeader && p.Value.Team == team);
+
+            bool willBeLeader;
+            if (isLeaderInTeam)
+            {
+                willBeLeader = false;
+            }
+            else if (teamMembers == gameRules.TeamSize - 1)
+            {
+                willBeLeader = true;
+            }
+            else
+            {
+                willBeLeader = wantToBeLeader;
+            }
+
+            PlayerStates.Add(agentId, new PlayerState(-1, -1, team, willBeLeader));
         }
     }
 }

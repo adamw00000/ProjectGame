@@ -70,6 +70,8 @@ namespace GameLib
                     throw new ArgumentException("Invalid input");
             }
 
+            Console.WriteLine(action.ToString());
+
             return action;
         }
     }

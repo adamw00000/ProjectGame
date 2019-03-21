@@ -7,13 +7,15 @@ using Avalonia.Controls.Shapes;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using System;
+using ConnectionLib;
 
 namespace ProjectGameGUI.Views
 {
     public class MainWindow : Window
     {
         public Grid MainGrid { get; set; }
-        private GameMasterState gameMasterState;
+        private GameMaster gameMaster;
+        private GameMasterState gameMasterState => gameMaster.state;
         private int width => gameMasterState.Board.Width;
         private int height => gameMasterState.Board.Height;
         private int goalAreaHeight => gameMasterState.Board.GoalAreaHeight;
@@ -25,48 +27,52 @@ namespace ProjectGameGUI.Views
 #if DEBUG
             this.AttachDevTools();
 #endif
-            InitializeDummyGM();
+
+            int[] actionPriorities = new int[] { 2, 1, 10, 20, 5, 10, 2, 2 };
+
+            LocalCommunicationServer cs = new LocalCommunicationServer();
+            GMLocalConnection gMLocalConnection = new GMLocalConnection(cs);
+            GameRules rules = new GameRules(teamSize: 3, baseTimePenalty: 100, boardHeight: 7, boardWidth: 7);
+            gameMaster = new GameMaster(rules, gMLocalConnection);
+
             this.Width = width * displaySettings.FieldWidth;
             this.Height = height * displaySettings.FieldHeight;
 
+           // Task inputReaderTask = InteractiveInputProvider.ReadInput();
+            //Agent interactiveAgent1 = new Agent(0, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
+            //Agent interactiveAgent2 = new Agent(1, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
+            //Task interactiveAgentTask1 = interactiveAgent1.Run();
+            //Task interactiveAgentTask2 = interactiveAgent2.Run();
+
+            Task.Run(() => { gameMaster.ListenJoiningAndStart(); });
+            for (int i = 0; i < rules.TeamSize; ++i)
+            {
+                //Agent Agent1 = new Agent(2 * i + 2, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
+                Agent Agent1 = new Agent(2 * i + 2, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
+                Task.Run(() => Agent1.JoinGame(Team.Red));
+
+                //Agent Agent2 = new Agent(2 * i + 3, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
+                Agent Agent2 = new Agent(2 * i + 3, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
+                Task.Run(() => Agent2.JoinGame(Team.Blue));
+            }
+
+            while (!gameMaster.gameStarted) { } 
+
             InitializeBoard();
-        //    TestUpdateLoop();
+            Task.Run(() => UpdateLoop());
         }
 
-        private void InitializeDummyGM()
+        private async Task Reader()
         {
-            GameRules rules = GUIhelper.GetOddSizeBoardRules();
-            gameMasterState = GUIhelper.GetGameMasterState(rules);
-            gameMasterState.InitializePlayerPositions(width, height, rules.TeamSize);
+            Task inputReaderTask = InteractiveInputProvider.ReadInput();
+            await inputReaderTask;
         }
-
-        private async Task TestUpdateLoop()
+        private async Task UpdateLoop()
         {
-            Random random = new Random();
-
             while (true)
             {
-                await Task.Delay(50);
-                switch(random.Next() % 4)
-                {
-                    case 0:
-                        {
-                            gameMasterState.GeneratePiece();
-                            break;
-                        }
-                    case 2:
-                    case 3:
-                    case 1:
-                        {
-                            try
-                            {
-                                gameMasterState.Move(random.Next() % gameMasterState.PlayerStates.Count, (MoveDirection)(random.Next() % 4));
-                            }
-                            catch { }
-                            break;
-                        }
-                }
                 await Update();
+                System.Threading.Thread.Sleep(500);
             }
         }
 
@@ -84,7 +90,7 @@ namespace ProjectGameGUI.Views
             VisualizePieces();
         }
 
-        private void UpdateBoard()
+        private async void UpdateBoard()
         {
             MainGrid.Children.Clear();
             VisualizeBorders();
