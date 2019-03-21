@@ -10,6 +10,7 @@ namespace GameLib
     public class Agent
     {
         private readonly IConnection connection;
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         private int id;
         private readonly IDecisionModule decisionModule;
@@ -172,7 +173,7 @@ namespace GameLib
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    logger.Error(e);
                 }
             }
 
