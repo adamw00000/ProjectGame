@@ -68,7 +68,7 @@ namespace GameLib
             {
                 action = new ActionCommunicationAgreementWithData(agentId, agentId, random.Next(2) == 1 ? true : false, agentState);
             }
-            Console.WriteLine(action.ToString());
+            //Console.WriteLine(action.ToString());
 
             return Task.FromResult(action);
         }

@@ -76,27 +76,36 @@ namespace GameLib
 
         public async Task StartGame()
         {
-            while(!state.GameEnded)
+            try
             {
-                await GeneratePieces();
-                DateTime nextPieceGeneratingTime = DateTime.UtcNow.AddMilliseconds(rules.PieceSpawnInterval);
-                while(DateTime.UtcNow < nextPieceGeneratingTime)
+                while (!state.GameEnded)
                 {
-                    int timespan = Math.Max(0, (int)(nextPieceGeneratingTime - DateTime.UtcNow).TotalMilliseconds);
-                    if(connection.TryReceive(out Message message, timespan))
+                    await GeneratePieces();
+                    DateTime nextPieceGeneratingTime = DateTime.UtcNow.AddMilliseconds(rules.PieceSpawnInterval);
+                    while (DateTime.UtcNow < nextPieceGeneratingTime)
                     {
-                        message.Handle(this);
-                    }                 
+                        int timespan = Math.Max(0, (int)(nextPieceGeneratingTime - DateTime.UtcNow).TotalMilliseconds);
+                        if (connection.TryReceive(out Message message, timespan))
+                        {
+                            //Console.WriteLine(message.ToString() + " started");
+                            message.Handle(this);
+                            //Console.WriteLine(message.ToString() + " ended");
+                        }
+                    }
                 }
+                Console.WriteLine("Game ended");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
 
         private (int timestamp, int waitUntil) CalculateDelay(int agentId)
         {
             PlayerState agentPlayerState = state.PlayerStates[agentId];
-            DateTime timestamp = DateTime.UtcNow;
-            DateTime waitUntil = timestamp.AddMilliseconds(agentPlayerState.LastActionDelay);
-            return ((int)(timestamp - start).TotalMilliseconds, (int)(waitUntil - start).TotalMilliseconds);
+            DateTime waitUntil = agentPlayerState.LastRequestTimestamp.AddMilliseconds(agentPlayerState.LastActionDelay);
+            return ((int)(agentPlayerState.LastRequestTimestamp - start).TotalMilliseconds, (int)(waitUntil - start).TotalMilliseconds);
         }
 
         private int ClosestPieceDistance(int agentId)
@@ -171,7 +180,14 @@ namespace GameLib
                 response = new InvalidAction(agentId, CurrentTimestamp());
             }
             connection.Send(response);
-            //TODO: Check for game end
+            if(state.GameEnded)
+            {
+                int timestamp = CurrentTimestamp();
+                foreach(var (id, agplayerId) in state.PlayerStates)
+                {
+                    Message message = new GameOverMessage(id, timestamp, (int) state.Winner);
+                }
+            }
         }
 
         public void Discover(int agentId)

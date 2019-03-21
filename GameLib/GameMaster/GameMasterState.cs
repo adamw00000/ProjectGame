@@ -7,6 +7,7 @@ namespace GameLib
     public class GameMasterState
     {
         public bool GameEnded = false;
+        public Team? Winner = null;
         private readonly double validPieceProbability;
         private readonly int maxPiecesOnBoard;
         private readonly GameRules gameRules;
@@ -221,6 +222,7 @@ namespace GameLib
                     if (UndiscoveredRedGoalsLeft == 0 || UndiscoveredBlueGoalsLeft == 0)
                     {
                         GameEnded = true;
+                        Winner = UndiscoveredBlueGoalsLeft == 0 ? Team.Blue : Team.Red;
                     }
                     GameMasterField discoveredGoal = Board[x, y];
                     discoveredGoal.IsGoal = false;
