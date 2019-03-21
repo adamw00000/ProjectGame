@@ -15,8 +15,10 @@ namespace ProjectGameGUI
         public readonly float AgentWidthFactor = 0.5F;
         public readonly float AgentHeightFactor = 0.5F;
 
-        public readonly ISolidColorBrush RedTeamColor = Brushes.Red;
-        public readonly ISolidColorBrush BlueTeamColor = Brushes.Blue;
+        public readonly ISolidColorBrush RedTeamColor = Brushes.IndianRed;
+        public readonly ISolidColorBrush RedTeamColorActive = Brushes.Red;
+        public readonly ISolidColorBrush BlueTeamColor = Brushes.DodgerBlue;
+        public readonly ISolidColorBrush BlueTeamColorActive = Brushes.Blue;
 
         public readonly int BorderThickness = 1;
         public readonly ISolidColorBrush BorderBrush = Brushes.Black;

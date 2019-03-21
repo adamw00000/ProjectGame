@@ -170,40 +170,56 @@ namespace ProjectGameGUI.Views
         {
             var states = new Dictionary<int, PlayerState>(gameMasterState.PlayerStates);
 
-            foreach (var player in states)
+            foreach (var (id, player) in states)
             {
-                Rectangle r = null;
-
-                if (player.Value.Team == Team.Blue)
+                if (player.Piece != null)
                 {
-                    r = displaySettings.GetPlayer(displaySettings.BlueTeamColor);
-                }
-                else
-                {
-                    r = displaySettings.GetPlayer(displaySettings.RedTeamColor);
-                }
-
-                Grid.SetColumn(r, player.Value.Position.Y);
-                Grid.SetRow(r, player.Value.Position.X);
-                r.ZIndex = 2;
-                MainGrid.Children.Add(r);
-
-                if (player.Value.Piece != null)
-                {
-                    Ellipse ellipse = displaySettings.GetPlayerPiece(player.Value.Piece.IsValid);
-                    Grid.SetColumn(ellipse, player.Value.Position.Y);
-                    Grid.SetRow(ellipse, player.Value.Position.X);
+                    Ellipse ellipse = displaySettings.GetPlayerPiece(player.Piece.IsValid);
+                    Grid.SetColumn(ellipse, player.Position.Y);
+                    Grid.SetRow(ellipse, player.Position.X);
                     ellipse.ZIndex = 3;
                     MainGrid.Children.Add(ellipse);
                 }
                 TextBlock textId = new TextBlock();
-                textId.Text = player.Key.ToString();
+
+                textId.Text = "Id: " + id.ToString() + "\n";
+
+                char c;
+
+                if (InteractiveInputProvider.RegisteredAgents.TryGetValue(id, out c))
+                {
+                    textId.Text += "['" + c.ToString() + "']";
+                }
+
+                Rectangle r = null;
+
+                if (player.Team == Team.Blue)
+                {
+                    if(InteractiveInputProvider.ActiveAgents.Contains(c))
+                        r = displaySettings.GetPlayer(displaySettings.BlueTeamColorActive);
+                    else
+                        r = displaySettings.GetPlayer(displaySettings.BlueTeamColor);
+                }
+                else
+                {
+                    if (InteractiveInputProvider.ActiveAgents.Contains(c))
+                        r = displaySettings.GetPlayer(displaySettings.RedTeamColorActive);
+                    else
+                        r = displaySettings.GetPlayer(displaySettings.RedTeamColor);
+                }
+
+                Grid.SetColumn(r, player.Position.Y);
+                Grid.SetRow(r, player.Position.X);
+                r.ZIndex = 2;
+                MainGrid.Children.Add(r);
+
+
                 textId.Foreground = Avalonia.Media.Brushes.Black;
                 textId.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
                 textId.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
                 textId.Foreground = Avalonia.Media.Brushes.White;
-                Grid.SetColumn(textId, player.Value.Position.Y);
-                Grid.SetRow(textId, player.Value.Position.X);
+                Grid.SetColumn(textId, player.Position.Y);
+                Grid.SetRow(textId, player.Position.X);
                 textId.ZIndex = 4;
                 MainGrid.Children.Add(textId);
             }

@@ -1,7 +1,7 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:ProjectGameGUI.ViewModels;assembly=ProjectGameGUI"
-        Icon="resm:ProjectGameGUI.Assets.avalonia-logo.ico"
+        Icon="resm:ProjectGameGUI.Assets.iomawsk.ico"
         Title="ProjectGame">
  
   
