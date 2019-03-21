@@ -21,6 +21,8 @@ namespace ProjectGameGUI.Views
         private int goalAreaHeight => gameMasterState.Board.GoalAreaHeight;
         private DisplaySettings displaySettings = new DisplaySettings();
 
+        Task[] agentTasks;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -37,26 +39,28 @@ namespace ProjectGameGUI.Views
 
             this.Width = width * displaySettings.FieldWidth;
             this.Height = height * displaySettings.FieldHeight;
-
-           // Task inputReaderTask = InteractiveInputProvider.ReadInput();
+            
             //Agent interactiveAgent1 = new Agent(0, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
             //Agent interactiveAgent2 = new Agent(1, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
             //Task interactiveAgentTask1 = interactiveAgent1.Run();
             //Task interactiveAgentTask2 = interactiveAgent2.Run();
 
             Task.Run(() => { gameMaster.ListenJoiningAndStart(); });
+
+            agentTasks = new Task[2 * rules.TeamSize];
+
             for (int i = 0; i < rules.TeamSize; ++i)
             {
                 //Agent Agent1 = new Agent(2 * i + 2, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
                 Agent Agent1 = new Agent(2 * i + 2, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
-                Task.Run(() => Agent1.JoinGame(Team.Red));
+                agentTasks[2 * i] = Task.Run(async () => await Agent1.Run(Team.Red));
 
                 //Agent Agent2 = new Agent(2 * i + 3, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
                 Agent Agent2 = new Agent(2 * i + 3, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
-                Task.Run(() => Agent2.JoinGame(Team.Blue));
+                agentTasks[2 * i + 1] = Task.Run(async () => await Agent2.Run(Team.Blue));
             }
 
-            while (!gameMaster.gameStarted) { } 
+            while (!gameMaster.gameStarted) { }
 
             InitializeBoard();
             Task.Run(() => UpdateLoop());
@@ -164,11 +168,13 @@ namespace ProjectGameGUI.Views
 
         private void VisualizePlayers()
         {
-            foreach(var player in gameMasterState.PlayerStates)
+            var states = new Dictionary<int, PlayerState>(gameMasterState.PlayerStates);
+
+            foreach (var player in states)
             {
                 Rectangle r = null;
 
-                if(player.Value.Team == Team.Blue)
+                if (player.Value.Team == Team.Blue)
                 {
                     r = displaySettings.GetPlayer(displaySettings.BlueTeamColor);
                 }
@@ -205,7 +211,7 @@ namespace ProjectGameGUI.Views
 
         private void VisualizePieces()
         {
-            foreach(var piecePos in gameMasterState.Board.PiecesPositions)
+            foreach (var piecePos in gameMasterState.Board.PiecesPositions)
             {
                 var piece = gameMasterState.Board[piecePos.x, piecePos.y].Piece;
                 Ellipse p = displaySettings.GetPiece(piece.IsValid);
