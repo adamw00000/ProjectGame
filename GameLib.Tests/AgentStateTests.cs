@@ -248,7 +248,7 @@ namespace GameLib.Tests
         }
 
         [Fact]
-        public void UpdateBoardWithCommunicationData_WhenBoardAreDifferentSizes_ThrowsInvalidDiscoveryResultException()
+        public void UpdateBoardWithCommunicationData_WhenBoardsAreDifferentSizes_ThrowsInvalidDiscoveryResultException()
         {
             var rules = new GameRules(boardWidth: 8);
             var state = GetSetUpState(rules);
