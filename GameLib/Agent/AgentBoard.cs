@@ -91,11 +91,13 @@ namespace GameLib
             {
                 for (int j = 0; j < Width; j++)
                 {
+                    if (BoardTable[i, j].IsGoal == AgentFieldState.Unknown)
+                        BoardTable[i, j].IsGoal = partnerBoard[i, j].IsGoal;
+
                     if (IsResultBoardOlder(partnerBoard, i, j))
                         continue;
 
                     BoardTable[i, j].Distance = partnerBoard[i, j].Distance;
-                    BoardTable[i, j].IsGoal = partnerBoard[i, j].IsGoal;
                     BoardTable[i, j].Timestamp = partnerBoard[i, j].Timestamp;
                 }
             }
