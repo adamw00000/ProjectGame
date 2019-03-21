@@ -248,28 +248,26 @@ namespace GameLib.Tests
         }
 
         [Fact]
-        public void ApplyCommunicationResult_WhenBoardAreDifferentSizes_ThrowsInvalidDiscoveryResultException()
+        public void UpdateBoardWithCommunicationData_WhenBoardsAreDifferentSizes_ThrowsInvalidDiscoveryResultException()
         {
             var rules = new GameRules(boardWidth: 8);
             var state = GetSetUpState(rules);
             var resultRules = new GameRules(boardWidth: 10);
             var resultBoard = new AgentBoard(resultRules);
-            var communicationResult = new CommunicationResult(resultBoard);
 
-            Should.Throw<InvalidCommunicationResultException>(() => state.ApplyCommunicationResult(communicationResult));
+            Should.Throw<InvalidCommunicationResultException>(() => state.UpdateBoardWithCommunicationData(resultBoard));
         }
 
         [Fact]
-        public void ApplyCommunicationResult_WhenResultIsNewer_UpdatesBoard()
+        public void UpdateBoardWithCommunicationData_WhenResultIsNewer_UpdatesBoard()
         {
             int distance = 1;
             var rules = GetDefaultRules();
             var state = GetSetUpState(rules);
             var resultBoard = new AgentBoard(rules);
             SetupCommunicationBoards(state.Board, resultBoard, DateTime.MaxValue, distance);
-            var communicationResult = new CommunicationResult(resultBoard);
 
-            state.ApplyCommunicationResult(communicationResult);
+            state.UpdateBoardWithCommunicationData(resultBoard);
 
             for (int i = 0; i < state.Board.Height; i++)
             {
@@ -281,16 +279,15 @@ namespace GameLib.Tests
         }
 
         [Fact]
-        public void ApplyCommunicationResult_WhenResultIsOlder_DoesntUpdatesBoard()
+        public void UpdateBoardWithCommunicationData_WhenResultIsOlder_DoesntUpdatesBoard()
         {
             int distance = 1;
             var rules = GetDefaultRules();
             var state = GetSetUpState(rules);
             var resultBoard = new AgentBoard(rules);
             SetupCommunicationBoards(state.Board, resultBoard, DateTime.MinValue, distance);
-            var communicationResult = new CommunicationResult(resultBoard);
 
-            state.ApplyCommunicationResult(communicationResult);
+            state.UpdateBoardWithCommunicationData(resultBoard);
 
             for (int i = 0; i < state.Board.Height; i++)
             {

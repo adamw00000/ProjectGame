@@ -11,6 +11,8 @@ namespace GameLib
         private readonly int[] prefixSumArray = new int[actionCount];
         private const int actionCount = 8;
 
+        public CommunicationDataProcessor DataProcessor { get; } = new CommunicationDataProcessor();
+
         public RandomDecisionModule(int[] weightArray)
         {
             if (weightArray.Length != actionCount)
@@ -62,16 +64,23 @@ namespace GameLib
             }
             else if (value <= prefixSumArray[6])
             {
-                action = new ActionCommunicationRequestWithData(agentId, agentId, agentState);
+                action = new ActionCommunicationRequestWithData(agentId, agentId, 
+                    DataProcessor.CreateCommunicationDataForCommunicationWith(agentId, agentState));
             }
             else
             {
-                action = new ActionCommunicationAgreementWithData(agentId, agentId, random.Next(2) == 1 ? true : false, agentState);
+                action = new ActionCommunicationAgreementWithData(agentId, agentId, 
+                    random.Next(2) == 1 ? true : false, DataProcessor.CreateCommunicationDataForCommunicationWith(agentId, agentState));
             }
 
             Console.WriteLine(action.ToString());
 
             return Task.FromResult(action);
+        }
+
+        public void SaveCommunicationResult(int senderId, bool agreement, DateTime timestamp, object data, AgentState agentState)
+        {
+            DataProcessor.ExtractCommunicationData(senderId, agreement, timestamp, data, agentState);
         }
     }
 }

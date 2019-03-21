@@ -48,5 +48,11 @@ namespace GameLib
         {
             throw new NotImplementedException();
         }
+
+        public void HandleCommunicationResponse(int timestamp, int waitUntilTime, int senderId, bool agreement, object data)
+        {
+            //timestamp => datetime
+            decisionModule.SaveCommunicationResult(senderId, agreement, /*temporary*/ new DateTime(), data, state);
+        }
     }
 }
