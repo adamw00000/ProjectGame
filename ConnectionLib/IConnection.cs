@@ -16,5 +16,7 @@ namespace ConnectionLib
 
         Message Receive();
         Task<Message> ReceiveAsync();
+
+        bool TryReceive(out Message message, int timespan);
     }
 }

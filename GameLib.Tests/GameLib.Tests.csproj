@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ConnectionLib\ConnectionLib.csproj" />
     <ProjectReference Include="..\GameLib\GameLib.csproj" />
   </ItemGroup>
 

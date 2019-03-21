@@ -1,14 +1,15 @@
 ﻿using System;
+using GameLib.GameMessages;
 
 namespace GameLib.Actions
 {
-    internal class ActionDiscoverResponse : IActionResponse
+    internal class ActionDiscoverResponse : GameMasterMessage, IActionResponse
     {
 
-        private readonly AgentField[,] closestPieces;
+        private readonly DiscoveryResult closestPieces;
         public int WaitUntilTime { get; }
 
-        public ActionDiscoverResponse(int waitUntilTime, AgentField[,] closestPieces)
+        public ActionDiscoverResponse(int agentId, int timestamp, int waitUntilTime, DiscoveryResult closestPieces) : base(agentId, timestamp)
         {
             this.closestPieces = closestPieces;
             this.WaitUntilTime = waitUntilTime;
@@ -16,7 +17,11 @@ namespace GameLib.Actions
 
         public void Handle(Agent agent)
         {
-            throw new NotImplementedException();
+            agent.HandleDiscoverResponse(Timestamp, WaitUntilTime, closestPieces);
+        }
+        public override void Handle(object handler)
+        {
+            Handle((Agent)handler);
         }
     }
 }

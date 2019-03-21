@@ -1,17 +1,23 @@
-﻿namespace GameLib.Actions
-{
-    internal class ActionCheckPiece : IAction
-    {
-        public int AgentId { get; }
+﻿using ConnectionLib;
+using GameLib.GameMessages;
 
-        public ActionCheckPiece(int agentId)
+namespace GameLib.Actions
+{
+    internal class ActionCheckPiece : AgentMessage, IAction
+    {
+        public ActionCheckPiece(int agentId) : base(agentId)
         {
-            AgentId = agentId;
+
         }
 
         public void Handle(GameMaster gameMaster)
         {
             gameMaster.CheckPiece(AgentId);
+        }
+
+        public override void Handle(object handler)
+        {
+            Handle((GameMaster)handler);
         }
     }
 }

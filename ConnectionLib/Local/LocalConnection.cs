@@ -54,6 +54,11 @@ namespace ConnectionLib
             Send(message);
             return Task.CompletedTask;
         }
+
+        public bool TryReceive(out Message message, int timespan)
+        {
+            return Messages.TryTake(out message, timespan);
+        }
         #endregion
     }
 }

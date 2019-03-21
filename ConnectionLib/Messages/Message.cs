@@ -4,16 +4,15 @@ using System.Text;
 
 namespace ConnectionLib
 {
-    public class Message
+    public abstract class Message
     {
         public int AgentId { get; set; }
-
 
         public Message(int agentId)
         {
             this.AgentId = agentId;
         }
 
-        // TODO Think about the rest of the class
+        public abstract void Handle(object handler);
     }
 }

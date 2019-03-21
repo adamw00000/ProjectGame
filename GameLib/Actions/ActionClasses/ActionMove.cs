@@ -2,23 +2,26 @@
 using System.Collections.Generic;
 using System.Text;
 using GameLib;
+using GameLib.GameMessages;
 
 namespace GameLib.Actions
 {
-    class ActionMove : IAction
+    class ActionMove : AgentMessage, IAction
     {
-        private readonly MoveDirection moveDirection;
-        public int AgentId { get; }
+        public readonly MoveDirection MoveDirection;
 
-        public ActionMove(int agentId, MoveDirection moveDirection)
+        public ActionMove(int agentId, MoveDirection moveDirection) : base(agentId)
         {
-            AgentId = agentId;
-            this.moveDirection = moveDirection;
+            this.MoveDirection = moveDirection;
         }
 
         public void Handle(GameMaster gameMaster)
         {
-            gameMaster.MoveAgent(AgentId, moveDirection);
+            gameMaster.MoveAgent(AgentId, MoveDirection);
+        }
+        public override void Handle(object handler)
+        {
+            Handle((GameMaster)handler);
         }
     }
 }

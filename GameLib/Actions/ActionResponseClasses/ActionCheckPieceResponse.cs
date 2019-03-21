@@ -1,21 +1,26 @@
 ﻿using System;
+using GameLib.GameMessages;
 
 namespace GameLib.Actions
 {
-    internal class ActionCheckPieceResponse : IActionResponse
+    internal class ActionCheckPieceResponse : GameMasterMessage, IActionResponse
     {
-        private readonly bool isCorrect;
+        private readonly bool IsValid;
         public int WaitUntilTime { get; }
 
-        public ActionCheckPieceResponse(int waitUntilTime, bool isCorrect)
+        public ActionCheckPieceResponse(int agentId, int timestamp, int waitUntilTime, bool isValid) : base(agentId, timestamp)
         {
             this.WaitUntilTime = waitUntilTime;
-            this.isCorrect = isCorrect;
+            this.IsValid = isValid;
         }
         
         public void Handle(Agent agent)
         {
-            throw new NotImplementedException();
+            agent.HandleCheckPieceResponse(Timestamp, WaitUntilTime, IsValid);
+        }
+        public override void Handle(object handler)
+        {
+            Handle((Agent)handler);
         }
     }
 }
