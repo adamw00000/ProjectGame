@@ -218,7 +218,7 @@ namespace GameLib.Tests
         [InlineData(3, 4, MoveDirection.Right, 1)]
         [InlineData(5, 4, MoveDirection.Down, 3)]
         [InlineData(7, 7, MoveDirection.Left, 6)]
-        public void Move_WhenSucceded_ReturnsDistanceToClosestPiece(int agentX, int agentY, MoveDirection direction, int expeced)
+        public void Move_WhenSucceded_ReturnsDistanceToClosestPiece(int agentX, int agentY, MoveDirection direction, int expected)
         {
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);
@@ -230,7 +230,7 @@ namespace GameLib.Tests
 
             int result = state.Move(agentId, direction);
 
-            result.ShouldBe(expeced);
+            result.ShouldBe(expected);
         }
 
         #endregion --Move--
