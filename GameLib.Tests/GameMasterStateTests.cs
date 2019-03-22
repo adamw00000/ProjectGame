@@ -812,7 +812,7 @@ namespace GameLib.Tests
         #region --Communicate--
 
         [Fact]
-        public void DelayCommunicationPartners_WhenTargetIsNotDelayed_AppliesCommunicationDelayToBothAgents()
+        public void DelayCommunicationPartners_WhenCalled_AppliesCommunicationDelayToBothAgents()
         {
             var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
@@ -828,9 +828,13 @@ namespace GameLib.Tests
             state.DelayCommunicationPartners(senderId, targetId);
 
             var expectedTargetDelay = rules.BaseTimePenalty * rules.CommunicationMultiplier;
-            var expectedSenderDelay = previousSenderDelay + expectedTargetDelay;
+            var expectedSenderDelayMin = expectedTargetDelay;
+            var expectedSenderDelayMax = previousSenderDelay + expectedTargetDelay;
 
-            state.PlayerStates[0].LastActionDelay.ShouldBe(expectedSenderDelay);
+            state.PlayerStates[0].LastRequestTimestamp.ShouldBeGreaterThan(beforeTimestamp);
+            state.PlayerStates[0].LastActionDelay.ShouldBeGreaterThanOrEqualTo(expectedSenderDelayMin);
+            state.PlayerStates[0].LastActionDelay.ShouldBeLessThanOrEqualTo(expectedSenderDelayMax);
+
             state.PlayerStates[1].LastRequestTimestamp.ShouldBeGreaterThan(beforeTimestamp);
             state.PlayerStates[1].LastActionDelay.ShouldBe(expectedTargetDelay);
         }
