@@ -765,7 +765,7 @@ namespace GameLib.Tests
             state.GeneratePieceAt(7, 3);
             state.PlayerStates.Add(agentId, new PlayerState(x, y) { LastActionDelay = 0 });
 
-            int[,] discoveryResult = state.Discover(agentId);
+            DiscoveryResult discoveryResult = state.Discover(agentId);
             int[,] distances = { {3,2,1,2,3,4,5,6},
                                  {2,1,0,1,2,3,4,5},
                                  {3,2,1,2,3,4,5,6},
@@ -781,11 +781,7 @@ namespace GameLib.Tests
                 {
                     if (x + i >= 0 && x + i < rules.BoardWidth && y + j >= 0 && y + j < rules.BoardHeight)
                     {
-                        discoveryResult[i + 1, j + 1].ShouldBe(distances[x + i, y + j]);
-                    }
-                    else
-                    {
-                        discoveryResult[i + 1, j + 1].ShouldBe(int.MaxValue);
+                        discoveryResult.Fields.Single(t => t.x == x + i && t.y == y + j).distance.ShouldBe(distances[x + i, y + j]);
                     }
                 }
             }
@@ -816,21 +812,7 @@ namespace GameLib.Tests
         #region --Communicate--
 
         [Fact]
-        public void DelayCommunicationPartners_WhenTargetHasDelay_ThrowsDelayException()
-        {
-            var rules = Helper.GetStaticDefaultRules();
-            var state = Helper.GetGameMasterState(rules);
-
-            var senderId = 0;
-            var targetId = 1;
-            state.PlayerStates.Add(senderId, new PlayerState());
-            state.PlayerStates.Add(targetId, new PlayerState() { LastRequestTimestamp = DateTime.UtcNow, LastActionDelay = 1000 * 3600 * 24 });
-
-            Should.Throw<DelayException>(() => state.DelayCommunicationPartners(senderId, targetId));
-        }
-
-        [Fact]
-        public void DelayCommunicationPartners_WhenTargetIsNotDelayed_AppliesCommunicationDelayToBothAgents()
+        public void DelayCommunicationPartners_WhenCalled_AppliesCommunicationDelayToBothAgents()
         {
             var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
@@ -838,17 +820,21 @@ namespace GameLib.Tests
             var senderId = 0;
             var targetId = 1;
             var previousSenderDelay = 1000 * 3600 * 24;
-            state.PlayerStates.Add(senderId, new PlayerState() { LastRequestTimestamp = DateTime.UtcNow, LastActionDelay = 1000 * 3600 * 24 });
-            state.PlayerStates.Add(targetId, new PlayerState());
+            state.PlayerStates.Add(senderId, new PlayerState(-1,-1) { LastRequestTimestamp = DateTime.UtcNow, LastActionDelay = previousSenderDelay});
+            state.PlayerStates.Add(targetId, new PlayerState(-1,-1));
 
             var beforeTimestamp = DateTime.UtcNow.AddMilliseconds(-1);
 
             state.DelayCommunicationPartners(senderId, targetId);
 
             var expectedTargetDelay = rules.BaseTimePenalty * rules.CommunicationMultiplier;
-            var expectedSenderDelay = previousSenderDelay + expectedTargetDelay;
+            var expectedSenderDelayMin = expectedTargetDelay;
+            var expectedSenderDelayMax = previousSenderDelay + expectedTargetDelay;
 
-            state.PlayerStates[0].LastActionDelay.ShouldBe(expectedSenderDelay);
+            state.PlayerStates[0].LastRequestTimestamp.ShouldBeGreaterThan(beforeTimestamp);
+            state.PlayerStates[0].LastActionDelay.ShouldBeGreaterThanOrEqualTo(expectedSenderDelayMin);
+            state.PlayerStates[0].LastActionDelay.ShouldBeLessThanOrEqualTo(expectedSenderDelayMax);
+
             state.PlayerStates[1].LastRequestTimestamp.ShouldBeGreaterThan(beforeTimestamp);
             state.PlayerStates[1].LastActionDelay.ShouldBe(expectedTargetDelay);
         }
@@ -858,6 +844,9 @@ namespace GameLib.Tests
         {
             var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
+
+            state.JoinGame(0, 0, false);
+            state.JoinGame(1, 0, false);
 
             var senderId = 0;
             var targetId = 1;
@@ -879,8 +868,9 @@ namespace GameLib.Tests
         [Fact]
         public void InitializingPlayersPositionsOnEvenSizedBoard_WhenCalled_SetsInitialPositions()
         {
-            var rules = Helper.GetDefaultRules();
+            var rules = Helper.GetDefaultRules(8);
             var state = Helper.GetGameMasterState(rules);
+            Helper.AddPlayers(state, rules);
 
             state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, rules.BoardWidth);
 
@@ -901,8 +891,9 @@ namespace GameLib.Tests
         [Fact]
         public void InitializingPlayersPositionsOnOddSizedBoard_WhenCalled_SetsInitialPositions()
         {
-            var rules = Helper.GetOddSizeBoardRules();
+            var rules = Helper.GetOddSizeBoardRules(7);
             var state = Helper.GetGameMasterState(rules);
+            Helper.AddPlayers(state, rules);
 
             state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, rules.BoardWidth);
 
@@ -923,8 +914,9 @@ namespace GameLib.Tests
         [Fact]
         public void InitializingPositionsWithWeirdNumberOfPlayers_WhenCalled_SetsInitialPositions()
         {
-            var rules = Helper.GetStaticDefaultRules();
+            var rules = Helper.GetDefaultRules(12);
             var state = Helper.GetGameMasterState(rules);
+            Helper.AddPlayers(state, rules);
 
             state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, 12);
 
@@ -960,10 +952,11 @@ namespace GameLib.Tests
         [Fact]
         public void InitializingPlayersPositions_WhenCalled_SetsInitialPositionsInTwoRows()
         {
-            var rules = Helper.GetDefaultRules();
+            var rules = Helper.GetDefaultRules(16);
             var state = Helper.GetGameMasterState(rules);
+            Helper.AddPlayers(state, rules);
 
-            state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, 2 * rules.BoardWidth);
+            state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, rules.TeamSize);
 
             bool[,] positions = new bool[rules.BoardHeight, rules.BoardWidth];
 
@@ -979,6 +972,62 @@ namespace GameLib.Tests
                 positions[rules.BoardHeight - 1, i].ShouldBe(true);
                 positions[rules.BoardHeight - 2, i].ShouldBe(true);
             }
+        }
+
+        [Theory]
+        [InlineData(0, 0, 0)]
+        public void JoinGame_WithAlreadyConnectedId_ThrowsGameSetupException(int agent1Id, int agent2Id, int teamId)
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            state.JoinGame(agent1Id, teamId, false);
+            Should.Throw<GameSetupException>(() => state.JoinGame(agent2Id, teamId, false), $"Agent with Id {agent2Id} is already connected");
+        }
+
+        [Theory]
+        [InlineData(0, 3)]
+        [InlineData(2, -1)]
+        public void JoinAgent_WithNonExistingTeamId_ThrowsGameSetupException(int agentId, int teamId) 
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            Should.Throw<GameSetupException>(() => state.JoinGame(agentId, teamId, false), $"No team with Id {teamId}");
+        }
+
+        [Theory]
+        [InlineData(0, 1, 0)]
+        public void JoinAgent_WithFullTeam_ThrowsGameSetupException(int agent1Id, int agent2Id, int teamId)
+        {
+            var rules = Helper.GetRulesWithSmallTeamSize();
+            var state = Helper.GetGameMasterState(rules);
+
+            state.JoinGame(agent1Id, teamId, false);
+            Should.Throw<GameSetupException>(() => state.JoinGame(agent2Id, teamId, false), $"Team {teamId} is full");
+        }
+
+        [Theory]
+        [InlineData(0, 1, 2, 0, false)]
+        [InlineData(0, 1, 2, 0, true)]
+        public void JoinAgent_WhenNotExactlyOneAgentWantsToBeLeader_ConnectsAllAgentsAndChoosesOneLeader(int agent1Id, int agent2Id, int agent3Id, int teamId, bool wantToBeLeader)
+        {
+            var rules = Helper.GetRulesWithMediumTeamSize();
+            var state = Helper.GetGameMasterState(rules);
+
+            state.JoinGame(agent1Id, teamId, wantToBeLeader);
+            state.JoinGame(agent2Id, teamId, wantToBeLeader);
+            state.JoinGame(agent3Id, teamId, wantToBeLeader);
+
+            int leaderCount = 0;
+            if (state.PlayerStates[agent1Id].IsLeader)
+                leaderCount++;
+            if (state.PlayerStates[agent2Id].IsLeader)
+                leaderCount++;
+            if (state.PlayerStates[agent3Id].IsLeader)
+                leaderCount++;
+
+            (state.PlayerStates.Count((g) => g.Value.Team == (Team)teamId), leaderCount).ShouldBe((3, 1));
         }
 
         #endregion --Initialization--

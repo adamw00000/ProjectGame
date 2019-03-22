@@ -7,13 +7,12 @@
         public bool HoldsPiece = false;
         public PieceState PieceState = PieceState.Unknown;
         public (int X, int Y) Position;
+        public int WaitUntilTime;
 
         public AgentState()
         {
         }
 
-        // Ta metoda została wyodrębniona z konstruktora bo nie chcemy tworzyć całego obiektu w momencie rozpoczęcia gry
-        // tylko uzupełnić planszę (która zależy od infromacji otrzymanych na początku gry.
         public void Setup(GameRules rules)
         {
             Position = (rules.AgentStartX, rules.AgentStartY);
@@ -67,21 +66,41 @@
             PieceState = newState;
         }
 
-        public void PlaceOrDestroyPiece()
+        public void DestroyPiece()
         {
             if (!HoldsPiece)
-                throw new PieceOperationException("Placing or destroying piece when agent doesn't have it");
+                throw new PieceOperationException("Destroying piece when agent doesn't have it");
 
             HoldsPiece = false;
             PieceState = PieceState.Unknown;
         }
-
-        public void Discover(AgentDiscoveryResult discoveryResult)
+        
+        public void PlacePiece(PutPieceResult putResult)
         {
-            if (!discoveryResult.IsValid(Board))
-                throw new InvalidDiscoveryResultException();
+            if(!HoldsPiece)
+            {
+                throw new PieceOperationException("Agent is not holding a piece");
+            }
+            switch(putResult)
+            {
+                case PutPieceResult.PieceGoalRealized:
+                    Board.BoardTable[Position.X, Position.Y].IsGoal = AgentFieldState.DiscoveredGoal;
+                    break;
+                case PutPieceResult.PieceGoalUnrealized:
+                    Board.BoardTable[Position.X, Position.Y].IsGoal = AgentFieldState.DiscoveredNotGoal;
+                    break;
+                case PutPieceResult.PieceInTaskArea:
+                    break;
+                case PutPieceResult.PieceWasFake:
+                    break;
+            }
+            HoldsPiece = false;
+            PieceState = PieceState.Unknown;
+        }
 
-            Board.ApplyDiscoveryResult(discoveryResult);
+        public void Discover(DiscoveryResult discoveryResult, int timestamp)
+        {
+            Board.ApplyDiscoveryResult(discoveryResult, timestamp);
         }
 
         public void UpdateBoardWithCommunicationData(AgentBoard partnerBoard)
@@ -91,7 +110,7 @@
             if (!IsValid(partnerBoard))
                 throw new InvalidCommunicationResultException();
 
-            Board.UpdateBoardWithCommunicationData(partnerBoard);
+            Board.ApplyCommunicationResult(partnerBoard);
         }
     }
 }

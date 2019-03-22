@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 
 namespace GameLib
 {
@@ -103,6 +104,21 @@ namespace GameLib
         }
 
         public InteractiveModuleException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
+
+    public class GameSetupException : Exception
+    {
+        public GameSetupException()
+        {
+        }
+
+        public GameSetupException(string message) : base(message)
+        {
+        }
+
+        public GameSetupException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

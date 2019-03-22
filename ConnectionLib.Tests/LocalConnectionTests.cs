@@ -1,6 +1,6 @@
 using System;
 using Xunit;
-
+using Shouldly;
 using ConnectionLib;
 
 namespace ConnectionLib.Tests
@@ -9,9 +9,13 @@ namespace ConnectionLib.Tests
     {
         public string Text { get; set; }
 
-        public TestMessage(int agentId, string text): base(agentId)
+        public TestMessage(int agentId, string text = ""): base(agentId)
         {
             Text = text;
+        }
+
+        public override void Handle(object handler)
+        {
         }
     }
 
@@ -89,7 +93,7 @@ namespace ConnectionLib.Tests
             AgentLocalConnection agentLocalConnection = new AgentLocalConnection(communicationServer);
             GMLocalConnection gmLocalConnection = new GMLocalConnection(communicationServer);
 
-            Message message = new Message(int.MaxValue);
+            Message message = new TestMessage(int.MaxValue);
 
             agentLocalConnection.Send(message);
             Message receivedMessage = gmLocalConnection.Receive();
@@ -106,7 +110,7 @@ namespace ConnectionLib.Tests
             GMLocalConnection gmLocalConnection = new GMLocalConnection(communicationServer);
 
             // Because of the determinism of LocalCommunicationServer i know that AgentId will be set to 1.
-            Message message = new Message(1);
+            Message message = new TestMessage(1,"");
 
             gmLocalConnection.Send(message);
             Message receivedMessage = agentLocalConnection.Receive();
@@ -122,8 +126,8 @@ namespace ConnectionLib.Tests
             AgentLocalConnection agentLocalConnection = new AgentLocalConnection(communicationServer);
             GMLocalConnection gmLocalConnection = new GMLocalConnection(communicationServer);
 
-            Message message1 = new Message(int.MaxValue);
-            Message message2 = new Message(int.MaxValue);
+            Message message1 = new TestMessage(int.MaxValue);
+            Message message2 = new TestMessage(int.MaxValue);
 
             agentLocalConnection.Send(message1);
             agentLocalConnection.Send(message2);
@@ -144,8 +148,8 @@ namespace ConnectionLib.Tests
             AgentLocalConnection agent1 = new AgentLocalConnection(communicationServer);
             AgentLocalConnection agent2 = new AgentLocalConnection(communicationServer);
 
-            Message message1 = new Message(int.MaxValue);
-            Message message2 = new Message(int.MaxValue);
+            Message message1 = new TestMessage(int.MaxValue);
+            Message message2 = new TestMessage(int.MaxValue);
 
             agent1.Send(message1);
             agent2.Send(message2);
@@ -162,8 +166,8 @@ namespace ConnectionLib.Tests
             AgentLocalConnection agent1 = new AgentLocalConnection(communicationServer);
             AgentLocalConnection agent2 = new AgentLocalConnection(communicationServer);
 
-            Message message1 = new Message(int.MaxValue);
-            Message message2 = new Message(int.MaxValue);
+            Message message1 = new TestMessage(int.MaxValue);
+            Message message2 = new TestMessage(int.MaxValue);
 
             agent1.Send(message1);
             agent2.Send(message2);
@@ -179,6 +183,62 @@ namespace ConnectionLib.Tests
 
             Assert.Equal(message1, agentReceived1);
             Assert.Equal(message2, agentReceived2);
+        }
+
+        [Theory]
+        [InlineData(5)]
+        [InlineData(50)]
+        public void GMLocalCommunication_WhenCollectionIsEmpty_TryTakeReturnsFalse(int waitTime)
+        {
+            LocalCommunicationServer communicationServer = new LocalCommunicationServer();
+
+            GMLocalConnection gm = new GMLocalConnection(communicationServer);
+            bool res = gm.TryReceive(out Message m, waitTime);
+            res.ShouldBe(false);
+            m.ShouldBeNull();
+        }
+
+        [Theory]
+        [InlineData(5)]
+        [InlineData(50)]
+        public void AgentLocalCommunication_WhenCollectionIsEmpty_TryTakeReturnsFalse(int waitTime)
+        {
+            LocalCommunicationServer communicationServer = new LocalCommunicationServer();
+
+            AgentLocalConnection agent1 = new AgentLocalConnection(communicationServer);
+            bool res = agent1.TryReceive(out Message m, waitTime);
+            res.ShouldBe(false);
+            m.ShouldBe(null);
+        }
+
+        [Theory]
+        [InlineData(5)]
+        [InlineData(50)]
+        public void GMLocalCommunication_WhenCollectionIsNotEmpty_TryTakeReturnsTrue(int waitTime)
+        {
+            LocalCommunicationServer communicationServer = new LocalCommunicationServer();
+
+            GMLocalConnection gm = new GMLocalConnection(communicationServer);
+            Message message = new TestMessage(0);
+            gm.Messages.Add(message);
+            bool res = gm.TryReceive(out Message m, waitTime);
+            res.ShouldBe(true);
+            m.ShouldBe(message);
+        }
+
+        [Theory]
+        [InlineData(5)]
+        [InlineData(50)]
+        public void AgentLocalCommunication_WhenCollectionIsNotEmpty_TryTakeReturnsTrue(int waitTime)
+        {
+            LocalCommunicationServer communicationServer = new LocalCommunicationServer();
+
+            AgentLocalConnection agent1 = new AgentLocalConnection(communicationServer);
+            Message message = new TestMessage(0);
+            agent1.Messages.Add(message);
+            bool res = agent1.TryReceive(out Message m, waitTime);
+            res.ShouldBe(true);
+            m.ShouldBe(message);
         }
     }
 }

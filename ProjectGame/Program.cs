@@ -1,5 +1,7 @@
 ﻿using GameLib;
+using ConnectionLib;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ProjectGame
@@ -12,23 +14,25 @@ namespace ProjectGame
         {
             logger.Info("Hello world!");
             Console.WriteLine("Hello World!");
+            int[] actionPriorities = new int[] { 2, 1, 10, 20, 0, 10, 0, 0 };
 
-            int[] actionPriorities = new int[] { 2, 1, 10, 20, 5, 10, 2, 2 };
-            Agent exampleRandomAgent = new Agent(2, new RandomDecisionModule(actionPriorities));
-            //Task randomAgentTask = exampleRandomAgent.Run();
+            LocalCommunicationServer cs = new LocalCommunicationServer();
+            GMLocalConnection gMLocalConnection = new GMLocalConnection(cs);
+            GameRules rules = new GameRules(teamSize: 2, baseTimePenalty: 1, goalCount: 1, badPieceProbability: 0, pieceSpawnInterval: 250, boardHeight: 3, boardWidth: 4, goalAreaHeight: 1);
+            GameMaster gm = new GameMaster(rules, gMLocalConnection);
 
-            Task inputReaderTask = InteractiveInputProvider.ReadInput();
-            Agent interactiveAgent1 = new Agent(0, new InteractiveDecisionModule());
-            Agent interactiveAgent2 = new Agent(1, new InteractiveDecisionModule());
-            Task interactiveAgentTask1 = interactiveAgent1.Run();
-            Task interactiveAgentTask2 = interactiveAgent2.Run();
+            Task.Run(() => { gm.ListenJoiningAndStart(); });
+            //Task gmListener = gm.ListenJoiningAndStart();
+            for (int i = 0; i < rules.TeamSize; ++i)
+            {
+                Console.WriteLine(i);
+                Agent exampleRandomAgent = new Agent(2*i + 2, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
+                new Thread(() => exampleRandomAgent.Run(Team.Red)).Start();
 
-            //await randomAgentTask;
-            await interactiveAgentTask1;
-            await interactiveAgentTask2;
-            await inputReaderTask;
-
-            
+                Agent exampleRandomAgent2 = new Agent(2*i + 3, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
+                new Thread(() => exampleRandomAgent2.Run(Team.Blue)).Start();
+            }
+            Thread.Sleep(10000000);
         }
     }
 }

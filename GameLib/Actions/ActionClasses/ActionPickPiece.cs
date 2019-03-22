@@ -1,17 +1,20 @@
-﻿namespace GameLib.Actions
-{
-    internal class ActionPickPiece : IAction
-    {
-        public int AgentId { get; }
+﻿using GameLib.GameMessages;
 
-        public ActionPickPiece(int agentId)
+namespace GameLib.Actions
+{
+    internal class ActionPickPiece : AgentMessage, IAction
+    {
+        public ActionPickPiece(int agentId) : base(agentId)
         {
-            AgentId = agentId;
         }
 
         public void Handle(GameMaster gameMaster)
         {
             gameMaster.PickPiece(AgentId);
+        }
+        public override void Handle(object handler)
+        {
+            Handle((GameMaster)handler);
         }
     }
 }
