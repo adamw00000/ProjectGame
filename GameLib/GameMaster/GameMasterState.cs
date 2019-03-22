@@ -88,7 +88,7 @@ namespace GameLib
                 Board.GeneratePieceAt(x, y, validPieceProbability);
         }
 
-        public void Move(int playerId, MoveDirection direction)
+        public int Move(int playerId, MoveDirection direction)
         {
             var player = PlayerStates[playerId];
             if (!player.IsEligibleForAction)
@@ -129,6 +129,8 @@ namespace GameLib
             PlayerStates[playerId] = player;
 
             DelayPlayer(playerId, gameRules.MoveMultiplier);
+
+            return Board[newPosition.X, newPosition.Y].Distance;
         }
 
         private bool IsOnBoard((int, int) newPosition)

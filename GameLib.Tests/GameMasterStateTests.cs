@@ -210,6 +210,28 @@ namespace GameLib.Tests
 
             Should.Throw<DelayException>(() => state.Move(agentId, direction));
         }
+        [Theory]
+        [InlineData(5, 0, MoveDirection.Right, 0)]
+        [InlineData(3, 1, MoveDirection.Right, 2)]
+        [InlineData(7, 1, MoveDirection.Up, 1)]
+        [InlineData(5, 2, MoveDirection.Up, 2)]
+        [InlineData(3, 4, MoveDirection.Right, 1)]
+        [InlineData(5, 4, MoveDirection.Down, 3)]
+        [InlineData(7, 7, MoveDirection.Left, 6)]
+        public void Move_WhenSucceded_ReturnsDistanceToClosestPiece(int agentX, int agentY, MoveDirection direction, int expeced)
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+            var agentId = 0;
+
+            state.GeneratePieceAt(3, 4);
+            state.GeneratePieceAt(5, 1);
+            state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY));
+
+            int result = state.Move(agentId, direction);
+
+            result.ShouldBe(expeced);
+        }
 
         #endregion --Move--
 
