@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GameLib
@@ -14,8 +15,9 @@ namespace GameLib
             ConsoleKey.A, ConsoleKey.S, ConsoleKey.D
         };
 
-        private readonly static Dictionary<int, char> registeredAgents = new Dictionary<int, char>();
-        private readonly static HashSet<char> activeAgents = new HashSet<char>();
+        private static object registerInteractiveAgentLock = new object();
+        public readonly static Dictionary<int, char> RegisteredAgents = new Dictionary<int, char>();
+        public readonly static HashSet<char> ActiveAgents = new HashSet<char>();
 
         private static int agentCount = 0;
 
@@ -23,13 +25,16 @@ namespace GameLib
 
         public static void Register(int id)
         {
-            if (agentCount > 9)
-                throw new InteractiveModuleException("You can have at most 10 Interactive Agent instances at the same time!");
+            lock(registerInteractiveAgentLock)
+            {
+                if (agentCount > 9)
+                    throw new InteractiveModuleException("You can have at most 10 Interactive Agent instances at the same time!");
 
-            char agentChar = (char)(agentCount + '0');
-            registeredAgents.Add(id, agentChar);
-            queues.Add(id, new BlockingCollection<ConsoleKey>());
-            agentCount++;
+                char agentChar = (char)(agentCount + '0');
+                RegisteredAgents.Add(id, agentChar);
+                queues.Add(id, new BlockingCollection<ConsoleKey>());
+                agentCount++;
+            }
         }
 
         public static async Task<ConsoleKey> GetKey(int id)
@@ -49,13 +54,13 @@ namespace GameLib
 
                 if (c >= '0' && c < (char)(agentCount + '0'))
                 {
-                    if (activeAgents.Contains(c))
+                    if (ActiveAgents.Contains(c))
                     {
-                        activeAgents.Remove(c);
+                        ActiveAgents.Remove(c);
                     }
                     else
                     {
-                        activeAgents.Add(c);
+                        ActiveAgents.Add(c);
                     }
                     continue;
                 }
@@ -63,9 +68,9 @@ namespace GameLib
                 if (!validKeys.Contains(consoleKey))
                     continue;
 
-                foreach (var (id, agentChar) in registeredAgents)
+                foreach (var (id, agentChar) in RegisteredAgents)
                 {
-                    if (activeAgents.Contains(agentChar))
+                    if (ActiveAgents.Contains(agentChar))
                     {
                         queues[id].Add(consoleKey);
                     }

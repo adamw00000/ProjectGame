@@ -9,11 +9,12 @@ namespace GameLib
     public class GameMaster
     {
         private readonly IConnection connection;
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private GameMasterState state;
+        public GameMasterState state; //GUI needs it
         private readonly GameRules rules;
         private DateTime start;
-        private bool gameStarted = false;
+        public bool gameStarted = false;
 
         public GameMaster(GameRules rules, IConnection connection)
         {
@@ -97,7 +98,7 @@ namespace GameLib
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                logger.Error(e);
             }
         }
 

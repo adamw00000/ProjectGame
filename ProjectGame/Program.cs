@@ -8,11 +8,8 @@ namespace ProjectGame
 {
     public static class Program
     {
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
-
         private async static Task Main(string[] args)
         {
-            logger.Info("Hello world!");
             Console.WriteLine("Hello World!");
             int[] actionPriorities = new int[] { 2, 1, 10, 20, 0, 10, 0, 0 };
 
