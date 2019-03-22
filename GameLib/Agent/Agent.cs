@@ -205,6 +205,9 @@ namespace GameLib
                 if (action is ActionCommunicationRequestWithData)
                     continue;
 
+                if (action is ActionCommunicationResponseWithData response && !response.Agreement)
+                    continue;
+
                 waitForResponse = true;
                 awaitedForResponse = action;
 
