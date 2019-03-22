@@ -250,7 +250,7 @@ namespace GameLib
             connection.Send(response);
         }
 
-        public void CommunicationRequestWithData(int requesterAgentId, int targetAgentId, Object data)
+        public void CommunicationRequestWithData(int requesterAgentId, int targetAgentId, object data)
         {
             try
             {
@@ -266,30 +266,35 @@ namespace GameLib
             }
         }
 
-        public void CommunicationAgreementWithData(int requesterAgentId, int targetAgentId, bool agreement, Object data)
+        public void CommunicationAgreementWithData(int requesterAgentId, int targetAgentId, bool agreement, object targetData)
         {
-            if(agreement == false)
+            if(!agreement)
             {
                 int timestamp = CurrentTimestamp();
                 Message response = new ActionCommunicationResponseWithData(requesterAgentId, timestamp, timestamp, targetAgentId, false, null);
                 connection.Send(response);
+                return;
             }
-            else
+
+            try
             {
-                if (state.GetCommunicationData(requesterAgentId, targetAgentId) == null)
-                {
-                    throw new NotImplementedException();
-                }
-                Message responseToSender, responseToTarget;
+                object senderData = state.GetCommunicationData(requesterAgentId, targetAgentId); //check if communication exists and get its data
                 state.DelayCommunicationPartners(requesterAgentId, targetAgentId);
+
+                Message responseToSender, responseToTarget;
                 (int timestamp1, int waitUntil1) = CalculateDelay(requesterAgentId);
                 (int timestamp2, int waitUntil2) = CalculateDelay(targetAgentId);
-                responseToSender = new ActionCommunicationResponseWithData(requesterAgentId, timestamp1, waitUntil1, targetAgentId, true, data);
-                responseToTarget = new ActionCommunicationResponseWithData(targetAgentId, timestamp2, waitUntil2, requesterAgentId, true, state.GetCommunicationData(requesterAgentId,targetAgentId));
-                state.SaveCommunicationData(requesterAgentId, targetAgentId, null);
-                //Needs to be moved to state ^
+                responseToSender = new ActionCommunicationResponseWithData(requesterAgentId, timestamp1, waitUntil1, targetAgentId, true, targetData);
+                responseToTarget = new ActionCommunicationResponseWithData(targetAgentId, timestamp2, waitUntil2, requesterAgentId, true, senderData);
+
                 connection.Send(responseToSender);
                 connection.Send(responseToTarget);
+            }
+            catch (CommunicationException) //if communication data does not exist
+            {
+                int timestamp = CurrentTimestamp();
+                Message response = new InvalidAction(targetAgentId, timestamp);
+                connection.Send(response);
             }
         }
     }
