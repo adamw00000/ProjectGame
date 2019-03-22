@@ -7,6 +7,7 @@ namespace GameLib
     public class Agent
     {
         private readonly IConnection connection;
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         private readonly int id;
         private readonly IDecisionModule decisionModule;
@@ -52,7 +53,14 @@ namespace GameLib
         public void HandleCommunicationResponse(int timestamp, int waitUntilTime, int senderId, bool agreement, object data)
         {
             //timestamp => datetime
-            decisionModule.SaveCommunicationResult(senderId, agreement, /*temporary*/ new DateTime(), data, state);
+            try
+            {
+                decisionModule.SaveCommunicationResult(senderId, agreement, /*temporary*/ new DateTime(), data, state);
+            }
+            catch (InvalidCommunicationDataException e)
+            {
+                logger.Error(e);
+            }
         }
     }
 }

@@ -24,12 +24,22 @@ namespace GameLib
                 return;
             }
 
+            CommunicationData deserializedData;
+            try
+            {
+                if (data == null)
+                    throw new NullReferenceException();
+                deserializedData = Unpack(data);
+            }
+            catch
+            {
+                throw new InvalidCommunicationDataException("Received data is not a valid CommunicationData object");
+            }
+
             LastCommunicationState[senderId] = (timestamp, CommunicationState.Accepted);
             (DateTime oldTimestamp, CommunicationData oldData) = CurrentAgentCommunicationData[senderId];
             if (oldTimestamp > timestamp)
                 return;
-
-            CommunicationData deserializedData = Unpack(data);
             agentState.UpdateBoardWithCommunicationData(deserializedData.AgentState.Board);
             CurrentAgentCommunicationData[senderId] = (timestamp, deserializedData);
         }
