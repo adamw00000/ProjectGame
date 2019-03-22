@@ -10,6 +10,7 @@ namespace GameLib
     public class Agent
     {
         private readonly IConnection connection;
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         private int id;
         private readonly IDecisionModule decisionModule;
@@ -112,16 +113,6 @@ namespace GameLib
             Message response = new ActionCommunicationAgreementWithData(requesterId, id, false, null);
             connection.Send(response);
             //Needs to be developed
-        }
-
-        public void HandleCommunicationResponse(int timestamp, int waitUntilTime, int senderId, bool agreement, object data)
-        {
-            if (agreement)
-            {
-                throw new NotImplementedException();
-            }
-            //TODO: Response handling
-            //This can't throw exception, because it's called in case of rejected communication.
         }
 
         public void HandleStartGameMessage(int agentId, GameRules rules, int timestamp)
@@ -229,6 +220,18 @@ namespace GameLib
                         break;
                     }
                 }
+            }
+        }
+
+        public void HandleCommunicationResponse(int timestamp, int waitUntilTime, int senderId, bool agreement, object data)
+        {
+            try
+            {
+                decisionModule.SaveCommunicationResult(senderId, agreement, start.AddMilliseconds(timestamp), data, state);
+            }
+            catch (InvalidCommunicationDataException e)
+            {
+                logger.Error(e);
             }
         }
     }

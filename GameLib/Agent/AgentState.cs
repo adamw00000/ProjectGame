@@ -103,12 +103,14 @@
             Board.ApplyDiscoveryResult(discoveryResult, timestamp);
         }
 
-        public void ApplyCommunicationResult(CommunicationResult communicationResult)
+        public void UpdateBoardWithCommunicationData(AgentBoard partnerBoard)
         {
-            if (!communicationResult.IsValid(Board))
+            bool IsValid(AgentBoard board) => Board.Width == board.Width && Board.Height == board.Height;
+
+            if (!IsValid(partnerBoard))
                 throw new InvalidCommunicationResultException();
 
-            Board.ApplyCommunicationResult(communicationResult.Board);
+            Board.ApplyCommunicationResult(partnerBoard);
         }
     }
 }

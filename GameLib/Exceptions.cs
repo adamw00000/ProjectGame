@@ -122,4 +122,19 @@ namespace GameLib
         {
         }
     }
+
+    public class InvalidCommunicationDataException : Exception
+    {
+        public InvalidCommunicationDataException() : base()
+        {
+        }
+
+        public InvalidCommunicationDataException(string message = "") : base(message)
+        {
+        }
+
+        public InvalidCommunicationDataException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
 }
