@@ -109,12 +109,6 @@ namespace GameLib
             return ((int)(agentPlayerState.LastRequestTimestamp - start).TotalMilliseconds, (int)(waitUntil - start).TotalMilliseconds);
         }
 
-        private int ClosestPieceDistance(int agentId)
-        {
-            PlayerState agentPlayerState = state.PlayerStates[agentId];
-            return state.Board[agentPlayerState.Position.X, agentPlayerState.Position.Y].Distance;
-        }
-
         private int CurrentTimestamp()
         {
             return (int)(DateTime.UtcNow - start).TotalMilliseconds;
@@ -124,8 +118,7 @@ namespace GameLib
             Message response;
             try
             {
-                state.Move(agentId, moveDirection);
-                int distance = ClosestPieceDistance(agentId);
+                int distance = state.Move(agentId, moveDirection);
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 response = new ActionMakeMoveResponse(agentId, timestamp, waitUntil, distance);
             }
