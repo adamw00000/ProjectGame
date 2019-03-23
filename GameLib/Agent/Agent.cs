@@ -145,18 +145,6 @@ namespace GameLib
             logger.Debug($"Agent {id} - rules for the game are:\n{rules.ToString()}");
         }
 
-        public void HandleCommunicationResponse(int timestamp, int waitUntilTime, int senderId, bool agreement, object data)
-        {
-            try
-            {
-                logger.Debug($"Agent {id} received communication response from agent {senderId}, he " + (agreement ? "agreed" : "didn't agree") + " for the communication");
-                decisionModule.SaveCommunicationResult(senderId, agreement, start.AddMilliseconds(timestamp), data, state);
-            }
-            catch (InvalidCommunicationDataException e)
-            {
-                logger.Error(e);
-            }
-        }
         public void HandlePickPieceResponse(int timestamp, int waitUntilTime)
         {
             if (awaitedForResponse is ActionPickPiece)
@@ -254,11 +242,27 @@ namespace GameLib
                 throw new InvalidOperationException("Wrong action result received");
             }
         }
+
         public void HandleCommunicationRequest(int requesterId, int timestamp)
         {
+            logger.Debug($"Agent {id} received CommunicationRequest form agent {requesterId}");
             //Needs to be developed - always responds false, redirecting to Decision Module needed
-            Message response = new ActionCommunicationAgreementWithData(requesterId, id, false, null);
-            connection.Send(response);
+        }
+
+        public void HandleCommunicationResponse(int timestamp, int waitUntilTime, int senderId, bool agreement, object data)
+        {
+            try
+            {
+                logger.Debug($"Agent {id} received communication response from agent {senderId}, he " + (agreement ? "agreed" : "didn't agree") + " for the communication");
+                decisionModule.SaveCommunicationResult(senderId, agreement, start.AddMilliseconds(timestamp), data, state);
+
+                state.WaitUntilTime = waitUntilTime;
+                waitForResponse = false;
+            }
+            catch (InvalidCommunicationDataException e)
+            {
+                logger.Error(e);
+            }
         }
 
         public void HandleTimePenaltyError(int timestamp, int waitUntilTime)

@@ -37,10 +37,14 @@ namespace GameLib
             }
 
             LastCommunicationState[senderId] = (timestamp, CommunicationState.Accepted);
-            (DateTime oldTimestamp, CommunicationData oldData) = CurrentAgentCommunicationData[senderId];
-            if (oldTimestamp > timestamp)
-                return;
             agentState.UpdateBoardWithCommunicationData(deserializedData.AgentState.Board);
+
+            if (CurrentAgentCommunicationData.TryGetValue(senderId, out var tuple))
+            {
+                (DateTime oldTimestamp, CommunicationData oldData) = tuple;
+                if (oldTimestamp > timestamp)
+                    return;
+            }
             CurrentAgentCommunicationData[senderId] = (timestamp, deserializedData);
         }
 

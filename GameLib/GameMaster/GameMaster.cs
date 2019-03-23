@@ -316,13 +316,15 @@ namespace GameLib
                 logger.Warn(e, $"Error during proccesing answer from {targetAgentId} to {requesterAgentId} with data {targetData.ToString()}: ");
                 Message response = new InvalidAction(targetAgentId, timestamp);
                 connection.Send(response);
+                return;
             }
 
             if (!agreement)
             {
                 int timestamp = CurrentTimestamp();
                 logger.Debug($"Request of agent {requesterAgentId} was rejected by {targetAgentId}");
-                Message response = new ActionCommunicationResponseWithData(requesterAgentId, timestamp, timestamp, targetAgentId, false, null);
+                Message response = new ActionCommunicationResponseWithData(requesterAgentId, timestamp, 
+                    CalculateDelay(requesterAgentId).waitUntil, targetAgentId, false, null);
                 connection.Send(response);
                 return;
             }

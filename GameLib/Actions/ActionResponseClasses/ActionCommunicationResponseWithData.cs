@@ -15,6 +15,7 @@ namespace GameLib.Actions
             this.WaitUntilTime = waitUntilTime;
             this.data = data;
             this.SenderId = senderId;
+            this.Agreement = agreement;
         }
 
         public void Handle(Agent agent)
