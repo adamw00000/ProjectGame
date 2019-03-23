@@ -5,7 +5,7 @@ namespace GameLib
 {
     public class DelayException : Exception
     {
-        public DelayException() : base()
+        public DelayException() : base("Penalty hasn't finished yet")
         {
         }
 
