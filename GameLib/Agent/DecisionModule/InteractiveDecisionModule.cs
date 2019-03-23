@@ -84,7 +84,7 @@ namespace GameLib
                     logger.Debug($"Agent {agentId} chose action ActionDiscovery");
                     break;
                 default:
-                    logger.Error($"Agent {agentId} failed to choose action");
+                    logger.Error($"Agent {agentId} received invalid input");
                     throw new ArgumentException("Invalid input");
             }
 

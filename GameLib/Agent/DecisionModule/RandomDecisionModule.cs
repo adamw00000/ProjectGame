@@ -8,6 +8,8 @@ namespace GameLib
 {
     public class RandomDecisionModule : IDecisionModule
     {
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private readonly int[] prefixSumArray = new int[actionCount];
         private const int actionCount = 8;
 
@@ -41,36 +43,46 @@ namespace GameLib
             if (value <= prefixSumArray[0])
             {
                 action = new ActionCheckPiece(agentId);
+                logger.Debug($"Agent {agentId} chose action ActionCheckPiece");
             }
             else if (value <= prefixSumArray[1])
             {
                 action = new ActionDestroyPiece(agentId);
+                logger.Debug($"Agent {agentId} chose action ActionDestroyPiece");
             }
             else if (value <= prefixSumArray[2])
             {
                 action = new ActionPickPiece(agentId);
+                logger.Debug($"Agent {agentId} chose action ActionPickPiece");
             }
             else if (value <= prefixSumArray[3])
             {
+                var direction = (MoveDirection)random.Next(4);
                 action = new ActionMove(agentId, (MoveDirection)random.Next(4));
+                logger.Debug($"Agent {agentId} chose action ActionMove with direction {direction}");
             }
             else if (value <= prefixSumArray[4])
             {
                 action = new ActionDiscovery(agentId);
+                logger.Debug($"Agent {agentId} chose action ActionDiscovery");
             }
             else if (value <= prefixSumArray[5])
             {
                 action = new ActionPutPiece(agentId);
+                logger.Debug($"Agent {agentId} chose action ActionPutPiece");
             }
             else if (value <= prefixSumArray[6])
             {
-                action = new ActionCommunicationRequestWithData(agentId, agentId, 
-                    DataProcessor.CreateCommunicationDataForCommunicationWith(agentId, agentState));
+                var requestData = DataProcessor.CreateCommunicationDataForCommunicationWith(agentId, agentState);
+                action = new ActionCommunicationRequestWithData(agentId, agentId, requestData);
+                logger.Debug($"Agent {agentId} chose action ActionCommunicationRequestWithData with data {requestData}");
             }
             else
             {
-                action = new ActionCommunicationAgreementWithData(agentId, agentId, 
-                    random.Next(2) == 1 ? true : false, DataProcessor.CreateCommunicationDataForCommunicationWith(agentId, agentState));
+                var responseData = DataProcessor.CreateCommunicationDataForCommunicationWith(agentId, agentState);
+                bool agreement = (random.Next(2) == 1) ? true : false;
+                action = new ActionCommunicationAgreementWithData(agentId, agentId, agreement, responseData);
+                logger.Debug($"Agent {agentId} chose action ActionCommunicationAgreementWithData with data {responseData} - he {(agreement ? "agrees" : "doesn't agree")} for the communication");
             }
             System.Threading.Thread.Sleep(1000); //necessary for GUI
             Console.WriteLine(action.ToString());
