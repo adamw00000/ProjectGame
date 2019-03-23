@@ -34,7 +34,7 @@ namespace ProjectGameGUI.Views
 
             LocalCommunicationServer cs = new LocalCommunicationServer();
             GMLocalConnection gMLocalConnection = new GMLocalConnection(cs);
-            GameRules rules = new GameRules(teamSize: 3, baseTimePenalty: 100, boardHeight: 7, boardWidth: 7);
+            GameRules rules = new GameRules(teamSize: 1, baseTimePenalty: 100, boardHeight: 7, boardWidth: 7);
             gameMaster = new GameMaster(rules, gMLocalConnection);
 
             this.Width = width * displaySettings.FieldWidth;
@@ -76,7 +76,7 @@ namespace ProjectGameGUI.Views
             while (true)
             {
                 await Update();
-                System.Threading.Thread.Sleep(500);
+                System.Threading.Thread.Sleep(100);
             }
         }
 
@@ -227,7 +227,9 @@ namespace ProjectGameGUI.Views
 
         private void VisualizePieces()
         {
-            foreach (var piecePos in gameMasterState.Board.PiecesPositions)
+            var states = new List<(int x, int y)>(gameMasterState.Board.PiecesPositions);
+
+            foreach (var piecePos in states)
             {
                 var piece = gameMasterState.Board[piecePos.x, piecePos.y].Piece;
                 Ellipse p = displaySettings.GetPiece(piece.IsValid);

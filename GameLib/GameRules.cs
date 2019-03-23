@@ -1,11 +1,13 @@
-﻿namespace GameLib
+﻿using Newtonsoft.Json;
+
+namespace GameLib
 {
     public class GameRules
     {
         public int AgentStartX { get; }
         public int AgentStartY { get; }
         public int[] AgentIdsFromTeam { get; }
-        public int TeamLiderId { get; }
+        public int TeamLeaderId { get; }
 
         public int BoardWidth { get; }
         public int BoardHeight { get; }
@@ -38,7 +40,7 @@
             AgentStartX = agentStartX;
             AgentStartY = agentStartY;
             AgentIdsFromTeam = agentIdsFromTeam;
-            TeamLiderId = leaderId;
+            TeamLeaderId = leaderId;
 
             BoardWidth = boardWidth;
             BoardHeight = boardHeight;
@@ -83,6 +85,11 @@
                 agentIdsFromTeam: playersFromTeam,
                 leaderId: leaderId
             );
+        }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
     }
 }

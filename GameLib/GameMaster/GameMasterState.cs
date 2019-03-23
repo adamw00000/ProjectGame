@@ -6,6 +6,8 @@ namespace GameLib
 {
     public class GameMasterState
     {
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         public bool GameEnded = false;
         public Team? Winner = null;
         private readonly double validPieceProbability;
@@ -71,6 +73,7 @@ namespace GameLib
         public void DelayPlayer(int playerId, int delayMultiplier)
         {
             var player = PlayerStates[playerId];
+            logger.Debug($"Delaying agent {playerId} by {(delayMultiplier * gameRules.BaseTimePenalty)}ms");
             player.LastRequestTimestamp = DateTime.UtcNow;
             player.LastActionDelay = delayMultiplier * gameRules.BaseTimePenalty;
             PlayerStates[playerId] = player;
@@ -79,7 +82,12 @@ namespace GameLib
         public void GeneratePiece()
         {
             if (Board.PieceCount < maxPiecesOnBoard)
+            {
                 Board.GeneratePiece(validPieceProbability);
+                logger.Trace("Piece placed");
+            }
+            else
+                logger.Debug("Max pieces on board reached");
         }
 
         public void GeneratePieceAt(int x, int y)
@@ -310,6 +318,7 @@ namespace GameLib
                     }
                 }
             }
+            logger.Debug($"Discovery result for {playerId}: {(fields.Aggregate("", (s, tuple) => s + $"({tuple.x},{tuple.y},{tuple.distance}) "))}");
             return new DiscoveryResult(fields);
         }
 
@@ -334,6 +343,7 @@ namespace GameLib
             int lastPenaltyDurationLeftTime = Math.Max(0, player.LastActionDelay - (int)(DateTime.UtcNow - player.LastRequestTimestamp).TotalMilliseconds);
             player.LastActionDelay = delayMultiplier * gameRules.BaseTimePenalty + lastPenaltyDurationLeftTime;
             player.LastRequestTimestamp = DateTime.UtcNow;
+            logger.Debug($"Adding delay for agent {playerId}, now it's {player.LastActionDelay}ms");
             PlayerStates[playerId] = player;
         }
 
