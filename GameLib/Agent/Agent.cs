@@ -18,17 +18,12 @@ namespace GameLib
         private readonly IDecisionModule decisionModule;
         private readonly AgentState state;
         private GameRules rules;
-        private DateTime start;
-        private bool waitForResponse;
-        private bool gameStarted = false;
-        private bool gameEnded = false;
+
         private Message awaitedForResponse;
-        private int isWinning = -1;
-        private bool wantsToBeLeader;
-        private bool isLeader;
-        private int[] teamIds;
-        private Team team;
-        private bool isInGame = false;
+        private bool waitForResponse;
+
+        // Not used - did u miss it somewhere?
+        //private int isWinning = -1;
 
         public Agent(int tempId, IDecisionModule decisionModule, IConnection connection)
         {
@@ -41,24 +36,24 @@ namespace GameLib
 
         private void JoinGame(Team choosenTeam, bool wantsToBeLeader)
         {
-            this.team = choosenTeam;
-            this.wantsToBeLeader = wantsToBeLeader;
-            Message joinMessage = new JoinGameMessage(id, (int)choosenTeam, wantsToBeLeader);
+            state.JoinGame(choosenTeam, wantsToBeLeader);
+            
+            Message joinMessage = new JoinGameMessage(tempId, (int)choosenTeam, wantsToBeLeader); //used to be "JoinGameMessage(id,... )". By mistake?
             connection.Send(joinMessage);
             logger.Debug($"Agent with temporary id {tempId} sent JoinGameMessage. He wants to join team {(choosenTeam == Team.Blue ? "Blue" : "Red")} and {(wantsToBeLeader ? "wants" : "doesn't want")} to be a leader.");
 
-            while (!gameStarted)
+            while (!state.GameStarted)
             {
                 Message message = connection.Receive();
                 message.Handle(this);
             }
-            logger.Info($"Agent with temporary id {tempId}: the game has started. {(isInGame ? "He joined the game successfully, received id " + id + " and he " + (isLeader ? "is" : "is not") + " a leader" : "He failed to join the game")}.");
+            logger.Info($"Agent with temporary id {tempId}: the game has started. {(state.IsInGame ? "He joined the game successfully, received id " + id + " and he " + (state.IsLeader ? "is" : "is not") + " a leader" : "He failed to join the game")}.");
         }
 
         public async Task Run(Team choosenTeam, bool wantsToBeLeader = false)
         {
             JoinGame(choosenTeam, wantsToBeLeader);
-            if(isInGame)
+            if(state.IsInGame)
             {
                 try
                 {
@@ -75,10 +70,10 @@ namespace GameLib
 
         private async Task MainLoopAsync()
         {
-            while (!gameEnded)
+            while (!state.GameEnded)
             {
                 Message action = (Message) (await decisionModule.ChooseAction(id, state));
-                Thread.Sleep(Math.Max(1, state.WaitUntilTime - CurrentTimestamp()));
+                Thread.Sleep(Math.Max(1, state.WaitUntilTime - state.CurrentTimestamp()));
                 logger.Debug($"Agent {id} sent action request: {action}");
                 connection.Send(action);
 
@@ -98,11 +93,11 @@ namespace GameLib
                     logger.Trace($"Agent {id} handled message while waiting for response");
                 } while (waitForResponse);
 
-                logger.Debug($"Agent {id} stopped waiting for response, last action delay left: {(state.WaitUntilTime - CurrentTimestamp() <= 0 ? "no delay" : (state.WaitUntilTime - CurrentTimestamp()) + "ms")}");
+                logger.Debug($"Agent {id} stopped waiting for response, last action delay left: {(state.WaitUntilTime - state.CurrentTimestamp() <= 0 ? "no delay" : (state.WaitUntilTime - state.CurrentTimestamp()) + "ms")}");
 
-                while (CurrentTimestamp() < state.WaitUntilTime)
+                while (state.CurrentTimestamp() < state.WaitUntilTime)
                 {
-                    bool res = connection.TryReceive(out Message m, state.WaitUntilTime - CurrentTimestamp());
+                    bool res = connection.TryReceive(out Message m, state.WaitUntilTime - state.CurrentTimestamp());
                     if (res)
                     {
                         logger.Debug($"Agent {id} handled message while delayed");
@@ -117,30 +112,22 @@ namespace GameLib
             }
         }
 
-        private int CurrentTimestamp()
-        {
-            return (int)(DateTime.UtcNow - start).TotalMilliseconds;
-        }
-
         public void HandleJoinResponse(bool isConnected)
         {
             if (!isConnected)
                 logger.Warn($"Agent with temporary id {tempId} didn't connect to the game");
 
-            isInGame = isConnected;
+            state.IsInGame = isConnected;
         }
 
         public void HandleStartGameMessage(int agentId, GameRules rules, int timestamp, long absoluteStart)
         {
             logger.Debug($"Agent with temporary id {tempId} received StartGameMessage, he received id {agentId}");
 
-            this.id = agentId;
-            this.isLeader = this.id == rules.TeamLeaderId;
-            this.teamIds = (int[])rules.AgentIdsFromTeam.Clone();
             this.rules = rules;
-            start = (new DateTime()).AddMilliseconds(absoluteStart);
-            state.Setup(rules);
-            gameStarted = true;
+            this.id = agentId;
+
+            state.HandleStartGameMessage(agentId, rules, timestamp, absoluteStart);
 
             logger.Debug($"Agent {id} - rules for the game are:\n{rules.ToString()}");
         }
@@ -197,7 +184,7 @@ namespace GameLib
         {
             if (awaitedForResponse is ActionMove move)
             {
-                logger.Debug($"Agent {id} - current time: {CurrentTimestamp()}, wait until: {waitUntilTime}");
+                logger.Debug($"Agent {id} - current time: {state.CurrentTimestamp()}, wait until: {waitUntilTime}");
                 state.Move(move.MoveDirection, distance);
                 state.WaitUntilTime = waitUntilTime;
                 waitForResponse = false;
@@ -254,7 +241,7 @@ namespace GameLib
             try
             {
                 logger.Debug($"Agent {id} received communication response from agent {senderId}, he " + (agreement ? "agreed" : "didn't agree") + " for the communication");
-                decisionModule.SaveCommunicationResult(senderId, agreement, start.AddMilliseconds(timestamp), data, state);
+                decisionModule.SaveCommunicationResult(senderId, agreement, state.Start.AddMilliseconds(timestamp), data, state);
 
                 state.WaitUntilTime = waitUntilTime;
                 waitForResponse = false;
@@ -289,9 +276,9 @@ namespace GameLib
 
         public void EndGame(int winningTeam, int timestamp)
         {
-            logger.Debug($"Agent {id} finished the game, he {(winningTeam == (int)team ? "won" : "lost")}.");
+            logger.Debug($"Agent {id} finished the game, he {(winningTeam == (int)state.Team ? "won" : "lost")}.");
 
-            gameEnded = true;
+            state.GameEnded = true;
             waitForResponse = false;
         }
     }
