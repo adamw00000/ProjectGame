@@ -20,6 +20,7 @@ namespace GameLib
 
         private bool wantsToBeLeader;
         private int[] teamIds; // We did add teamIds here becouse DecisionModule will use them for communication and it does get AgentState
+        private int teamLeaderId;
 
 
         public AgentState()
@@ -143,6 +144,7 @@ namespace GameLib
 
             this.IsLeader = agentId == rules.TeamLeaderId;
             this.teamIds = (int[])rules.AgentIdsFromTeam.Clone();
+            this.teamLeaderId = rules.TeamLeaderId;
             this.Start = (new DateTime()).AddMilliseconds(absoluteStart);
             this.GameStarted = true;
         }
