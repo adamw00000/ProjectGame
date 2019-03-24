@@ -45,18 +45,19 @@ namespace ProjectGameGUI.Views
             //Task interactiveAgentTask1 = interactiveAgent1.Run();
             //Task interactiveAgentTask2 = interactiveAgent2.Run();
 
+
             Task.Run(() => { gameMaster.ListenJoiningAndStart(); });
 
             agentTasks = new Task[2 * rules.TeamSize];
 
             for (int i = 0; i < rules.TeamSize; ++i)
             {
-                //Agent Agent1 = new Agent(2 * i + 2, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
-                Agent Agent1 = new Agent(2 * i + 2, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
+                Agent Agent1 = new Agent(2 * i + 2, new RandomDecisionModule(actionPriorities, 10), new AgentLocalConnection(cs));
+                //Agent Agent1 = new Agent(2 * i + 2, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
                 agentTasks[2 * i] = Task.Run(async () => await Agent1.Run(Team.Red));
 
-                //Agent Agent2 = new Agent(2 * i + 3, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
-                Agent Agent2 = new Agent(2 * i + 3, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
+                Agent Agent2 = new Agent(2 * i + 3, new RandomDecisionModule(actionPriorities, 5), new AgentLocalConnection(cs));
+                //Agent Agent2 = new Agent(2 * i + 3, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
                 agentTasks[2 * i + 1] = Task.Run(async () => await Agent2.Run(Team.Blue));
             }
 
