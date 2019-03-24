@@ -39,13 +39,13 @@ namespace ProjectGameGUI
         public static readonly ISolidColorBrush TextColor = Brushes.Black;
 
 
-        public static Canvas GetPlayerControl(Player player)
+        public static Grid GetPlayerControl(Player player)
         {
-            Canvas canvas = new Canvas();
-            Grid.SetRow(canvas, player.X);
-            Grid.SetColumn(canvas, player.Y);
-            canvas.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
-            canvas.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
+            Grid grid = new Grid();
+            Grid.SetRow(grid, player.X);
+            Grid.SetColumn(grid, player.Y);
+            grid.VerticalAlignment = VerticalAlignment.Center;
+            grid.HorizontalAlignment = HorizontalAlignment.Center;
 
             Rectangle rect = new Rectangle();          
             rect.ZIndex = 2;
@@ -59,22 +59,24 @@ namespace ProjectGameGUI
             {
                 rect.Fill = player.IsActive ? RedTeamColorActive : RedTeamColor;
             }
+            rect.VerticalAlignment = VerticalAlignment.Top;
+            rect.HorizontalAlignment = HorizontalAlignment.Left;
             
-            canvas.Children.Add(rect);
+            grid.Children.Add(rect);
             TextBlock text = new TextBlock();
             text.Text = player.Name;
             text.Foreground = TextColor;
             text.ZIndex = 4;
-            text.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
-            text.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
-            canvas.Children.Add(text);
+            text.VerticalAlignment = VerticalAlignment.Center;
+            text.HorizontalAlignment = HorizontalAlignment.Center;
+            grid.Children.Add(text);
 
             if(player.HeldPiece != null)
             {
-                canvas.Children.Add(GetPlayerPieceControl(player.HeldPiece));
+                grid.Children.Add(GetPlayerPieceControl(player.HeldPiece));
             }
 
-            return canvas;
+            return grid;
         }
 
         public static Border GetFieldControl(Field field)
@@ -119,8 +121,8 @@ namespace ProjectGameGUI
             ellipse.Width = PieceWidthFactor * FieldWidth * PlayerPieceFactor;
             ellipse.Height = PieceHeightFactor * FieldHeight * PlayerPieceFactor;
             ellipse.Fill = piece.IsValid ? ValidPieceColor : InvalidPieceColor;
-            ellipse.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
-            ellipse.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
+            ellipse.VerticalAlignment = VerticalAlignment.Center;
+            ellipse.HorizontalAlignment = HorizontalAlignment.Center;
             ellipse.ZIndex = 3;
             return ellipse;
         }
@@ -131,8 +133,8 @@ namespace ProjectGameGUI
             ellipse.Width = PieceWidthFactor * FieldWidth;
             ellipse.Height = PieceHeightFactor * FieldHeight;
             ellipse.Fill = piece.IsValid ? ValidPieceColor : InvalidPieceColor;
-            ellipse.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center;
-            ellipse.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center;
+            ellipse.VerticalAlignment = VerticalAlignment.Center;
+            ellipse.HorizontalAlignment = HorizontalAlignment.Center;
             Grid.SetRow(ellipse, piece.X);
             Grid.SetColumn(ellipse, piece.Y);
             ellipse.ZIndex = 1;

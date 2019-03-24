@@ -13,32 +13,6 @@ using System.Collections.ObjectModel;
 
 namespace ProjectGameGUI.Models
 {
-    public class GameObject
-    {
-        public int X { get; set; }
-        public int Y { get; set; }
-    }
-
-    public class Piece : GameObject
-    {
-        public bool IsValid { get; set; }
-    }
-
-    public class Player : GameObject
-    {
-        public Piece HeldPiece { get; set; }
-        public string Name { get; set; }
-        public Team Team { get; set; }
-        public bool IsActive { get; set; }
-    }
-
-    public class Field : GameObject
-    {
-        public string Name { get; set; }
-        public Team? Team { get; set; }
-        public bool IsUndiscoveredGoal { get; set; }
-    }
-
     public class GameModel
     {
         private Task[] agentTasks;
@@ -59,7 +33,7 @@ namespace ProjectGameGUI.Models
 
             LocalCommunicationServer cs = new LocalCommunicationServer();
             GMLocalConnection gMLocalConnection = new GMLocalConnection(cs);
-            GameRules rules = new GameRules(teamSize: 1, baseTimePenalty: 100, boardHeight: 7, boardWidth: 7);
+            GameRules rules = new GameRules(teamSize: 1, baseTimePenalty: 25, boardHeight: 7, boardWidth: 7);
             gameMaster = new GameMaster(rules, gMLocalConnection);
 
             this.mainWindowViewModel.WindowWidth = width * DisplaySettings.FieldWidth;
@@ -74,12 +48,12 @@ namespace ProjectGameGUI.Models
 
             for (int i = 0; i < rules.TeamSize; ++i)
             {
-                //Agent Agent1 = new Agent(2 * i + 2, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
-                Agent Agent1 = new Agent(2 * i + 2, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
+                Agent Agent1 = new Agent(2 * i + 2, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
+                //Agent Agent1 = new Agent(2 * i + 2, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
                 agentTasks[2 * i] = Task.Run(async () => await Agent1.Run(Team.Red));
 
-                //Agent Agent2 = new Agent(2 * i + 3, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
-                Agent Agent2 = new Agent(2 * i + 3, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
+                Agent Agent2 = new Agent(2 * i + 3, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
+                //Agent Agent2 = new Agent(2 * i + 3, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
                 agentTasks[2 * i + 1] = Task.Run(async () => await Agent2.Run(Team.Blue));
             }
 
@@ -98,7 +72,7 @@ namespace ProjectGameGUI.Models
             while (true)
             {
                 await Update();
-                System.Threading.Thread.Sleep(100);
+                System.Threading.Thread.Sleep(34);
             }
         }
 
@@ -115,9 +89,9 @@ namespace ProjectGameGUI.Models
 
         private async void UpdateBoard()
         {
-            VisualizeBorders();
-            VisualizePlayers();
-            VisualizePieces();
+            PrepareFields();
+            PreparePlayers();
+            PreparePieces();
             mainWindowViewModel.Fields = new ObservableCollection<Field>(fields);
             mainWindowViewModel.Players = new ObservableCollection<Player>(players);
             mainWindowViewModel.Pieces = new ObservableCollection<Piece>(pieces);
@@ -138,7 +112,7 @@ namespace ProjectGameGUI.Models
             }
         }
 
-        private void VisualizeBorders()
+        private void PrepareFields()
         {
             fields.Clear();
             for (int j = 0; j < width; j++)
@@ -176,7 +150,7 @@ namespace ProjectGameGUI.Models
             }
         }
 
-        private void VisualizePlayers()
+        private void PreparePlayers()
         {
             players.Clear();
             var states = new Dictionary<int, PlayerState>(gameMasterState.PlayerStates);
@@ -210,7 +184,7 @@ namespace ProjectGameGUI.Models
             }
         }
 
-        private void VisualizePieces()
+        private void PreparePieces()
         {
             pieces.Clear();
             var states = new List<(int x, int y)>(gameMasterState.Board.PiecesPositions);

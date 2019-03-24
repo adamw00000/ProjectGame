@@ -42,8 +42,8 @@ namespace ProjectGameGUI.Converters
             {
                 foreach (var player in players)
                 {
-                    Canvas canvas = DisplaySettings.GetPlayerControl(player);
-                    result.Add(canvas);
+                    Grid grid = DisplaySettings.GetPlayerControl(player);
+                    result.Add(grid);
                 }
             }
 

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 using ProjectGameGUI.Models;
+using ReactiveUI;
 
 namespace ProjectGameGUI.ViewModels
 {
@@ -18,11 +19,15 @@ namespace ProjectGameGUI.ViewModels
         public ObservableCollection<Models.Piece> Pieces
         {
             get => _pieces;
-            set => _pieces = value;
+            set
+            {
+                _pieces = value;
+                this.RaisePropertyChanged(nameof(Pieces));
+            }
         }
 
-        public ObservableCollection<Player> Players { get => _players; set => _players = value; }
-        public ObservableCollection<Field> Fields { get => _fields; set => _fields = value; }
+        public ObservableCollection<Player> Players { get => _players; set { _players = value; this.RaisePropertyChanged(nameof(Players)); } }
+        public ObservableCollection<Field> Fields { get => _fields; set { _fields = value; this.RaisePropertyChanged(nameof(Fields)); } }
 
         public int WindowWidth { get; set; }
         public int WindowHeight { get; set; }
