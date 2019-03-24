@@ -10,17 +10,21 @@ namespace GameLib
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
+        private Random random;
+
         private readonly int[] prefixSumArray = new int[actionCount];
         private const int actionCount = 8;
 
         public CommunicationDataProcessor DataProcessor { get; } = new CommunicationDataProcessor();
 
-        public RandomDecisionModule(int[] weightArray)
+        public RandomDecisionModule(int[] weightArray, int randSeed = 123)
         {
             if (weightArray.Length != actionCount)
                 throw new ArgumentException($"Weight array's length must be {actionCount}!");
 
             CalculatePrefixWeightArray(weightArray);
+
+            random = new Random(randSeed);
         }
 
         private void CalculatePrefixWeightArray(int[] weightArray)
@@ -37,7 +41,6 @@ namespace GameLib
         public Task<IAction> ChooseAction(int agentId, AgentState agentState)
         {
             IAction action;
-            Random random = RandomGenerator.GetGenerator();
 
             int value = random.Next(1, prefixSumArray[actionCount - 1] + 1);
             if (value <= prefixSumArray[0])
@@ -58,7 +61,7 @@ namespace GameLib
             else if (value <= prefixSumArray[3])
             {
                 var direction = (MoveDirection)random.Next(4);
-                action = new ActionMove(agentId, (MoveDirection)random.Next(4));
+                action = new ActionMove(agentId, direction); 
                 logger.Debug($"Agent {agentId} chose action ActionMove with direction {direction}");
             }
             else if (value <= prefixSumArray[4])
