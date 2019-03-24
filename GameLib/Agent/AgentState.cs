@@ -1,13 +1,27 @@
-﻿namespace GameLib
+﻿using System;
+
+namespace GameLib
 {
     public class AgentState
     {
         public AgentBoard Board { get; private set; }
+        public bool IsInGame { get; set; } = false;
+        public bool GameStarted { get; set; } = false;
+        public bool GameEnded { get; set; } = false;
+        public bool IsLeader { get; private set; }
 
         public bool HoldsPiece = false;
         public PieceState PieceState = PieceState.Unknown;
         public (int X, int Y) Position;
         public int WaitUntilTime;
+
+        public Team Team;
+        public DateTime Start;
+
+        private bool wantsToBeLeader;
+        private int[] teamIds; // We did add teamIds here becouse DecisionModule will use them for communication and it does get AgentState
+        private int teamLeaderId;
+
 
         public AgentState()
         {
@@ -111,6 +125,28 @@
                 throw new InvalidCommunicationResultException();
 
             Board.ApplyCommunicationResult(partnerBoard);
+        }
+
+        public void JoinGame(Team choosenTeam, bool wantsToBeLeader)
+        {
+            this.Team = choosenTeam;
+            this.wantsToBeLeader = wantsToBeLeader;
+        }
+
+        public int CurrentTimestamp()
+        {
+            return (int)(DateTime.UtcNow - Start).TotalMilliseconds;
+        }
+
+        public void HandleStartGameMessage(int agentId, GameRules rules, int timestamp, long absoluteStart)
+        {
+            Setup(rules);
+
+            this.IsLeader = agentId == rules.TeamLeaderId;
+            this.teamIds = (int[])rules.AgentIdsFromTeam.Clone();
+            this.teamLeaderId = rules.TeamLeaderId;
+            this.Start = (new DateTime()).AddMilliseconds(absoluteStart);
+            this.GameStarted = true;
         }
     }
 }
