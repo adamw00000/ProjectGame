@@ -61,7 +61,7 @@ namespace GameLib
             else if (value <= prefixSumArray[3])
             {
                 var direction = (MoveDirection)random.Next(4);
-                action = new ActionMove(agentId, direction); //used to be "ActionMove(agentId, (MoveDirection)random.Next(4))". By mistkae?
+                action = new ActionMove(agentId, direction); 
                 logger.Debug($"Agent {agentId} chose action ActionMove with direction {direction}");
             }
             else if (value <= prefixSumArray[4])
