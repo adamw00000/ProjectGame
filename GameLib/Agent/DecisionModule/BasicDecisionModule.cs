@@ -31,7 +31,7 @@ namespace GameLib
             if (communicationQueue.Count != 0) //another agent request
             {
                 var randomTeammate = agentState.TeamIds[random.Next(agentState.TeamIds.Length)];
-                bool agreement = random.Next(2) == 0 ? true : false; //50% szans
+                bool agreement = random.Next(2) == 0 ? true : false; //50% chance
 
                 if (agreement)
                 {
@@ -212,52 +212,19 @@ namespace GameLib
                 }
                 else
                 {
-                    return SeekPiece(agentState.Board[X, Y].Distance, X, Y, agentState.Board.Width, agentState.Board.Height);
+                    return SeekPiece(agentState, agentState.Board[X, Y].Distance, X, Y, agentState.Board.Width, agentState.Board.Height);
                 }
             }
         }
 
-        private MoveDirection SeekPiece(int distance, int x, int y, int boardWidth, int boardHeight)
+        private MoveDirection SeekPiece(AgentState agentState, int distance, int x, int y, int boardWidth, int boardHeight)
         {
             if (previousDistance > distance)
             {
                 if (movingBackWasNeeded)
                 {
                     movingBackWasNeeded = false;
-                    if (lastMove == MoveDirection.Up || lastMove == MoveDirection.Down)
-                    {
-                        if (y <= boardWidth / 2 && boardWidth % 2 == 0)
-                        {
-                            return MoveDirection.Right;
-                        }
-                        else if (y == boardWidth / 2 && boardWidth % 2 == 1)
-                        {
-                            int d = random.Next(0, 2);
-                            if (d == 0) return MoveDirection.Left;
-                            else return MoveDirection.Right;
-                        }
-                        else
-                        {
-                            return MoveDirection.Left;
-                        }
-                    }
-                    else
-                    {
-                        if (x <= boardHeight / 2 && boardHeight % 2 == 0)
-                        {
-                            return MoveDirection.Down;
-                        }
-                        else if (x == boardHeight / 2 && boardHeight % 2 == 1)
-                        {
-                            int d = random.Next(0, 2);
-                            if (d == 0) return MoveDirection.Up;
-                            else return MoveDirection.Down;
-                        }
-                        else
-                        {
-                            return MoveDirection.Up;
-                        }
-                    }
+                    return MoveToTheSide(agentState);
                 }
                 else return lastMove;
             }
@@ -280,7 +247,32 @@ namespace GameLib
             }
             else
             {
-                return lastMove;
+                if (agentState.PossibleMoves.Contains(lastMove))
+                    return lastMove;
+                else
+                    return MoveToTheSide(agentState);
+            }
+        }
+
+        private MoveDirection MoveToTheSide(AgentState agentState)
+        {
+            if (lastMove == MoveDirection.Up || lastMove == MoveDirection.Down)
+            {
+                List<MoveDirection> sideMoves = new List<MoveDirection>();
+                if (agentState.PossibleMoves.Contains(MoveDirection.Left))
+                    sideMoves.Add(MoveDirection.Left);
+                if (agentState.PossibleMoves.Contains(MoveDirection.Right))
+                    sideMoves.Add(MoveDirection.Right);
+                return sideMoves[random.Next(sideMoves.Count)];
+            }
+            else
+            {
+                List<MoveDirection> sideMoves = new List<MoveDirection>();
+                if (agentState.PossibleMoves.Contains(MoveDirection.Up))
+                    sideMoves.Add(MoveDirection.Up);
+                if (agentState.PossibleMoves.Contains(MoveDirection.Down))
+                    sideMoves.Add(MoveDirection.Down);
+                return sideMoves[random.Next(sideMoves.Count)];
             }
         }
     }
