@@ -68,20 +68,6 @@ namespace GameLib.Tests
             }
         }
 
-        [Fact]
-        public void GeneratedPiece_WhenProbabilityIs0_IsNotValid()
-        {
-            GameRules rules = Helper.GetAlwaysInvalidPieceRules();
-            var state = Helper.GetGameMasterState(rules);
-
-            state.GeneratePiece();
-
-            foreach (var (x, y) in state.Board.PiecesPositions)
-            {
-                state.Board.BoardTable[x, y].HasValidPiece.ShouldBe(false);
-            }
-        }
-
         #endregion --Generate--
 
         #region --Move--

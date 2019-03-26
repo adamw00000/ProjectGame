@@ -144,5 +144,63 @@ namespace GameLib.Tests
 
             Should.Throw<InvalidRulesException>(() => rules = new GameRules(communicationMultiplier: communicationMultiplier));
         }
+        //-----------------------AgentGameRules-----------------------
+        [Theory]
+        [InlineData(1, -1)]
+        [InlineData(1, 8)]
+        [InlineData(-1, 6)]
+        public void AgentGameRules_WhenAgentStartsOutsideTheBoard_ThrowsException(int x, int y)
+        {
+            GameRules rules;
+
+            Should.Throw<InvalidRulesException>(() => rules = new AgentGameRules(agentStartX: x, agentStartY: y));
+        }
+        [Theory]
+        [InlineData(4, 4)]
+        [InlineData(2, 5)]
+        [InlineData(5, 1)]
+        public void AgentGameRules_WhenAgentStartsInTaskArea_ThrowsException(int x, int y)
+        {
+            GameRules rules;
+
+            Should.Throw<InvalidRulesException>(() => rules = new AgentGameRules(agentStartX: x, agentStartY: y));
+        }
+
+        [Fact]
+        public void AgentGameRules_IdsArrayIsNull_ThrownsException()
+        {
+            AgentGameRules rules;
+            int[] agentIds = null;
+
+            Should.Throw<InvalidRulesException>(() => rules = new AgentGameRules(agentIdsFromTeam: agentIds));
+        }
+
+        [Fact]
+        public void AgentGameRules_IdsArrayLenghtIsDifferentFromTeamSize_ThrownsException()
+        {
+            AgentGameRules rules;
+            int[] agentIds = new int[] { 0, 1, 2, 3 };
+
+            Should.Throw<InvalidRulesException>(() => rules = new AgentGameRules(agentIdsFromTeam: agentIds));
+        }
+
+        [Fact]
+        public void AgentGameRules_IdsArrayContainsDuplicates_ThrownsException()
+        {
+            AgentGameRules rules;
+            int[] agentIds = new int[] { 0, 2, 2, 3, 3 };
+
+            Should.Throw<InvalidRulesException>(() => rules = new AgentGameRules(agentIdsFromTeam: agentIds));
+        }
+
+        [Fact]
+        public void AgentGameRules_IdsArrayDoesntContainLeaderId_ThrownsException()
+        {
+            AgentGameRules rules;
+            int[] agentIds = new int[] { 0, 1, 2, 3, 4 };
+            int leaderId = 5;
+
+            Should.Throw<InvalidRulesException>(() => rules = new AgentGameRules(agentIdsFromTeam: agentIds, leaderId: leaderId));
+        }
     }
 }

@@ -55,15 +55,15 @@ namespace GameLib
             }
         }
 
-        public Dictionary<int, GameRules> GetAgentGameRules()
+        public Dictionary<int, AgentGameRules> GetAgentGameRules()
         {
-            Dictionary<int, GameRules> rules = new Dictionary<int, GameRules>();
+            Dictionary<int, AgentGameRules> rules = new Dictionary<int, AgentGameRules>();
 
             foreach (var (id, playerState) in PlayerStates)
             {
                 int[] teamIds = PlayerStates.Where(pair => pair.Value.Team == playerState.Team).Select(pair => pair.Key).ToArray();
                 int leaderId = PlayerStates.Single(pair => pair.Value.IsLeader && pair.Value.Team == playerState.Team).Key;
-                var privateRules = gameRules.ReconstructWithAgentPosition(playerState.Position.X, playerState.Position.Y, teamIds, leaderId);
+                var privateRules = new AgentGameRules(gameRules, playerState.Position.X, playerState.Position.Y, teamIds, leaderId);
                 rules.Add(id, privateRules);
             }
 

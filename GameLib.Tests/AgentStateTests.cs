@@ -9,9 +9,9 @@ namespace GameLib.Tests
     public class AgentStateTests
     {
         //factory methods - in order to abstract sometimes complex object creation
-        private GameRules GetDefaultRules()
+        private AgentGameRules GetDefaultRules()
         {
-            return new GameRules(boardWidth: 8, boardHeight: 8, goalAreaHeight: 2, agentStartX: 4, agentStartY: 5);
+            return new AgentGameRules(boardWidth: 8, boardHeight: 8, goalAreaHeight: 2, agentStartX: 1, agentStartY: 1, teamSize: 2, agentIdsFromTeam: new int[] { 0, 1 }, leaderId: 0);
         }
 
         private AgentState GetState()
@@ -19,7 +19,7 @@ namespace GameLib.Tests
             return new AgentState();
         }
 
-        private AgentState GetSetUpState(GameRules rules)
+        private AgentState GetSetUpState(AgentGameRules rules)
         {
             var state = new AgentState();
             state.Setup(rules);
@@ -50,12 +50,12 @@ namespace GameLib.Tests
         }
 
         [Theory]
-        [InlineData(4, 4)]
-        [InlineData(1, 8)]
+        [InlineData(1, 4)]
+        [InlineData(0, 7)]
         public void Setup_WhenCalled_SetsAgentsPosition(int X, int Y)
         {
             var state = GetState();
-            var rules = new GameRules(boardWidth: 8, boardHeight: 8, agentStartX: X, agentStartY: Y);
+            var rules = new AgentGameRules(boardWidth: 8, boardHeight: 8, agentStartX: X, agentStartY: Y, teamSize: 2, agentIdsFromTeam: new int[] { 0, 1 }, leaderId: 0);
 
             state.Setup(rules);
 
@@ -69,7 +69,7 @@ namespace GameLib.Tests
         public void Setup_WhenCalled_InitializesBoard(int width, int height, int goalAreaHeight)
         {
             var state = GetState();
-            var rules = new GameRules(boardWidth: width, boardHeight: height, goalAreaHeight: goalAreaHeight, agentStartX: 0, agentStartY: 0, teamSize: width);
+            var rules = new AgentGameRules(boardWidth: width, boardHeight: height, goalAreaHeight: goalAreaHeight, agentStartX: 0, agentStartY: 0, teamSize: 2, agentIdsFromTeam: new int[] { 0, 1 }, leaderId: 0);
 
             state.Setup(rules);
 
@@ -121,7 +121,7 @@ namespace GameLib.Tests
         [InlineData(MoveDirection.Up)]
         public void Move_WhenMoveIsInvalid_ThrowsInvalidMoveException(MoveDirection direction)
         {
-            var rules = new GameRules(boardWidth: 8, boardHeight: 8, agentStartX: 0, agentStartY: 0);
+            var rules = new AgentGameRules(boardWidth: 8, boardHeight: 8, agentStartX: 0, agentStartY: 0, teamSize: 2, agentIdsFromTeam: new int[] { 0, 1 }, leaderId: 0);
             var state = GetSetUpState(rules);
             var distance = 1;
 
@@ -138,7 +138,7 @@ namespace GameLib.Tests
             var state = GetSetUpState(rules);
 
             var callTime = DateTime.UtcNow.AddMilliseconds(-1);
-            state.Move(MoveDirection.Up, distance);
+            state.Move(MoveDirection.Down, distance);
 
             var field = state.Board[state.Position.X, state.Position.Y];
             field.Distance.ShouldBe(distance);
@@ -251,9 +251,9 @@ namespace GameLib.Tests
         [Fact]
         public void UpdateBoardWithCommunicationData_WhenBoardsAreDifferentSizes_ThrowsInvalidDiscoveryResultException()
         {
-            var rules = new GameRules(boardWidth: 8);
+            var rules = new AgentGameRules(boardWidth: 8, teamSize: 2, agentIdsFromTeam: new int[] { 0, 1 }, leaderId: 0);
             var state = GetSetUpState(rules);
-            var resultRules = new GameRules(boardWidth: 10);
+            var resultRules = new AgentGameRules(boardWidth: 10, teamSize: 2, agentIdsFromTeam: new int[] { 0, 1 }, leaderId: 0);
             var resultBoard = new AgentBoard(resultRules);
 
             Should.Throw<InvalidCommunicationResultException>(() => state.UpdateBoardWithCommunicationData(resultBoard));
