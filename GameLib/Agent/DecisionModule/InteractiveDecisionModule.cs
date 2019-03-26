@@ -6,14 +6,13 @@ using GameLib.Actions;
 
 namespace GameLib
 {
-    public class InteractiveDecisionModule : IDecisionModule
+    public class InteractiveDecisionModule : DecisionModuleBase
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         private bool registered = false;
-        public CommunicationDataProcessor DataProcessor { get; } = new CommunicationDataProcessor();
 
-        public async Task<IAction> ChooseAction(int agentId, AgentState agentState)
+        public async override Task<IAction> ChooseAction(int agentId, AgentState agentState)
         {
             if (!registered)
             {
@@ -90,11 +89,6 @@ namespace GameLib
             }
 
             return action;
-        }
-
-        public void SaveCommunicationResult(int senderId, bool agreement, DateTime timestamp, object data, AgentState agentState)
-        {
-            DataProcessor.ExtractCommunicationData(senderId, agreement, timestamp, data, agentState);
         }
     }
 }

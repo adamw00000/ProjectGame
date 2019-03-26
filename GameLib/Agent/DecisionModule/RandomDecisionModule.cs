@@ -6,7 +6,7 @@ using GameLib.Actions;
 
 namespace GameLib
 {
-    public class RandomDecisionModule : IDecisionModule
+    public class RandomDecisionModule : DecisionModuleBase
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -14,8 +14,6 @@ namespace GameLib
 
         private readonly int[] prefixSumArray = new int[actionCount];
         private const int actionCount = 8;
-
-        public CommunicationDataProcessor DataProcessor { get; } = new CommunicationDataProcessor();
 
         public RandomDecisionModule(int[] weightArray, int randSeed = 123)
         {
@@ -38,7 +36,7 @@ namespace GameLib
             }
         }
 
-        public Task<IAction> ChooseAction(int agentId, AgentState agentState)
+        public override Task<IAction> ChooseAction(int agentId, AgentState agentState)
         {
             IAction action;
 
@@ -91,11 +89,6 @@ namespace GameLib
             Console.WriteLine(action.ToString());
 
             return Task.FromResult(action);
-        }
-
-        public void SaveCommunicationResult(int senderId, bool agreement, DateTime timestamp, object data, AgentState agentState)
-        {
-            DataProcessor.ExtractCommunicationData(senderId, agreement, timestamp, data, agentState);
         }
     }
 }
