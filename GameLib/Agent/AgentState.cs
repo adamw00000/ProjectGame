@@ -56,8 +56,8 @@ namespace GameLib
                     break;
             }
 
-            if (Position.X >= Board.Width || Position.X < 0 ||
-                Position.Y >= Board.Height || Position.Y < 0)
+            if (Position.X >= Board.Height || Position.X < 0 ||
+                Position.Y >= Board.Width || Position.Y < 0)
             {
                 Position = oldPosition;
                 throw new InvalidMoveException();
