@@ -378,7 +378,7 @@ namespace GameLib.Tests
 
             state.PickUpPiece(agentId);
 
-            var expectedDelay = rules.BaseTimePenalty * rules.PickUpMultiplier;
+            var expectedDelay = rules.BaseTimePenalty * rules.PickUpPieceMultiplier;
             state.PlayerStates[0].LastRequestTimestamp.ShouldBeGreaterThan(beforeTimestamp);
             state.PlayerStates[0].LastActionDelay.ShouldBe(expectedDelay);
         }
@@ -742,7 +742,7 @@ namespace GameLib.Tests
 
             state.CheckPiece(agentId);
 
-            var expectedDelay = rules.BaseTimePenalty * rules.CheckMultiplier;
+            var expectedDelay = rules.BaseTimePenalty * rules.CheckPieceMultiplier;
             state.PlayerStates[0].LastRequestTimestamp.ShouldBeGreaterThan(beforeTimestamp);
             state.PlayerStates[0].LastActionDelay.ShouldBe(expectedDelay);
         }

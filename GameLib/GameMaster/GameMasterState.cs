@@ -182,7 +182,7 @@ namespace GameLib
             Board.RecalculateDistances();
             PlayerStates[playerId] = player;
 
-            DelayPlayer(playerId, gameRules.PickUpMultiplier);
+            DelayPlayer(playerId, gameRules.PickUpPieceMultiplier);
         }
 
         public PutPieceResult PutPiece(int playerId)
@@ -292,7 +292,7 @@ namespace GameLib
             if (player.Piece == null)
                 throw new PieceOperationException("Player doesn't have a piece!");
 
-            DelayPlayer(playerId, gameRules.CheckMultiplier);
+            DelayPlayer(playerId, gameRules.CheckPieceMultiplier);
 
             return player.Piece.IsValid;
         }

@@ -21,8 +21,8 @@ namespace GameLib
         public int BaseTimePenalty { get; }
         public int MoveMultiplier { get; }
         public int DiscoverMultiplier { get; }
-        public int PickUpMultiplier { get; }
-        public int CheckMultiplier { get; }
+        public int PickUpPieceMultiplier { get; }
+        public int CheckPieceMultiplier { get; }
         public int DestroyPieceMultiplier { get; }
         public int PutPieceMultiplier { get; }
         public int CommunicationMultiplier { get; }
@@ -37,6 +37,41 @@ namespace GameLib
             int checkMultiplier = 4, int destroyMultiplier = 4, int putMultiplier = 4, int communicationMultiplier = 4,
             int agentStartX = 4, int agentStartY = 4, int[] agentIdsFromTeam = null, int leaderId = 0)
         {
+            if (boardWidth < 1)
+                throw new InvalidRulesException();
+            if (boardHeight < 1)
+                throw new InvalidRulesException();
+            if (goalAreaHeight < 1 || goalAreaHeight * 2 >= boardHeight)
+                throw new InvalidRulesException();
+            int gameAreaSize = boardWidth * (boardHeight - 2 * goalAreaHeight);
+            int goalAreaSize = boardWidth * goalAreaHeight;
+            if (goalCount < 1 || goalCount > goalAreaSize)
+                throw new InvalidRulesException();
+            if (teamSize < 1 || teamSize > goalAreaSize)
+                throw new InvalidRulesException();
+            if (pieceSpawnInterval < 0)
+                throw new InvalidRulesException();
+            if (maxPiecesOnBoard < 1 || maxPiecesOnBoard > gameAreaSize)
+                throw new InvalidRulesException();
+            if (badPieceProbability < 0.0 || badPieceProbability >= 1.0)
+                throw new InvalidRulesException();
+            if (baseTimePenalty < 1)
+                throw new InvalidRulesException();
+            if (moveMultiplier < 1)
+                throw new InvalidRulesException();
+            if (discoverMultiplier < 1)
+                throw new InvalidRulesException();
+            if (pickUpMultiplier < 1)
+                throw new InvalidRulesException();
+            if (checkMultiplier < 1)
+                throw new InvalidRulesException();
+            if (destroyMultiplier < 1)
+                throw new InvalidRulesException();
+            if (putMultiplier < 1)
+                throw new InvalidRulesException();
+            if (communicationMultiplier < 1)
+                throw new InvalidRulesException();
+
             AgentStartX = agentStartX;
             AgentStartY = agentStartY;
             AgentIdsFromTeam = agentIdsFromTeam;
@@ -54,8 +89,8 @@ namespace GameLib
             BaseTimePenalty = baseTimePenalty;
             MoveMultiplier = moveMultiplier;
             DiscoverMultiplier = discoverMultiplier;
-            PickUpMultiplier = pickUpMultiplier;
-            CheckMultiplier = checkMultiplier;
+            PickUpPieceMultiplier = pickUpMultiplier;
+            CheckPieceMultiplier = checkMultiplier;
             DestroyPieceMultiplier = destroyMultiplier;
             PutPieceMultiplier = putMultiplier;
             CommunicationMultiplier = communicationMultiplier;
@@ -75,8 +110,8 @@ namespace GameLib
                 baseTimePenalty: BaseTimePenalty,
                 moveMultiplier: MoveMultiplier,
                 discoverMultiplier: DestroyPieceMultiplier,
-                pickUpMultiplier: PickUpMultiplier,
-                checkMultiplier: CheckMultiplier,
+                pickUpMultiplier: PickUpPieceMultiplier,
+                checkMultiplier: CheckPieceMultiplier,
                 destroyMultiplier: DestroyPieceMultiplier,
                 putMultiplier: PutPieceMultiplier,
                 communicationMultiplier: CommunicationMultiplier,

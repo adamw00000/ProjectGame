@@ -69,7 +69,7 @@ namespace GameLib.Tests
         public void Setup_WhenCalled_InitializesBoard(int width, int height, int goalAreaHeight)
         {
             var state = GetState();
-            var rules = new GameRules(boardWidth: width, boardHeight: height, goalAreaHeight: goalAreaHeight, agentStartX: 0, agentStartY: 0);
+            var rules = new GameRules(boardWidth: width, boardHeight: height, goalAreaHeight: goalAreaHeight, agentStartX: 0, agentStartY: 0, teamSize: width);
 
             state.Setup(rules);
 
