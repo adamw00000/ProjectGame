@@ -137,4 +137,19 @@ namespace GameLib
         {
         }
     }
+
+    public class InvalidRulesException : Exception
+    {
+        public InvalidRulesException() : base()
+        {
+        }
+
+        public InvalidRulesException(string message) : base(message)
+        {
+        }
+
+        public InvalidRulesException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
 }

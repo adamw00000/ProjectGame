@@ -27,7 +27,7 @@ namespace GameLib
         {
         }
 
-        public void Setup(GameRules rules)
+        public void Setup(AgentGameRules rules)
         {
             Position = (rules.AgentStartX, rules.AgentStartY);
             Board = new AgentBoard(rules);
@@ -138,7 +138,7 @@ namespace GameLib
             return (int)(DateTime.UtcNow - Start).TotalMilliseconds;
         }
 
-        public void HandleStartGameMessage(int agentId, GameRules rules, int timestamp, long absoluteStart)
+        public void HandleStartGameMessage(int agentId, AgentGameRules rules, int timestamp, long absoluteStart)
         {
             Setup(rules);
 
