@@ -21,20 +21,20 @@ namespace GameLib
                 pickUpMultiplier, checkMultiplier, destroyMultiplier, putMultiplier, communicationMultiplier)
         {
             if (agentStartY < 0 || agentStartY >= boardWidth)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid starting y");
             if (agentStartX < 0 || agentStartX >= boardHeight)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid starting x");
             if (agentStartX >= goalAreaHeight && agentStartX < boardHeight - goalAreaHeight) //in task area
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Agent starts in task area");
             if (agentIdsFromTeam == null)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Ids array is null");
             if (agentIdsFromTeam.Length != teamSize)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Ids array size is different from team size");
             HashSet<int> setId = new HashSet<int>(agentIdsFromTeam);
             if (setId.Count != agentIdsFromTeam.Length)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Ids array contains duplicates");
             if (!setId.Contains(leaderId))
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Ids array does not contain leader");
 
             AgentStartX = agentStartX;
             AgentStartY = agentStartY;
@@ -47,21 +47,21 @@ namespace GameLib
                 rules.MaxPiecesOnBoard, rules.BadPieceProbability, rules.BaseTimePenalty, rules.MoveMultiplier, rules.DiscoverMultiplier,
                 rules.PickUpPieceMultiplier, rules.CheckPieceMultiplier, rules.DestroyPieceMultiplier, rules.PutPieceMultiplier, rules.CommunicationMultiplier)
         {
-            if (agentStartX < 0 || agentStartX >= rules.BoardWidth)
-                throw new InvalidRulesException();
+            if (agentStartY < 0 || agentStartY >= rules.BoardWidth)
+                throw new InvalidRulesException("Invalid starting y");
             if (agentStartX < 0 || agentStartX >= rules.BoardHeight)
-                throw new InvalidRulesException();
-            if(agentStartX >= rules.GoalAreaHeight && agentStartX < rules.BoardHeight - rules.GoalAreaHeight) //in task area
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid starting x");
+            if (agentStartX >= rules.GoalAreaHeight && agentStartX < rules.BoardHeight - rules.GoalAreaHeight) //in task area
+                throw new InvalidRulesException("Agent starts in task area");
             if (agentIdsFromTeam == null)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Ids array is null");
             if (agentIdsFromTeam.Length != rules.TeamSize)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Ids array size is different from team size");
             HashSet<int> setId = new HashSet<int>(agentIdsFromTeam);
             if (setId.Count != agentIdsFromTeam.Length)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Ids array contains duplicates");
             if (!setId.Contains(leaderId))
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Ids array does not contain leader");
 
             AgentStartX = agentStartX;
             AgentStartY = agentStartY;

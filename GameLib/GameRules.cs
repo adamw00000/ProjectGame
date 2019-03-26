@@ -32,39 +32,39 @@ namespace GameLib
             int checkMultiplier = 4, int destroyMultiplier = 4, int putMultiplier = 4, int communicationMultiplier = 4)
         {
             if (boardWidth < 1)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid board width value");
             if (boardHeight < 1)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid board height value");
             if (goalAreaHeight < 1 || goalAreaHeight * 2 >= boardHeight)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid goal area height value");
             int taskAreaSize = boardWidth * (boardHeight - 2 * goalAreaHeight);
             int goalAreaSize = boardWidth * goalAreaHeight;
             if (goalCount < 1 || goalCount > goalAreaSize)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid goal count value");
             if (teamSize < 1 || teamSize > goalAreaSize)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invali team size value");
             if (pieceSpawnInterval < 0)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid spawn interval value");
             if (maxPiecesOnBoard < 1 || maxPiecesOnBoard > taskAreaSize)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid max pieces on board value");
             if (badPieceProbability < 0.0 || badPieceProbability >= 1.0)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid bad piece probability");
             if (baseTimePenalty < 1)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid base time penalty");
             if (moveMultiplier < 1)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid move multiplier");
             if (discoverMultiplier < 1)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid discover multiplier");
             if (pickUpMultiplier < 1)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid pick up piece multiplier");
             if (checkMultiplier < 1)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid check piece multiplier");
             if (destroyMultiplier < 1)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid destroy piece multiplier");
             if (putMultiplier < 1)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid put piece multiplier");
             if (communicationMultiplier < 1)
-                throw new InvalidRulesException();
+                throw new InvalidRulesException("Invalid communication multiplier");
 
             BoardWidth = boardWidth;
             BoardHeight = boardHeight;
