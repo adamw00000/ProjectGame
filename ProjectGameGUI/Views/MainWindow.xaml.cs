@@ -34,7 +34,7 @@ namespace ProjectGameGUI.Views
 
             LocalCommunicationServer cs = new LocalCommunicationServer();
             GMLocalConnection gMLocalConnection = new GMLocalConnection(cs);
-            GameRules rules = new GameRules(teamSize: 1, baseTimePenalty: 50, boardHeight: 7, boardWidth: 7);
+            GameRules rules = new GameRules(teamSize: 2, baseTimePenalty: 50, boardHeight: 7, boardWidth: 7, pieceSpawnInterval: 1000);
             gameMaster = new GameMaster(rules, gMLocalConnection);
 
             this.Width = width * displaySettings.FieldWidth;

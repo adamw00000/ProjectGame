@@ -30,17 +30,19 @@ namespace GameLib
 
             if (communicationQueue.Count != 0) //another agent request
             {
-                var randomTeammate = agentState.TeamIds[random.Next(agentState.TeamIds.Length)];
-                bool agreement = random.Next(2) == 0 ? true : false; //50% chance
+                var teammate = communicationQueue[0];
+                communicationQueue.RemoveAt(0);
+                //bool agreement = random.Next(2) == 0 ? true : false; //50% chance
+                bool agreement = true;
 
                 if (agreement)
                 {
-                    var data = DataProcessor.CreateCommunicationDataForCommunicationWith(randomTeammate, agentState);
-                    action = new ActionCommunicationAgreementWithData(agentId, randomTeammate, true, data);
+                    var data = DataProcessor.CreateCommunicationDataForCommunicationWith(teammate, agentState);
+                    action = new ActionCommunicationAgreementWithData(agentId, teammate, true, data);
                 }
                 else
                 {
-                    action = new ActionCommunicationAgreementWithData(agentId, randomTeammate, false, null);
+                    action = new ActionCommunicationAgreementWithData(agentId, teammate, false, null);
                 }
                 previousAction = action;
                 return Task.FromResult(action); //return
