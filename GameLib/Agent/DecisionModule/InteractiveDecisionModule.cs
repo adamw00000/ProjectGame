@@ -32,7 +32,8 @@ namespace GameLib
         private IAction ParseInput(ConsoleKey key, int agentId, AgentState agentState)
         {
             IAction action;
-            var random = RandomGenerator.GetGenerator();
+
+            Random random = RandomGenerator.GetGenerator(); 
 
             switch (key)
             {

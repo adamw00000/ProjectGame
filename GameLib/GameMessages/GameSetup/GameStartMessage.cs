@@ -6,10 +6,10 @@ namespace GameLib.GameMessages
 {
     class GameStartMessage : GameMasterMessage
     {
-        public readonly GameRules Rules;
+        public readonly AgentGameRules Rules;
         public readonly long AbsoluteStart;
 
-        public GameStartMessage(int agentId, int timestamp, GameRules rules, long absStart) : base(agentId, timestamp)
+        public GameStartMessage(int agentId, int timestamp, AgentGameRules rules, long absStart) : base(agentId, timestamp)
         {
             Rules = rules;
             AbsoluteStart = absStart;

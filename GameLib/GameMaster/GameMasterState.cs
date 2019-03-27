@@ -55,15 +55,15 @@ namespace GameLib
             }
         }
 
-        public Dictionary<int, GameRules> GetAgentGameRules()
+        public Dictionary<int, AgentGameRules> GetAgentGameRules()
         {
-            Dictionary<int, GameRules> rules = new Dictionary<int, GameRules>();
+            Dictionary<int, AgentGameRules> rules = new Dictionary<int, AgentGameRules>();
 
             foreach (var (id, playerState) in PlayerStates)
             {
                 int[] teamIds = PlayerStates.Where(pair => pair.Value.Team == playerState.Team).Select(pair => pair.Key).ToArray();
                 int leaderId = PlayerStates.Single(pair => pair.Value.IsLeader && pair.Value.Team == playerState.Team).Key;
-                var privateRules = gameRules.ReconstructWithAgentPosition(playerState.Position.X, playerState.Position.Y, teamIds, leaderId);
+                var privateRules = new AgentGameRules(gameRules, playerState.Position.X, playerState.Position.Y, teamIds, leaderId);
                 rules.Add(id, privateRules);
             }
 
@@ -182,7 +182,7 @@ namespace GameLib
             Board.RecalculateDistances();
             PlayerStates[playerId] = player;
 
-            DelayPlayer(playerId, gameRules.PickUpMultiplier);
+            DelayPlayer(playerId, gameRules.PickUpPieceMultiplier);
         }
 
         public PutPieceResult PutPiece(int playerId)
@@ -292,7 +292,7 @@ namespace GameLib
             if (player.Piece == null)
                 throw new PieceOperationException("Player doesn't have a piece!");
 
-            DelayPlayer(playerId, gameRules.CheckMultiplier);
+            DelayPlayer(playerId, gameRules.CheckPieceMultiplier);
 
             return player.Piece.IsValid;
         }
