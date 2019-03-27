@@ -48,23 +48,14 @@ namespace GameLib
                 return Task.FromResult(action); //return
             }
 
-            //if (random.Next(10) == 0) //random move (one in 10)
+            //if (random.Next(20) == 0) //random communication (one in 20)
             //{
-            //    var possibleMoves = agentState.PossibleMoves;
-            //    var direction = possibleMoves[random.Next(possibleMoves.Count)];
-            //    action = new ActionMove(agentId, direction);
+            //    var randomTeammate = agentState.TeamIds[random.Next(agentState.TeamIds.Length)];
+            //    var data = DataProcessor.CreateCommunicationDataForCommunicationWith(randomTeammate, agentState);
+            //    action = new ActionCommunicationRequestWithData(agentId, randomTeammate, data);
             //    previousAction = action;
             //    return Task.FromResult(action); //return
             //}
-
-            if (random.Next(20) == 0) //random communication (one in 20)
-            {
-                var randomTeammate = agentState.TeamIds[random.Next(agentState.TeamIds.Length)];
-                var data = DataProcessor.CreateCommunicationDataForCommunicationWith(randomTeammate, agentState);
-                action = new ActionCommunicationRequestWithData(agentId, randomTeammate, data);
-                previousAction = action;
-                return Task.FromResult(action); //return
-            }
 
             (int X, int Y) = agentState.Position;
 
