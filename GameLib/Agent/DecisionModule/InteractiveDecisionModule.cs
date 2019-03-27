@@ -10,6 +10,8 @@ namespace GameLib
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
+        int wszystkosiesypie; //HAVE TO BE CHANGED!!!!
+
         private bool registered = false;
         public CommunicationDataProcessor DataProcessor { get; } = new CommunicationDataProcessor();
 
@@ -17,11 +19,12 @@ namespace GameLib
         {
             if (!registered)
             {
-                InteractiveInputProvider.Register(agentId);
+                wszystkosiesypie = RandomGenerator.GetGenerator().Next(1000000);
+                InteractiveInputProvider.Register(wszystkosiesypie);
                 registered = true;
             }
 
-            ConsoleKey key = await InteractiveInputProvider.GetKey(agentId);
+            ConsoleKey key = await InteractiveInputProvider.GetKey(wszystkosiesypie);
 
             IAction action = ParseInput(key, agentId, agentState);
             Console.WriteLine(action);
@@ -70,15 +73,17 @@ namespace GameLib
                     logger.Debug($"Agent {agentId} chose action ActionDestroyPiece");
                     break;
                 case ConsoleKey.A:
-                    var requestData = DataProcessor.CreateCommunicationDataForCommunicationWith(agentId, agentState);
-                    action = new ActionCommunicationRequestWithData(agentId, agentId, requestData);
-                    logger.Debug($"Agent {agentId} chose action ActionCommunicationRequestWithData with data {requestData}");
+                    int teammateId = agentState.TeamIds[random.Next(agentState.TeamIds.Length)];
+                    var requestData = DataProcessor.CreateCommunicationDataForCommunicationWith(teammateId, agentState);
+                    action = new ActionCommunicationRequestWithData(agentId, teammateId, requestData);
+                    logger.Debug($"Agent {agentId} chose action ActionCommunicationRequestWithData with agent {teammateId} with data {requestData}");
                     break;
                 case ConsoleKey.S:
+                    int teammate2Id = agentState.TeamIds[random.Next(agentState.TeamIds.Length)];
                     bool agreement = (random.Next(2) == 1) ? true : false;
-                    var responseData = DataProcessor.CreateCommunicationDataForCommunicationWith(agentId, agentState);
-                    action = new ActionCommunicationAgreementWithData(agentId, agentId, agreement, responseData);
-                    logger.Debug($"Agent {agentId} chose action ActionCommunicationAgreementWithData with data {responseData} - he {(agreement ? "agrees" : "doesn't agree")} for the communication");
+                    var responseData = DataProcessor.CreateCommunicationDataForCommunicationWith(teammate2Id, agentState);
+                    action = new ActionCommunicationAgreementWithData(agentId, teammate2Id, agreement, responseData);
+                    logger.Debug($"Agent {agentId} chose action ActionCommunicationAgreementWithData with agent {teammate2Id} with data {responseData} - he {(agreement ? "agrees" : "doesn't agree")} for the communication");
                     break;
                 case ConsoleKey.D:
                     action = new ActionDiscovery(agentId);

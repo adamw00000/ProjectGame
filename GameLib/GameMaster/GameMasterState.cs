@@ -99,8 +99,8 @@ namespace GameLib
         public int Move(int playerId, MoveDirection direction)
         {
             var player = PlayerStates[playerId];
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
+
+            CheckEligibility(player);
 
             var newPosition = player.Position;
 
@@ -141,6 +141,14 @@ namespace GameLib
             return Board[newPosition.X, newPosition.Y].Distance;
         }
 
+        private static void CheckEligibility(PlayerState player)
+        {
+            if (player.PendingLeaderCommunication)
+                throw new PendingLeaderCommunicationException();
+            if (!player.IsEligibleForAction)
+                throw new DelayException();
+        }
+
         private bool IsOnBoard((int, int) newPosition)
         {
             (int x, int y) = newPosition;
@@ -164,8 +172,7 @@ namespace GameLib
         {
             PlayerState player = PlayerStates[playerId];
 
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
+            CheckEligibility(player);
 
             if (player.Piece != null)
                 throw new PieceOperationException("Cannot pick up piece if you already have one!");
@@ -189,8 +196,7 @@ namespace GameLib
         {
             PlayerState player = PlayerStates[playerId];
 
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
+            CheckEligibility(player);
 
             if (player.Piece == null)
                 throw new PieceOperationException("Player doesn't have a piece!");
@@ -271,8 +277,7 @@ namespace GameLib
         {
             PlayerState player = PlayerStates[playerId];
 
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
+            CheckEligibility(player);
 
             if (player.Piece == null)
                 throw new PieceOperationException("Player doesn't have a piece!");
@@ -286,8 +291,7 @@ namespace GameLib
         {
             PlayerState player = PlayerStates[playerId];
 
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
+            CheckEligibility(player);
 
             if (player.Piece == null)
                 throw new PieceOperationException("Player doesn't have a piece!");
@@ -301,8 +305,7 @@ namespace GameLib
         {
             PlayerState player = PlayerStates[playerId];
 
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
+            CheckEligibility(player);
 
             DelayPlayer(playerId, gameRules.DiscoverMultiplier);
 
@@ -331,7 +334,13 @@ namespace GameLib
 
         public void DelayCommunicationPartners(int senderId, int targetId)
         {
-            PlayerState player = PlayerStates[targetId];
+            PlayerState senderPlayer = PlayerStates[senderId];
+
+            if (senderPlayer.IsLeader)
+            {
+                logger.Debug($"Agent {targetId} no longer has pending leader communication!");
+                PlayerStates[targetId].PendingLeaderCommunication = false;
+            }
 
             AddDelay(targetId, gameRules.CommunicationMultiplier);
             AddDelay(senderId, gameRules.CommunicationMultiplier);
@@ -349,10 +358,15 @@ namespace GameLib
 
         public void SaveCommunicationData(int senderId, int targetId, object data)
         {
-            PlayerState player = PlayerStates[targetId];
+            PlayerState senderPlayer = PlayerStates[senderId];
+            
+            CheckEligibility(senderPlayer);
 
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
+            if (senderPlayer.IsLeader)
+            {
+                PlayerStates[targetId].PendingLeaderCommunication = true;
+                logger.Debug($"Agent {targetId} has now pending leader communication!");
+            }
 
             CommunicationData[(senderId, targetId)] = data;
         }
@@ -371,6 +385,18 @@ namespace GameLib
             {
                 throw new CommunicationException($"Communication data for pair ({senderId}, {targetId}) doesn't exist!");
             }
+        }
+
+        public void VerifyLeaderCommunicationState(int senderId, int targetId, bool agreement)
+        {
+            var senderPlayer = PlayerStates[senderId];
+            var targetPlayer = PlayerStates[targetId];
+
+            if (targetPlayer.PendingLeaderCommunication && !senderPlayer.IsLeader)
+                throw new PendingLeaderCommunicationException();
+
+            if (targetPlayer.PendingLeaderCommunication && senderPlayer.IsLeader && !agreement)
+                throw new PendingLeaderCommunicationException();
         }
 
         public void JoinGame(int agentId, int teamId, bool wantToBeLeader)

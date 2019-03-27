@@ -11,6 +11,7 @@ namespace GameLib
 
         public DateTime LastRequestTimestamp { get; set; }
         public int LastActionDelay { get; set; }
+        public bool PendingLeaderCommunication { get; set; }
 
         public bool IsEligibleForAction => DateTime.UtcNow >= LastRequestTimestamp.AddMilliseconds(LastActionDelay);
 

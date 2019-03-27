@@ -848,6 +848,23 @@ namespace GameLib.Tests
         }
 
         [Fact]
+        public void SaveCommunicationData_WhenSenderIsDelayed_ThrowsDelayException()
+        {
+            var rules = Helper.GetStaticDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            var senderId = 0;
+            var targetId = 1;
+            var previousSenderDelay = 1000 * 3600 * 24;
+            state.PlayerStates.Add(senderId, new PlayerState(-1, -1) { LastRequestTimestamp = DateTime.UtcNow, LastActionDelay = previousSenderDelay });
+            state.PlayerStates.Add(targetId, new PlayerState(-1, -1));
+
+            object message1 = 15;
+
+            Should.Throw<DelayException>(() => state.SaveCommunicationData(senderId, targetId, message1));
+        }
+
+        [Fact]
         public void GetCommunicationData_WhenCalled_ReturnsMostRecentDataForThePair()
         {
             var rules = Helper.GetStaticDefaultRules();
@@ -867,6 +884,39 @@ namespace GameLib.Tests
 
             var result = state.GetCommunicationData(senderId, targetId);
             result.ShouldBe(message2);
+        }
+
+        [Fact]
+        public void SaveCommunicationData_WhenCalled_SetsPendingCommunicationWithLeader()
+        {
+            var rules = Helper.GetStaticDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            var senderId = 0;
+            var targetId = 1;
+            state.PlayerStates.Add(senderId, new PlayerState(-1, -1, isLeader: true));
+            state.PlayerStates.Add(targetId, new PlayerState(-1, -1));
+
+            state.SaveCommunicationData(senderId, targetId, "");
+
+            state.PlayerStates[targetId].PendingLeaderCommunication.ShouldBe(true);
+        }
+
+        [Fact]
+        public void DelayCommunicationPartners_WhenCalled_RemovesPendingCommunicationWithLeader()
+        {
+            var rules = Helper.GetStaticDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+
+            var senderId = 0;
+            var targetId = 1;
+            state.PlayerStates.Add(senderId, new PlayerState(-1, -1, isLeader: true));
+            state.PlayerStates.Add(targetId, new PlayerState(-1, -1));
+
+            state.SaveCommunicationData(senderId, targetId, "");
+            state.DelayCommunicationPartners(senderId, targetId);
+
+            state.PlayerStates[targetId].PendingLeaderCommunication.ShouldBe(false);
         }
 
         #endregion --Communicate--
