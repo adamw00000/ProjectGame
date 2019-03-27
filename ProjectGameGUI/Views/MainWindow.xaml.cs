@@ -18,7 +18,6 @@ namespace ProjectGameGUI.Views
     public class MainWindow : Window
     {
         ExpandedGrid MainGrid;
-        MainWindowViewModel viewModel;
 
         public MainWindow()
         {
@@ -27,8 +26,6 @@ namespace ProjectGameGUI.Views
             InitializeLogging();
             this.AttachDevTools();
 #endif
-            viewModel = new MainWindowViewModel();
-            DataContext = viewModel;
             MainGrid = this.Get<ExpandedGrid>("MainGrid");
         }
 

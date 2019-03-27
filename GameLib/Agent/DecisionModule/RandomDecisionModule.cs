@@ -15,13 +15,16 @@ namespace GameLib
         private readonly int[] prefixSumArray = new int[actionCount];
         private const int actionCount = 8;
 
-        public RandomDecisionModule(int[] weightArray, int randSeed = 123)
+        public RandomDecisionModule(int[] weightArray) : this(weightArray, RandomGenerator.GetGenerator().Next())
+        { }
+
+        public RandomDecisionModule(int[] weightArray, int randSeed)
         {
             if (weightArray.Length != actionCount)
                 throw new ArgumentException($"Weight array's length must be {actionCount}!");
 
             CalculatePrefixWeightArray(weightArray);
-
+            
             random = new Random(randSeed);
         }
 
