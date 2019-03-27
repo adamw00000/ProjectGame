@@ -219,6 +219,19 @@ namespace GameLib.Tests
             result.ShouldBe(expected);
         }
 
+        [Fact]
+        public void Move_WhenAgentHavePendingLeaderCommunication_ThrowsPendingLeaderCommunicationException()
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+            var agentId = 0;
+            var direction = MoveDirection.Down;
+
+            state.PlayerStates.Add(agentId, new PlayerState(1, 1) { PendingLeaderCommunication = true });
+
+            Should.Throw<PendingLeaderCommunicationException>(() => state.Move(agentId, direction));
+        }
+
         #endregion --Move--
 
         #region --PickUpPiece--
@@ -393,6 +406,19 @@ namespace GameLib.Tests
                 }
             }
             state.Board.PieceCount.ShouldBe(1);
+        }
+
+        [Fact]
+        public void PickUpPiece_WhenAgentHavePendingLeaderCommunication_ThrowsPendingLeaderCommunicationException()
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+            var agentId = 0;
+            state.Board.BoardTable[1, 1].Piece = new Piece(1.0);
+
+            state.PlayerStates.Add(agentId, new PlayerState(1, 1) { PendingLeaderCommunication = true });
+
+            Should.Throw<PendingLeaderCommunicationException>(() => state.PickUpPiece(agentId));
         }
 
         #endregion --PickUpPiece--
@@ -588,6 +614,18 @@ namespace GameLib.Tests
             state.PlayerStates[0].LastActionDelay.ShouldBe(expectedDelay);
         }
 
+        [Fact]
+        public void PutPiece_WhenAgentHavePendingLeaderCommunication_ThrowsPendingLeaderCommunicationException()
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+            var agentId = 0;
+
+            state.PlayerStates.Add(agentId, new PlayerState(1, 1) { PendingLeaderCommunication = true, Piece = new Piece(1.0) });
+
+            Should.Throw<PendingLeaderCommunicationException>(() => state.PutPiece(agentId));
+        }
+
         #endregion --PutPiece--
 
         #region --DestroyPiece--
@@ -661,6 +699,18 @@ namespace GameLib.Tests
             state.PlayerStates[0].LastActionDelay.ShouldBe(expectedDelay);
         }
 
+        [Fact]
+        public void DestroyPiece_WhenAgentHavePendingLeaderCommunication_ThrowsPendingLeaderCommunicationException()
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+            var agentId = 0;
+
+            state.PlayerStates.Add(agentId, new PlayerState(1, 1) { PendingLeaderCommunication = true, Piece = new Piece(1.0) });
+
+            Should.Throw<PendingLeaderCommunicationException>(() => state.DestroyPiece(agentId));
+        }
+
         #endregion --DestroyPiece--
 
         #region --CheckPiece--
@@ -731,6 +781,18 @@ namespace GameLib.Tests
             var expectedDelay = rules.BaseTimePenalty * rules.CheckPieceMultiplier;
             state.PlayerStates[0].LastRequestTimestamp.ShouldBeGreaterThan(beforeTimestamp);
             state.PlayerStates[0].LastActionDelay.ShouldBe(expectedDelay);
+        }
+
+        [Fact]
+        public void CheckPiece_WhenAgentHavePendingLeaderCommunication_ThrowsPendingLeaderCommunicationException()
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+            var agentId = 0;
+
+            state.PlayerStates.Add(agentId, new PlayerState(1, 1) { PendingLeaderCommunication = true, Piece = new Piece(1.0) });
+
+            Should.Throw<PendingLeaderCommunicationException>(() => state.CheckPiece(agentId));
         }
 
         #endregion --CheckPiece--
@@ -813,6 +875,18 @@ namespace GameLib.Tests
             var expectedDelay = rules.BaseTimePenalty * rules.DiscoverMultiplier;
             state.PlayerStates[0].LastRequestTimestamp.ShouldBeGreaterThan(beforeTimestamp);
             state.PlayerStates[0].LastActionDelay.ShouldBe(expectedDelay);
+        }
+
+        [Fact]
+        public void Discover_WhenAgentHavePendingLeaderCommunication_ThrowsPendingLeaderCommunicationException()
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+            var agentId = 0;
+
+            state.PlayerStates.Add(agentId, new PlayerState(1, 1) { PendingLeaderCommunication = true });
+
+            Should.Throw<PendingLeaderCommunicationException>(() => state.Discover(agentId));
         }
 
         #endregion --Discover--
