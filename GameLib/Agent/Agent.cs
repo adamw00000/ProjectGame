@@ -124,7 +124,7 @@ namespace GameLib
         {
             logger.Debug($"Agent with temporary id {tempId} received StartGameMessage, he received id {agentId}");
 
-            this.rules = new AgentGameRules(rules);
+            this.rules = rules;
             this.id = agentId;
 
             state.HandleStartGameMessage(agentId, rules, timestamp, absoluteStart);
