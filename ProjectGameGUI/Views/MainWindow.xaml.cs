@@ -26,8 +26,8 @@ namespace ProjectGameGUI.Views
             InitializeLogging();
             this.AttachDevTools();
 #endif
-            MainWindowViewModel viewModel = new MainWindowViewModel();
-            DataContext = viewModel;
+            //MainWindowViewModel viewModel = new MainWindowViewModel();
+            //DataContext = viewModel;
             MainGrid = this.Get<ExpandedGrid>("MainGrid");
         }
 
