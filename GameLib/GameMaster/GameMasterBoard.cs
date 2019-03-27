@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace GameLib
 {
-    public class GameMasterBoard
+    public class GameMasterBoard: ICloneable
     {
         public readonly GameMasterField[,] BoardTable;
         public int Height => BoardTable.GetLength(0);
@@ -11,6 +12,12 @@ namespace GameLib
 
         public int PieceCount { get; set; } = 0; //including ones possessed by agents
         public List<(int x, int y)> PiecesPositions = new List<(int x, int y)>();
+
+        private GameMasterBoard(int height, int width, int goalAreaHeight)
+        {
+            this.GoalAreaHeight = goalAreaHeight;
+            this.BoardTable = new GameMasterField[height, width];
+        }
 
         public GameMasterBoard(GameRules rules)
         {
@@ -239,5 +246,29 @@ namespace GameLib
 
             return false;
         }
+
+        public object Clone()
+        {
+            GameMasterBoard gmb = new GameMasterBoard(Height, Width, GoalAreaHeight);
+            
+            for (int i = 0; i < Height; i++)
+            {
+                for (int j = 0; j < Width; j++)
+                {
+                    gmb.BoardTable[i, j] = (GameMasterField)BoardTable[i, j].Clone();
+                }
+            }
+            gmb.PieceCount = PieceCount;
+
+            List<(int x, int y)> piecesTmp = new List<(int x, int y)>(this.PiecesPositions);
+
+            foreach (var pos in piecesTmp)
+            {
+                gmb.PiecesPositions.Add((pos.x, pos.y));
+            }
+
+            return gmb;
+        }
+
     }
 }

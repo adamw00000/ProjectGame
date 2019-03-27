@@ -11,10 +11,19 @@ namespace GameLib
         private readonly IConnection connection;
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public GameMasterState state; //GUI needs it
+        private GameMasterState state;
         private readonly GameRules rules;
         private DateTime start;
         public bool gameStarted = false;
+
+        public GameMasterStateSnapshot GameMasterStateSnapshot
+        {
+            get
+            {
+                return new GameMasterStateSnapshot(state);
+            }
+
+        }
 
         public GameMaster(GameRules rules, IConnection connection)
         {

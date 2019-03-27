@@ -17,10 +17,10 @@ namespace ProjectGameGUI.Models
     {
         private Task[] agentTasks;
         private GameMaster gameMaster;
-        private GameMasterState gameMasterState => gameMaster.state;
-        private int width => gameMasterState.Board.Width;
-        private int height => gameMasterState.Board.Height;
-        private int goalAreaHeight => gameMasterState.Board.GoalAreaHeight;
+        private GameMasterStateSnapshot gameMasterStateSnapShot => gameMaster.GameMasterStateSnapshot;
+        private int width => gameMasterStateSnapShot.Board.Width;
+        private int height => gameMasterStateSnapShot.Board.Height;
+        private int goalAreaHeight => gameMasterStateSnapShot.Board.GoalAreaHeight;
         private MainWindowViewModel mainWindowViewModel;
         private List<Field> fields = new List<Field>();
         private List<Player> players = new List<Player>();
@@ -33,7 +33,7 @@ namespace ProjectGameGUI.Models
 
             LocalCommunicationServer cs = new LocalCommunicationServer();
             GMLocalConnection gMLocalConnection = new GMLocalConnection(cs);
-            GameRules rules = new GameRules(teamSize: 1, baseTimePenalty: 25, boardHeight: 7, boardWidth: 7);
+            GameRules rules = new GameRules(teamSize: 2, baseTimePenalty: 25, boardHeight: 7, boardWidth: 7);
             gameMaster = new GameMaster(rules, gMLocalConnection);
 
             this.mainWindowViewModel.WindowWidth = width * DisplaySettings.FieldWidth;
@@ -123,7 +123,7 @@ namespace ProjectGameGUI.Models
                     field.X = i;
                     field.Y = j;
                     field.Team = Team.Red;
-                    field.IsUndiscoveredGoal = gameMasterState.Board[i, j].IsGoal;
+                    field.IsUndiscoveredGoal = gameMasterStateSnapShot.Board[i, j].IsGoal;
                     field.Name = $"({i},{j})";
                     fields.Add(field);
                 }
@@ -143,7 +143,7 @@ namespace ProjectGameGUI.Models
                     field.X = i;
                     field.Y = j;
                     field.Team = Team.Blue;
-                    field.IsUndiscoveredGoal = gameMasterState.Board[i, j].IsGoal;
+                    field.IsUndiscoveredGoal = gameMasterStateSnapShot.Board[i, j].IsGoal;
                     field.Name = $"({i},{j})";
                     fields.Add(field);
                 }
@@ -153,12 +153,10 @@ namespace ProjectGameGUI.Models
         private void PreparePlayers()
         {
             players.Clear();
-            var states = new Dictionary<int, PlayerState>(gameMasterState.PlayerStates);
-
-            foreach (var (id, playerstate) in states)
+            
+            foreach (var (id, playerstate) in gameMasterStateSnapShot.PlayerStates)
             {
                 Player player = new Player();
-
                 if (playerstate.Piece != null)
                 {
                     Piece piece = new Piece();
@@ -187,13 +185,12 @@ namespace ProjectGameGUI.Models
         private void PreparePieces()
         {
             pieces.Clear();
-            var states = new List<(int x, int y)>(gameMasterState.Board.PiecesPositions);
 
-            foreach (var piecePos in states)
+            foreach (var piecePos in gameMasterStateSnapShot.Board.PiecesPositions)
             {
                 Piece piece = new Piece();
                 (piece.X, piece.Y) = piecePos;
-                piece.IsValid = gameMasterState.Board[piecePos.x, piecePos.y].Piece.IsValid;
+                piece.IsValid = gameMasterStateSnapShot.Board[piecePos.x, piecePos.y].Piece.IsValid;
                 pieces.Add(piece);
             }
         }
