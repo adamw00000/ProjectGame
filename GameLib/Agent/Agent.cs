@@ -17,7 +17,7 @@ namespace GameLib
         private readonly int tempId;
         private readonly DecisionModuleBase decisionModule;
         private readonly AgentState state;
-        private GameRules rules;
+        private AgentGameRules rules;
 
         private Message awaitedForResponse;
         private bool waitForResponse;
@@ -120,11 +120,11 @@ namespace GameLib
             state.IsInGame = isConnected;
         }
 
-        public void HandleStartGameMessage(int agentId, GameRules rules, int timestamp, long absoluteStart)
+        public void HandleStartGameMessage(int agentId, AgentGameRules rules, int timestamp, long absoluteStart)
         {
             logger.Debug($"Agent with temporary id {tempId} received StartGameMessage, he received id {agentId}");
 
-            this.rules = rules;
+            this.rules = new AgentGameRules(rules);
             this.id = agentId;
 
             state.HandleStartGameMessage(agentId, rules, timestamp, absoluteStart);

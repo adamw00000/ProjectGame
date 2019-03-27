@@ -204,7 +204,7 @@ namespace GameLib
             {
                 for (int j = y - 1; j < y + 2; j++)
                 {
-                    if (i >= 0 && i < Width && j >= 0 && j < Height)
+                    if (i >= 0 && i < Height && j >= 0 && j < Width)
                     {
                         result[i - x + 1, j - y + 1] = BoardTable[i, j].Distance;
                     }

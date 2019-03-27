@@ -9,7 +9,7 @@ namespace GameLib
         public int Width => BoardTable.GetLength(1);
         public int GoalAreaHeight { get; }
 
-        public AgentBoard(GameRules rules)
+        public AgentBoard(AgentGameRules rules)
         {
             BoardTable = new AgentField[rules.BoardHeight, rules.BoardWidth];
             GoalAreaHeight = rules.GoalAreaHeight;

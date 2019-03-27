@@ -68,20 +68,6 @@ namespace GameLib.Tests
             }
         }
 
-        [Fact]
-        public void GeneratedPiece_WhenProbabilityIs0_IsNotValid()
-        {
-            GameRules rules = Helper.GetAlwaysInvalidPieceRules();
-            var state = Helper.GetGameMasterState(rules);
-
-            state.GeneratePiece();
-
-            foreach (var (x, y) in state.Board.PiecesPositions)
-            {
-                state.Board.BoardTable[x, y].HasValidPiece.ShouldBe(false);
-            }
-        }
-
         #endregion --Generate--
 
         #region --Move--
@@ -378,7 +364,7 @@ namespace GameLib.Tests
 
             state.PickUpPiece(agentId);
 
-            var expectedDelay = rules.BaseTimePenalty * rules.PickUpMultiplier;
+            var expectedDelay = rules.BaseTimePenalty * rules.PickUpPieceMultiplier;
             state.PlayerStates[0].LastRequestTimestamp.ShouldBeGreaterThan(beforeTimestamp);
             state.PlayerStates[0].LastActionDelay.ShouldBe(expectedDelay);
         }
@@ -742,7 +728,7 @@ namespace GameLib.Tests
 
             state.CheckPiece(agentId);
 
-            var expectedDelay = rules.BaseTimePenalty * rules.CheckMultiplier;
+            var expectedDelay = rules.BaseTimePenalty * rules.CheckPieceMultiplier;
             state.PlayerStates[0].LastRequestTimestamp.ShouldBeGreaterThan(beforeTimestamp);
             state.PlayerStates[0].LastActionDelay.ShouldBe(expectedDelay);
         }
