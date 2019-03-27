@@ -202,6 +202,7 @@ namespace GameLib
                 foreach (var (id, agplayerId) in state.PlayerStates)
                 {
                     Message message = new GameOverMessage(id, timestamp, (int)state.Winner);
+                    connection.Send(message);
                 }
             }
         }
