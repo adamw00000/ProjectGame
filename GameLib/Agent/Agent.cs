@@ -232,7 +232,7 @@ namespace GameLib
 
         public void HandleCommunicationRequest(int requesterId, int timestamp)
         {
-            logger.Debug($"Agent {id} received CommunicationRequest form agent {requesterId}");
+            logger.Debug($"Agent {id} received CommunicationRequest from agent {requesterId}");
 
             decisionModule.AddSenderToCommunicationQueue(state, requesterId);
         }

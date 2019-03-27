@@ -122,7 +122,6 @@ namespace GameLib
 
             previousPosition = (X, Y);
             previousDistance = agentState.Board[X, Y].Distance;
-
             previousAction = action;
             return Task.FromResult(action);
         }
