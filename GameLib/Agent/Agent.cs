@@ -15,7 +15,7 @@ namespace GameLib
 
         private int id;
         private readonly int tempId;
-        private readonly IDecisionModule decisionModule;
+        private readonly DecisionModuleBase decisionModule;
         private readonly AgentState state;
         private AgentGameRules rules;
 
@@ -26,7 +26,7 @@ namespace GameLib
         // Not used - did u miss it somewhere?
         //private int isWinning = -1;
 
-        public Agent(int tempId, IDecisionModule decisionModule, IConnection connection)
+        public Agent(int tempId, DecisionModuleBase decisionModule, IConnection connection)
         {
             this.tempId = tempId;
             this.decisionModule = decisionModule;
@@ -236,8 +236,9 @@ namespace GameLib
 
         public void HandleCommunicationRequest(int requesterId, int timestamp)
         {
-            logger.Debug($"Agent {id} received CommunicationRequest form agent {requesterId}");
-            //Needs to be developed - always responds false, redirecting to Decision Module needed
+            logger.Debug($"Agent {id} received CommunicationRequest from agent {requesterId}");
+
+            decisionModule.AddSenderToCommunicationQueue(state, requesterId);
         }
 
         public void HandleCommunicationResponse(int timestamp, int waitUntilTime, int senderId, bool agreement, object data)
@@ -246,7 +247,7 @@ namespace GameLib
             {
                 logger.Debug($"Agent {id} received communication response from agent {senderId}, he " + (agreement ? "agreed" : "didn't agree") + " for the communication");
                 decisionModule.SaveCommunicationResult(senderId, agreement, state.Start.AddMilliseconds(timestamp), data, state);
-
+                
                 state.WaitUntilTime = waitUntilTime;
                 waitForResponse = false;
             }
@@ -259,7 +260,7 @@ namespace GameLib
         public void HandleTimePenaltyError(int timestamp, int requestTimestamp, int waitUntilTime)
         {
             logger.Warn($"Agent {id} tried to move during penalty.");
-
+            
             state.WaitUntilTime = waitUntilTime;
             if (requestTimestamp == LastActionTimestamp)
             {

@@ -6,7 +6,7 @@ using GameLib.Actions;
 
 namespace GameLib
 {
-    public class RandomDecisionModule : IDecisionModule
+    public class RandomDecisionModule : DecisionModuleBase
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -14,8 +14,6 @@ namespace GameLib
 
         private readonly int[] prefixSumArray = new int[actionCount];
         private const int actionCount = 8;
-
-        public CommunicationDataProcessor DataProcessor { get; } = new CommunicationDataProcessor();
 
         public RandomDecisionModule(int[] weightArray) : this(weightArray, RandomGenerator.GetGenerator().Next())
         { }
@@ -84,26 +82,23 @@ namespace GameLib
             }
             else if (value <= prefixSumArray[6])
             {
-                var requestData = DataProcessor.CreateCommunicationDataForCommunicationWith(agentId, agentState);
-                action = new ActionCommunicationRequestWithData(agentId, CurrentTimestamp(agentState), agentId, requestData);
-                logger.Debug($"Agent {agentId} chose action ActionCommunicationRequestWithData with data {requestData}");
+                var teammate = agentState.TeamIds[random.Next(agentState.TeamIds.Length)];
+                var requestData = DataProcessor.CreateCommunicationDataForCommunicationWith(teammate, agentState);
+                action = new ActionCommunicationRequestWithData(agentId, CurrentTimestamp(agentState), teammate, requestData);
+                logger.Debug($"Agent {agentId} chose action ActionCommunicationRequestWithData with agent {teammate} with data {requestData}");
             }
             else
             {
-                var responseData = DataProcessor.CreateCommunicationDataForCommunicationWith(agentId, agentState);
+                var randomTeammate = agentState.TeamIds[random.Next(agentState.TeamIds.Length)];
+                var responseData = DataProcessor.CreateCommunicationDataForCommunicationWith(randomTeammate, agentState);
                 bool agreement = (random.Next(2) == 1) ? true : false;
-                action = new ActionCommunicationAgreementWithData(agentId, CurrentTimestamp(agentState), agentId, agreement, responseData);
-                logger.Debug($"Agent {agentId} chose action ActionCommunicationAgreementWithData with data {responseData} - he {(agreement ? "agrees" : "doesn't agree")} for the communication");
+                action = new ActionCommunicationAgreementWithData(agentId, CurrentTimestamp(agentState), randomTeammate, agreement, responseData);
+                logger.Debug($"Agent {agentId} chose action ActionCommunicationAgreementWithData with agent {randomTeammate} with data {responseData} - he {(agreement ? "agrees" : "doesn't agree")} for the communication");
             }
             System.Threading.Thread.Sleep(1000); //necessary for GUI
             Console.WriteLine(action.ToString());
 
             return Task.FromResult(action);
-        }
-
-        public void SaveCommunicationResult(int senderId, bool agreement, DateTime timestamp, object data, AgentState agentState)
-        {
-            DataProcessor.ExtractCommunicationData(senderId, agreement, timestamp, data, agentState);
         }
     }
 }
