@@ -10,7 +10,8 @@
         Icon="resm:ProjectGameGUI.Assets.iomawsk.ico"
         Title="ProjectGame"
         Width="{Binding WindowWidth}"
-        Height="{Binding WindowHeight}">
+        Height="{Binding WindowHeight}"
+        CanResize="True">
   <controls:Window.ContentTemplate>
   </controls:Window.ContentTemplate>
   <Window.Resources>

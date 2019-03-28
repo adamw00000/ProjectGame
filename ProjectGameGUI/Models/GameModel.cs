@@ -29,6 +29,10 @@ namespace ProjectGameGUI.Models
         public GameModel(MainWindowViewModel mainWindowViewModel)
         {
             this.mainWindowViewModel = mainWindowViewModel;
+        }
+
+        public void InitializeGame()
+        {
             int[] actionPriorities = new int[] { 2, 1, 10, 20, 5, 10, 2, 2 };
 
             LocalCommunicationServer cs = new LocalCommunicationServer();
