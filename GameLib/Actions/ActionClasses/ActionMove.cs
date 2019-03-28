@@ -10,14 +10,14 @@ namespace GameLib.Actions
     {
         public readonly MoveDirection MoveDirection;
 
-        public ActionMove(int agentId, MoveDirection moveDirection) : base(agentId)
+        public ActionMove(int agentId, MoveDirection moveDirection, int timestamp) : base(agentId, timestamp)
         {
             this.MoveDirection = moveDirection;
         }
 
         public void Handle(GameMaster gameMaster)
         {
-            gameMaster.MoveAgent(AgentId, MoveDirection);
+            gameMaster.MoveAgent(AgentId, MoveDirection, Timestamp);
         }
         public override void Handle(object handler)
         {

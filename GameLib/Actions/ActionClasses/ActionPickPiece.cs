@@ -4,13 +4,13 @@ namespace GameLib.Actions
 {
     internal class ActionPickPiece : AgentMessage, IAction
     {
-        public ActionPickPiece(int agentId) : base(agentId)
+        public ActionPickPiece(int agentId, int timestamp) : base(agentId, timestamp)
         {
         }
 
         public void Handle(GameMaster gameMaster)
         {
-            gameMaster.PickPiece(AgentId);
+            gameMaster.PickPiece(AgentId, Timestamp);
         }
         public override void Handle(object handler)
         {
