@@ -32,7 +32,8 @@ namespace GameLib
             {
                 var teammate = communicationQueue[0];
                 communicationQueue.RemoveAt(0);
-                bool agreement = random.Next(2) == 0 ? true : false; //50% chance
+                //bool agreement = random.Next(2) == 0 ? true : false; //50% chance
+                bool agreement = true; // do zmiany
 
                 if (agreement)
                 {
