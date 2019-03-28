@@ -152,4 +152,19 @@ namespace GameLib
         {
         }
     }
+
+    public class PendingLeaderCommunicationException : Exception
+    {
+        public PendingLeaderCommunicationException() : base()
+        {
+        }
+
+        public PendingLeaderCommunicationException(string message) : base(message)
+        {
+        }
+
+        public PendingLeaderCommunicationException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
 }

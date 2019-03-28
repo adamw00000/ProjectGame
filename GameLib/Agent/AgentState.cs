@@ -57,6 +57,9 @@ namespace GameLib
         public Team Team;
         public DateTime Start;
 
+        public int[] TeamIds; // We did add teamIds here becouse DecisionModule will use them for communication and it does get AgentState
+        public int TeamLeaderId;
+
         private bool wantsToBeLeader;
 
         public AgentState()
