@@ -299,7 +299,7 @@ namespace GameLib
         public void CommunicationAgreementWithData(int requesterAgentId, int targetAgentId, bool agreement, object targetData)
         {
             logger.Debug($"Agent {requesterAgentId} was tried to be answered by {targetAgentId} and data {(targetData == null ? "null" : targetData.ToString())}");
-            if (targetData == null)
+            if (agreement && targetData == null)
             {
                 logger.Warn($"Agent {targetAgentId} sent null as targetData");
                 Message response = new InvalidAction(targetAgentId, CurrentTimestamp());

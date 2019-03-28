@@ -32,8 +32,7 @@ namespace GameLib
             {
                 var teammate = communicationQueue[0];
                 communicationQueue.RemoveAt(0);
-                //bool agreement = random.Next(2) == 0 ? true : false; //50% chance
-                bool agreement = true;
+                bool agreement = random.Next(2) == 0 ? true : false; //50% chance
 
                 if (agreement)
                 {
@@ -48,14 +47,14 @@ namespace GameLib
                 return Task.FromResult(action); //return
             }
 
-            //if (random.Next(20) == 0) //random communication (one in 20)
-            //{
-            //    var randomTeammate = agentState.TeamIds[random.Next(agentState.TeamIds.Length)];
-            //    var data = DataProcessor.CreateCommunicationDataForCommunicationWith(randomTeammate, agentState);
-            //    action = new ActionCommunicationRequestWithData(agentId, randomTeammate, data);
-            //    previousAction = action;
-            //    return Task.FromResult(action); //return
-            //}
+            if (random.Next(20) == 0) //random communication (one in 20)
+            {
+                var randomTeammate = agentState.TeamIds[random.Next(agentState.TeamIds.Length)];
+                var data = DataProcessor.CreateCommunicationDataForCommunicationWith(randomTeammate, agentState);
+                action = new ActionCommunicationRequestWithData(agentId, randomTeammate, data);
+                previousAction = action;
+                return Task.FromResult(action); //return
+            }
 
             (int X, int Y) = agentState.Position;
 
