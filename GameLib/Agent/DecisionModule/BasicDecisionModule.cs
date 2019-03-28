@@ -23,7 +23,7 @@ namespace GameLib
             {
                 isLeaderRequestPending = false;
                 var data = DataProcessor.CreateCommunicationDataForCommunicationWith(agentState.TeamLeaderId, agentState);
-                action = new ActionCommunicationAgreementWithData(agentId, agentState.TeamLeaderId, true, data); //always respond
+                action = new ActionCommunicationAgreementWithData(agentId, CurrentTimestamp(agentState), agentState.TeamLeaderId, true, data); //always respond
                 previousAction = action;
                 return Task.FromResult(action); //return
             }
@@ -38,24 +38,24 @@ namespace GameLib
                 if (agreement)
                 {
                     var data = DataProcessor.CreateCommunicationDataForCommunicationWith(teammate, agentState);
-                    action = new ActionCommunicationAgreementWithData(agentId, teammate, true, data);
+                    action = new ActionCommunicationAgreementWithData(agentId, CurrentTimestamp(agentState), teammate, true, data);
                 }
                 else
                 {
-                    action = new ActionCommunicationAgreementWithData(agentId, teammate, false, null);
+                    action = new ActionCommunicationAgreementWithData(agentId, CurrentTimestamp(agentState), teammate, false, null);
                 }
                 previousAction = action;
                 return Task.FromResult(action); //return
             }
 
-            //if (random.Next(20) == 0) //random communication (one in 20)
-            //{
-            //    var randomTeammate = agentState.TeamIds[random.Next(agentState.TeamIds.Length)];
-            //    var data = DataProcessor.CreateCommunicationDataForCommunicationWith(randomTeammate, agentState);
-            //    action = new ActionCommunicationRequestWithData(agentId, randomTeammate, data);
-            //    previousAction = action;
-            //    return Task.FromResult(action); //return
-            //}
+            if (random.Next(20) == 0) //random communication (one in 20)
+            {
+                var randomTeammate = agentState.TeamIds[random.Next(agentState.TeamIds.Length)];
+                var data = DataProcessor.CreateCommunicationDataForCommunicationWith(randomTeammate, agentState);
+                action = new ActionCommunicationRequestWithData(agentId, CurrentTimestamp(agentState), randomTeammate, data);
+                previousAction = action;
+                return Task.FromResult(action); //return
+            }
 
             (int X, int Y) = agentState.Position;
 
@@ -65,29 +65,29 @@ namespace GameLib
                 {
                     if (agentState.CurrentField.IsGoal == AgentFieldState.Unknown) //if can discover
                     {
-                        action = new ActionPutPiece(agentId);
+                        action = new ActionPutPiece(agentId, CurrentTimestamp(agentState));
                     }
                     else //if any of the neighbouring fields can be discovered, go there, else - random move
                     {
                         var selectedDirection = GenerateGoalAreaMoveWithPiece(agentState);
                         lastMove = selectedDirection;
-                        action = new ActionMove(agentId, selectedDirection);
+                        action = new ActionMove(agentId, selectedDirection, CurrentTimestamp(agentState));
                     }
                 }
                 else //holds piece in task area
                 {
                     if (previousAction is ActionPickPiece)
                     {
-                        action = new ActionCheckPiece(agentId);
+                        action = new ActionCheckPiece(agentId, CurrentTimestamp(agentState));
                     }
                     else if (agentState.PieceState == PieceState.Invalid)
                     {
-                        action = new ActionDestroyPiece(agentId);
+                        action = new ActionDestroyPiece(agentId, CurrentTimestamp(agentState));
                     }
                     else //move to goal area
                     {
                         var direction = MoveToGoalArea(agentState, agentId, X, Y);
-                        action = new ActionMove(agentId, direction);
+                        action = new ActionMove(agentId, direction, CurrentTimestamp(agentState));
                     }
                 }
             }
@@ -95,19 +95,19 @@ namespace GameLib
             {
                 if (agentState.CurrentField.Distance == 0) //standing on piece
                 {
-                    action = new ActionPickPiece(agentId);
+                    action = new ActionPickPiece(agentId, CurrentTimestamp(agentState));
                     previousAction = action;
                     return Task.FromResult(action); //return
                 }
                 if (random.Next(20) == 0) //random discovery (one in 20)
                 {
-                    action = new ActionDiscovery(agentId);
+                    action = new ActionDiscovery(agentId, CurrentTimestamp(agentState));
                 }
                 else
                 {
                     //move to task area
                     var direction = MoveToTaskArea(agentState, agentId, X, Y);
-                    action = new ActionMove(agentId, direction);
+                    action = new ActionMove(agentId, direction, CurrentTimestamp(agentState));
                 }
             }
 

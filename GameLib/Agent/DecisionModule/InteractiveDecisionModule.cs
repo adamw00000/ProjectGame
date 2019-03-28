@@ -27,12 +27,7 @@ namespace GameLib
 
             return action;
         }
-
-        private int CurrentTimestamp(AgentState agentState)
-        {
-            return (int)(DateTime.UtcNow - agentState.Start).TotalMilliseconds;
-        }
-
+        
         private IAction ParseInput(ConsoleKey key, int agentId, AgentState agentState)
         {
             IAction action;

@@ -20,6 +20,11 @@ namespace GameLib
             DataProcessor.ExtractCommunicationData(senderId, agreement, timestamp, data, agentState);
         }
 
+        protected int CurrentTimestamp(AgentState agentState)
+        {
+            return (int)(DateTime.UtcNow - agentState.Start).TotalMilliseconds;
+        }
+
         internal void AddSenderToCommunicationQueue(AgentState agentState, int senderId)
         {
             if (senderId == agentState.TeamLeaderId)

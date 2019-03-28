@@ -39,12 +39,7 @@ namespace GameLib
             }
         }
 
-        private int CurrentTimestamp(AgentState agentState)
-        {
-            return (int)(DateTime.UtcNow - agentState.Start).TotalMilliseconds;
-        }
-
-        public Task<IAction> ChooseAction(int agentId, AgentState agentState)
+        public override Task<IAction> ChooseAction(int agentId, AgentState agentState)
         {
             IAction action;
 
