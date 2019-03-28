@@ -133,6 +133,12 @@ namespace GameLib
                 logger.Debug($"Agent {agentId} moved {moveDirection.ToString()}");
                 response = new ActionMakeMoveResponse(agentId, timestamp, waitUntil, distance);
             }
+            catch (PendingLeaderCommunicationException e)
+            {
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
+                logger.Warn(e, $"Agent {agentId} couldn't move: ");
+                response = new InvalidAction(agentId, CurrentTimestamp());
+            }
             catch (DelayException e)
             {
                 logger.Warn(e, $"Agent {agentId} tried move during penalty: ");
@@ -158,6 +164,12 @@ namespace GameLib
                 logger.Debug($"Agent {agentId} picked up a piece");
                 response = new ActionPickPieceResponse(agentId, timestamp, waitUntil);
             }
+            catch (PendingLeaderCommunicationException e)
+            {
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
+                logger.Warn(e, $"Agent {agentId} couldn't pick up a piece: ");
+                response = new InvalidAction(agentId, CurrentTimestamp());
+            }
             catch (DelayException e)
             {
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
@@ -182,6 +194,12 @@ namespace GameLib
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 logger.Debug($"Agent {agentId} put a piece");
                 response = new ActionPutPieceResponse(agentId, timestamp, waitUntil, result);
+            }
+            catch (PendingLeaderCommunicationException e)
+            {
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
+                logger.Warn(e, $"Agent {agentId} couldn't put a piece: ");
+                response = new InvalidAction(agentId, CurrentTimestamp());
             }
             catch (DelayException e)
             {
@@ -218,6 +236,12 @@ namespace GameLib
                 logger.Debug($"Agent {agentId} made action discovery successfully");
                 response = new ActionDiscoverResponse(agentId, timestamp, waitUntil, discoveryResult);
             }
+            catch (PendingLeaderCommunicationException e)
+            {
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
+                logger.Warn(e, $"Agent {agentId} couldn't make discovery action: ");
+                response = new InvalidAction(agentId, CurrentTimestamp());
+            }
             catch (DelayException e)
             {
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
@@ -237,6 +261,12 @@ namespace GameLib
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 logger.Debug($"Agent {agentId} checked his piece - it's {(result ? "valid" : "not valid")}");
                 response = new ActionCheckPieceResponse(agentId, timestamp, waitUntil, result);
+            }
+            catch (PendingLeaderCommunicationException e)
+            {
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
+                logger.Warn(e, $"Agent {agentId} couldn't check his piece: ");
+                response = new InvalidAction(agentId, CurrentTimestamp());
             }
             catch (DelayException e)
             {
@@ -263,6 +293,12 @@ namespace GameLib
                 logger.Debug($"Agent {agentId} destroyed piece");
                 response = new ActionDestroyPieceResponse(agentId, timestamp, waitUntil);
             }
+            catch (PendingLeaderCommunicationException e)
+            {
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
+                logger.Warn(e, $"Agent {agentId} couldn't destroy piece: ");
+                response = new InvalidAction(agentId, CurrentTimestamp());
+            }
             catch (DelayException e)
             {
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
@@ -287,10 +323,17 @@ namespace GameLib
                 Message request = new ActionCommunicationRequest(requesterAgentId, targetAgentId, CurrentTimestamp());
                 connection.Send(request);
             }
+            catch (PendingLeaderCommunicationException e)
+            {
+                (int timestamp, int waitUntil) = CalculateDelay(requesterAgentId);
+                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {data.ToString()}: ");
+                Message response = new InvalidAction(requesterAgentId, CurrentTimestamp());
+                connection.Send(response);
+            }
             catch (DelayException e)
             {
                 (int timestamp, int waitUntil) = CalculateDelay(requesterAgentId);
-                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {data.ToString()}");
+                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {data.ToString()}: ");
                 Message response = new RequestTimePenaltyError(requesterAgentId, timestamp, waitUntil);
                 connection.Send(response);
             }
@@ -299,6 +342,19 @@ namespace GameLib
         public void CommunicationAgreementWithData(int requesterAgentId, int targetAgentId, bool agreement, object targetData)
         {
             logger.Debug($"Agent {requesterAgentId} was tried to be answered by {targetAgentId} and data {(targetData == null ? "null" : targetData.ToString())}");
+            try
+            {
+                state.VerifyLeaderCommunicationState(requesterAgentId, targetAgentId, agreement);
+            }
+            catch (PendingLeaderCommunicationException e)
+            {
+                int timestamp = CurrentTimestamp();
+                logger.Warn(e, $"Error during proccesing answer from {targetAgentId} to {requesterAgentId} with data {targetData.ToString()} (pending leader communication): ");
+                Message response = new InvalidAction(targetAgentId, timestamp);
+                connection.Send(response);
+                return;
+            }
+
             if (targetData == null)
             {
                 logger.Warn($"Agent {targetAgentId} sent null as targetData");

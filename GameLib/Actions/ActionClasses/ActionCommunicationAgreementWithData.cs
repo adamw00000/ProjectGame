@@ -7,19 +7,19 @@ namespace GameLib.Actions
     {
         private readonly object data;
 
-        public int TargetId { get; }
+        public int SenderId { get; }
         public bool AcceptsCommunication { get; }
 
-        public ActionCommunicationAgreementWithData(int agentId, int targetId, bool acceptsCommunication, object data = null) : base(agentId)
+        public ActionCommunicationAgreementWithData(int agentId, int senderId, bool acceptsCommunication, object data = null) : base(agentId)
         {
-            TargetId = targetId;
+            SenderId = senderId;
             AcceptsCommunication = acceptsCommunication;
             this.data = data;
         }
 
         public void Handle(GameMaster gameMaster)
         {
-            gameMaster.CommunicationAgreementWithData(AgentId, TargetId, AcceptsCommunication, data);
+            gameMaster.CommunicationAgreementWithData(SenderId, AgentId, AcceptsCommunication, data);
         }
 
         public override void Handle(object handler)
