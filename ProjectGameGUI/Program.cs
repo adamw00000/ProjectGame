@@ -13,7 +13,7 @@ namespace ProjectGameGUI
         static async Task Main(string[] args)
         {
             Task inputReaderTask = InteractiveInputProvider.ReadInput();
-            BuildAvaloniaApp().Start<MainWindow>(() => new MainWindowViewModel());
+            BuildAvaloniaApp().Start<MainWindow>();
 
             await inputReaderTask;
         }

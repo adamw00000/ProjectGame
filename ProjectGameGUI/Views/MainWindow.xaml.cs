@@ -21,6 +21,10 @@ namespace ProjectGameGUI.Views
 
         public MainWindow()
         {
+            MainWindowViewModel viewModel = new MainWindowViewModel();
+            DataContext = viewModel;
+
+            Initialized += MainWindow_Initialized;
             InitializeComponent();
 #if DEBUG
             InitializeLogging();
@@ -42,6 +46,11 @@ namespace ProjectGameGUI.Views
             .WriteTo.Trace(outputTemplate: "{Area}: {Message}")
             .CreateLogger());
 #endif
+        }
+
+        private void MainWindow_Initialized(object sender, EventArgs e)
+        {
+            ((MainWindowViewModel)DataContext).InitializeGame();
         }
     }
 }

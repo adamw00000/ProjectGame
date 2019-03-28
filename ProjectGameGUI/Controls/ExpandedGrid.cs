@@ -10,9 +10,9 @@ namespace ProjectGameGUI.Controls
         private int _columnsCount;
 
         public static readonly AvaloniaProperty<int> RowsCountDeclaration =
-            AvaloniaProperty.RegisterDirect<ExpandedGrid, int>(nameof(RowsCount), eg => eg.RowsCount, (eg, value) => eg.RowsCount = value);
+            AvaloniaProperty.RegisterDirect<ExpandedGrid, int>(nameof(RowsCount), eg => eg.RowsCount, (eg, value) => eg.RowsCount = value, 1);
         public static readonly AvaloniaProperty<int> ColumnsCountDeclaration = 
-            AvaloniaProperty.RegisterDirect<ExpandedGrid, int>(nameof(ColumnsCount), eg => eg.ColumnsCount, (eg, value) => eg.ColumnsCount = value);
+            AvaloniaProperty.RegisterDirect<ExpandedGrid, int>(nameof(ColumnsCount), eg => eg.ColumnsCount, (eg, value) => eg.ColumnsCount = value, 1);
         public static readonly AvaloniaProperty<IEnumerable<IControl>> ItemsDeclaration =
             AvaloniaProperty.RegisterDirect<ExpandedGrid, IEnumerable<IControl>>(nameof(Items), eg => eg.Items, (eg, value) => eg.Items = value);
         private int rowsCount
