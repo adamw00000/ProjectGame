@@ -10,20 +10,17 @@ namespace GameLib
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        int wszystkosiesypie; //HAVE TO BE CHANGED!!!!
-
         private bool registered = false;
 
         public async override Task<IAction> ChooseAction(int agentId, AgentState agentState)
         {
             if (!registered)
             {
-                wszystkosiesypie = RandomGenerator.GetGenerator().Next(1000000);
-                InteractiveInputProvider.Register(wszystkosiesypie);
+                InteractiveInputProvider.Register(agentId);
                 registered = true;
             }
 
-            ConsoleKey key = await InteractiveInputProvider.GetKey(wszystkosiesypie);
+            ConsoleKey key = await InteractiveInputProvider.GetKey(agentId);
 
             IAction action = ParseInput(key, agentId, agentState);
             Console.WriteLine(action);
