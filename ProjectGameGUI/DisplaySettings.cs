@@ -85,7 +85,7 @@ namespace ProjectGameGUI
             border.BorderBrush = BorderBrush;
             Grid.SetRow(border, field.X);
             Grid.SetColumn(border, field.Y);
-            border.ZIndex = 0;
+            border.ZIndex = -1;
             border.BorderThickness = new Avalonia.Thickness(BorderThickness);
 
             switch(field.Team)
