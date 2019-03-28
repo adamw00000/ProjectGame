@@ -85,8 +85,9 @@ namespace ProjectGameGUI
             border.BorderBrush = BorderBrush;
             Grid.SetRow(border, field.X);
             Grid.SetColumn(border, field.Y);
-            border.ZIndex = 0;
+            border.ZIndex = -1;
             border.BorderThickness = new Avalonia.Thickness(BorderThickness);
+
             switch(field.Team)
             {
                 case GameLib.Team.Blue:
@@ -97,7 +98,7 @@ namespace ProjectGameGUI
                     break;
                 default:
                     border.Background = TaskAreaColor;
-                    return border;
+                    break;
             }
             if(field.IsUndiscoveredGoal)
             {
@@ -137,7 +138,7 @@ namespace ProjectGameGUI
             ellipse.HorizontalAlignment = HorizontalAlignment.Center;
             Grid.SetRow(ellipse, piece.X);
             Grid.SetColumn(ellipse, piece.Y);
-            ellipse.ZIndex = 1;
+            ellipse.ZIndex = 0;
             return ellipse;
         }
 
