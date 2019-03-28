@@ -355,7 +355,7 @@ namespace GameLib
                 return;
             }
 
-            if (targetData == null)
+            if (agreement && targetData == null)
             {
                 logger.Warn($"Agent {targetAgentId} sent null as targetData");
                 Message response = new InvalidAction(targetAgentId, CurrentTimestamp(), requestTimestamp);
