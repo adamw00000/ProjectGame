@@ -8,7 +8,7 @@ Project purpose is to simulate gameplay between two teams, Red and Blue. Each te
 Project is divided into three types of modules:
 
  - Game Master Module
- - Agent Modules
+ - Agent Module
  - GUI
 
 ~~Project is divided into three applications:~~
