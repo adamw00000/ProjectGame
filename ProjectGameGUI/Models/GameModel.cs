@@ -73,6 +73,7 @@ namespace ProjectGameGUI.Models
             Task inputReaderTask = InteractiveInputProvider.ReadInput();
             await inputReaderTask;
         }
+
         private async Task UpdateLoop()
         {
             while (true)
@@ -121,36 +122,36 @@ namespace ProjectGameGUI.Models
         private void PrepareFields()
         {
             fields.Clear();
-            for (int j = 0; j < width; j++)
+            for (int x = 0; x < width; x++)
             {
-                for (int i = 0; i < goalAreaHeight; i++)
+                for (int y = 0; y < goalAreaHeight; y++)
                 {
                     Field field = new Field();
-                    field.X = i;
-                    field.Y = j;
-                    field.Team = Team.Red;
-                    field.IsUndiscoveredGoal = gameMasterState.Board[i, j].IsGoal;
-                    field.Name = $"({i},{j})";
+                    field.X = x;
+                    field.Y = height - y - 1; //avalonia displays it upside down
+                    field.Team = Team.Blue;
+                    field.IsUndiscoveredGoal = gameMasterState.Board[x, y].IsGoal;
+                    field.Name = $"({x},{y})";
                     fields.Add(field);
                 }
-                for (int i = goalAreaHeight; i < height - goalAreaHeight; i++)
+                for (int y = goalAreaHeight; y < height - goalAreaHeight; y++)
                 {
                     Field field = new Field();
-                    field.X = i;
-                    field.Y = j;
+                    field.X = x;
+                    field.Y = height - y - 1; //avalonia displays it upside down
                     field.Team = null;
                     field.IsUndiscoveredGoal = false;
-                    field.Name = $"({i},{j})";
+                    field.Name = $"({x},{y})";
                     fields.Add(field);
                 }
-                for (int i = height - goalAreaHeight; i < height; i++)
+                for (int y = height - goalAreaHeight; y < height; y++)
                 {
                     Field field = new Field();
-                    field.X = i;
-                    field.Y = j;
-                    field.Team = Team.Blue;
-                    field.IsUndiscoveredGoal = gameMasterState.Board[i, j].IsGoal;
-                    field.Name = $"({i},{j})";
+                    field.X = x;
+                    field.Y = height - y - 1; //avalonia displays it upside down
+                    field.Team = Team.Red;
+                    field.IsUndiscoveredGoal = gameMasterState.Board[x, y].IsGoal;
+                    field.Name = $"({x},{y})";
                     fields.Add(field);
                 }
             }
@@ -169,7 +170,7 @@ namespace ProjectGameGUI.Models
                 {
                     Piece piece = new Piece();
                     piece.IsValid = playerstate.Piece.IsValid;
-                    (piece.X, piece.Y) = playerstate.Position;
+                    //(piece.X, piece.Y) = playerstate.Position; // not useful
                     player.HeldPiece = piece;
                 }
                 TextBlock textId = new TextBlock();
@@ -184,7 +185,8 @@ namespace ProjectGameGUI.Models
                 }
 
                 player.Team = playerstate.Team;
-                (player.X, player.Y) = playerstate.Position;
+                player.X = playerstate.Position.X;
+                player.Y = height - playerstate.Position.Y - 1; //avalonia displays it upside down
                 player.IsActive = InteractiveInputProvider.ActiveAgents.Contains(c);
                 players.Add(player);
             }
@@ -198,7 +200,8 @@ namespace ProjectGameGUI.Models
             foreach (var piecePos in states)
             {
                 Piece piece = new Piece();
-                (piece.X, piece.Y) = piecePos;
+                piece.X = piecePos.x;
+                piece.Y = height - piecePos.y - 1;
                 piece.IsValid = gameMasterState.Board[piecePos.x, piecePos.y].Piece.IsValid;
                 pieces.Add(piece);
             }
