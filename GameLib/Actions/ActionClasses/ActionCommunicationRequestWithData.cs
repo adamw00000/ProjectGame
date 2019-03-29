@@ -9,7 +9,7 @@ namespace GameLib.Actions
 
         public int TargetId { get; }
 
-        public ActionCommunicationRequestWithData(int agentId, int targetId, object data) : base(agentId)
+        public ActionCommunicationRequestWithData(int agentId, int timestamp, int targetId, object data) : base(agentId, timestamp)
         {
             this.data = data;
             TargetId = targetId;
@@ -17,7 +17,7 @@ namespace GameLib.Actions
 
         public void Handle(GameMaster gameMaster)
         {
-            gameMaster.CommunicationRequestWithData(AgentId, TargetId, data);
+            gameMaster.CommunicationRequestWithData(AgentId, TargetId, data, Timestamp);
         }
 
         public override void Handle(object handler)

@@ -15,17 +15,18 @@ namespace GameLib
 
         private int id;
         private readonly int tempId;
-        private readonly IDecisionModule decisionModule;
+        private readonly DecisionModuleBase decisionModule;
         private readonly AgentState state;
         private AgentGameRules rules;
 
         private Message awaitedForResponse;
         private bool waitForResponse;
+        private int LastActionTimestamp;
 
         // Not used - did u miss it somewhere?
         //private int isWinning = -1;
 
-        public Agent(int tempId, IDecisionModule decisionModule, IConnection connection)
+        public Agent(int tempId, DecisionModuleBase decisionModule, IConnection connection)
         {
             this.tempId = tempId;
             this.decisionModule = decisionModule;
@@ -72,10 +73,12 @@ namespace GameLib
         {
             while (!state.GameEnded)
             {
-                Message action = (Message) (await decisionModule.ChooseAction(id, state));
+                AgentMessage actionTemp = (AgentMessage)await decisionModule.ChooseAction(id, state);
+                Message action = (Message)actionTemp;
                 Thread.Sleep(Math.Max(1, state.WaitUntilTime - state.CurrentTimestamp()));
                 logger.Debug($"Agent {id} sent action request: {action}");
                 connection.Send(action);
+
 
                 if (action is ActionCommunicationRequestWithData)
                     continue;
@@ -83,6 +86,7 @@ namespace GameLib
                 if (action is ActionCommunicationAgreementWithData response && !response.AcceptsCommunication)
                     continue;
 
+                LastActionTimestamp = actionTemp.Timestamp;
                 waitForResponse = true;
                 awaitedForResponse = action;
 
@@ -144,7 +148,7 @@ namespace GameLib
             else
             {
                 logger.Error($"Agent {id} - wrong action response received - PickPiece response expected");
-                throw new InvalidOperationException("Wrong action result received");
+                //throw new InvalidOperationException("Wrong action result received");
             }
         }
 
@@ -160,7 +164,7 @@ namespace GameLib
             else
             {
                 logger.Error($"Agent {id} - wrong action response received - PutPiece response expected");
-                throw new InvalidOperationException("Wrong action result received");
+                //throw new InvalidOperationException("Wrong action result received");
             }
         }
 
@@ -176,7 +180,7 @@ namespace GameLib
             else
             {
                 logger.Error($"Agent {id} - wrong action response received - Destroy response expected");
-                throw new InvalidOperationException("Wrong action result received");
+                //throw new InvalidOperationException("Wrong action result received");
             }
         }
 
@@ -194,7 +198,7 @@ namespace GameLib
             else
             {
                 logger.Error($"Agent {id} - wrong action response received - Move response expected");
-                throw new InvalidOperationException("Wrong action result received");
+                //throw new InvalidOperationException("Wrong action result received");
             }
         }
 
@@ -210,7 +214,7 @@ namespace GameLib
             else
             {
                 logger.Error($"Agent {id} - wrong action response received - Discover response expected");
-                throw new InvalidOperationException("Wrong action result received");
+                //throw new InvalidOperationException("Wrong action result received");
             }
         }
 
@@ -226,14 +230,15 @@ namespace GameLib
             else
             {
                 logger.Error($"Agent {id} - wrong action response received - CheckPiece response expected");
-                throw new InvalidOperationException("Wrong action result received");
+                //throw new InvalidOperationException("Wrong action result received");
             }
         }
 
         public void HandleCommunicationRequest(int requesterId, int timestamp)
         {
-            logger.Debug($"Agent {id} received CommunicationRequest form agent {requesterId}");
-            //Needs to be developed - always responds false, redirecting to Decision Module needed
+            logger.Debug($"Agent {id} received CommunicationRequest from agent {requesterId}");
+
+            decisionModule.AddSenderToCommunicationQueue(state, requesterId);
         }
 
         public void HandleCommunicationResponse(int timestamp, int waitUntilTime, int senderId, bool agreement, object data)
@@ -242,7 +247,7 @@ namespace GameLib
             {
                 logger.Debug($"Agent {id} received communication response from agent {senderId}, he " + (agreement ? "agreed" : "didn't agree") + " for the communication");
                 decisionModule.SaveCommunicationResult(senderId, agreement, state.Start.AddMilliseconds(timestamp), data, state);
-
+                
                 state.WaitUntilTime = waitUntilTime;
                 waitForResponse = false;
             }
@@ -252,26 +257,35 @@ namespace GameLib
             }
         }
 
-        public void HandleTimePenaltyError(int timestamp, int waitUntilTime)
+        public void HandleTimePenaltyError(int timestamp, int requestTimestamp, int waitUntilTime)
         {
             logger.Warn($"Agent {id} tried to move during penalty.");
-
+            
             state.WaitUntilTime = waitUntilTime;
-            waitForResponse = false;
+            if (requestTimestamp == LastActionTimestamp)
+            {
+                waitForResponse = false;
+            }
         }
 
-        public void HandleInvalidMoveDirectionError(int timestamp)
+        public void HandleInvalidMoveDirectionError(int timestamp, int requestTimestamp)
         {
             logger.Warn($"Agent {id} tried to make invalid move.");
 
-            waitForResponse = false;
+            if (requestTimestamp == LastActionTimestamp)
+            {
+                waitForResponse = false;
+            }
         }
 
-        public void HandleInvalidActionError(int timestamp)
+        public void HandleInvalidActionError(int timestamp, int requestTimestamp)
         {
             logger.Warn($"Agent {id} tried to perform invalid action.");
 
-            waitForResponse = false;
+            if (requestTimestamp == LastActionTimestamp)
+            {
+                waitForResponse = false;
+            }
         }
 
         public void EndGame(int winningTeam, int timestamp)

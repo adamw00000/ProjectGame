@@ -9,7 +9,7 @@ namespace GameLib.GameMessages
         public readonly int TeamId;
         public readonly bool WantToBeLeader;
 
-        public JoinGameMessage(int agentId, int teamId, bool wantToBeLeader) : base(agentId)
+        public JoinGameMessage(int agentId, int teamId, bool wantToBeLeader) : base(agentId, 0)
         {
             TeamId = teamId;
             WantToBeLeader = wantToBeLeader;

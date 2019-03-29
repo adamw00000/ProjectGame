@@ -7,9 +7,11 @@ namespace GameLib.GameMessages
 {
     abstract class AgentMessage : Message
     {
-        public AgentMessage(int agentId) : base(agentId)
-        {
+        public int Timestamp;
 
+        public AgentMessage(int agentId, int timestamp) : base(agentId)
+        {
+            this.Timestamp = timestamp;
         }
     }
 }

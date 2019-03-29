@@ -7,13 +7,16 @@ namespace GameLib.Actions
 {
     class InvalidAction : GameMasterMessage, IActionError
     {
-        public InvalidAction(int agentId, int timestamp) : base(agentId, timestamp)
+        public int RequestTimestamp { get; }
+
+        public InvalidAction(int agentId, int timestamp, int requestTimestamp) : base(agentId, timestamp)
         {
+            RequestTimestamp = requestTimestamp;
         }
 
         public void Handle(Agent agent)
         {
-            agent.HandleInvalidActionError(Timestamp);
+            agent.HandleInvalidActionError(Timestamp, RequestTimestamp);
         }
         public override void Handle(object handler)
         {

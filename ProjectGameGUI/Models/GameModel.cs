@@ -37,7 +37,7 @@ namespace ProjectGameGUI.Models
 
             LocalCommunicationServer cs = new LocalCommunicationServer();
             GMLocalConnection gMLocalConnection = new GMLocalConnection(cs);
-            GameRules rules = new GameRules(teamSize: 2, baseTimePenalty: 25, boardHeight: 7, boardWidth: 7);
+            GameRules rules = new GameRules(teamSize: 2, baseTimePenalty: 50, boardHeight: 8, boardWidth: 4);
             gameMaster = new GameMaster(rules, gMLocalConnection);
 
             this.mainWindowViewModel.WindowWidth = width * DisplaySettings.FieldWidth;
@@ -52,12 +52,14 @@ namespace ProjectGameGUI.Models
 
             for (int i = 0; i < rules.TeamSize; ++i)
             {
-               // Agent Agent1 = new Agent(2 * i + 2, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
-                Agent Agent1 = new Agent(2 * i + 2, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
+                //Agent Agent1 = new Agent(2 * i + 2, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
+                //Agent Agent1 = new Agent(2 * i + 2, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
+                Agent Agent1 = new Agent(2 * i + 2, new BasicDecisionModule(), new AgentLocalConnection(cs));
                 agentTasks[2 * i] = Task.Run(async () => await Agent1.Run(Team.Red));
 
                 //Agent Agent2 = new Agent(2 * i + 3, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
-                Agent Agent2 = new Agent(2 * i + 3, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
+                //Agent Agent2 = new Agent(2 * i + 3, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
+                Agent Agent2 = new Agent(2 * i + 3, new BasicDecisionModule(), new AgentLocalConnection(cs));
                 agentTasks[2 * i + 1] = Task.Run(async () => await Agent2.Run(Team.Blue));
             }
 

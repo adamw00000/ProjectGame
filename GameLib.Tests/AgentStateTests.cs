@@ -148,13 +148,29 @@ namespace GameLib.Tests
         [Fact]
         public void PickUpPiece_WhenAgentDoesntHavePiece_UpdatesPieceState()
         {
-            var state = GetState();
+            var rules = GetDefaultRules();
+            var state = GetSetUpState(rules);
             state.HoldsPiece = false;
 
             state.PickUpPiece();
 
             state.HoldsPiece.ShouldBe(true);
             state.PieceState.ShouldBe(PieceState.Unknown);
+        }
+
+        [Fact]
+        public void PickUpPiece_WhenAgentDoesntHavePiece_SetsDistanceToMinusOne()
+        {
+            var rules = GetDefaultRules();
+            var state = GetSetUpState(rules);
+            int x = 1;
+            int y = 1;
+            state.Position = (x, y);
+            state.Board.SetDistance(x, y, 5);
+
+            state.PickUpPiece();
+
+            state.Board[x, y].Distance.ShouldBe(-1);
         }
 
         [Fact]

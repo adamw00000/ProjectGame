@@ -48,4 +48,12 @@ namespace GameLib
         Goal,
         NA
     }
+
+    public enum ActionState
+    {
+        Success,
+        DelayError,
+        InvalidMoveError,
+        InvalidActionError
+    }
 }

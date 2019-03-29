@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace GameLib
 {
@@ -9,6 +10,44 @@ namespace GameLib
         public bool GameStarted { get; set; } = false;
         public bool GameEnded { get; set; } = false;
         public bool IsLeader { get; private set; }
+        public int[] TeamIds { get; private set; }
+        public int TeamLeaderId { get; private set; }
+
+        public bool IsInTaskArea => Position.X >= Board.GoalAreaHeight &&
+                                    Position.X < Board.Height - Board.GoalAreaHeight &&
+                                    Position.X >= 0 && Position.X < Board.Height;
+        public bool IsInGoalArea
+        {
+            get
+            {
+                if (Team == Team.Red)
+                    return Position.X < Board.GoalAreaHeight && Position.X >= 0;
+                else
+                    return Position.X >= Board.Height - Board.GoalAreaHeight && Position.X < Board.Height;
+            }
+        }
+
+        public List<MoveDirection> PossibleMoves
+        {
+            get
+            {
+                List<MoveDirection> possibleMoves = new List<MoveDirection>();
+                if ((Team == Team.Red && Position.X > 0) || (Team == Team.Blue && Position.X > Board.GoalAreaHeight))
+                    possibleMoves.Add(MoveDirection.Up);
+                if ((Team == Team.Red && Position.X < Board.Height - Board.GoalAreaHeight - 1) || (Team == Team.Blue && Position.X < Board.Height - 1))
+                    possibleMoves.Add(MoveDirection.Down);
+
+                if (Position.Y > 0)
+                    possibleMoves.Add(MoveDirection.Left);
+                if (Position.Y < Board.Width - 1)
+                    possibleMoves.Add(MoveDirection.Right);
+
+                return possibleMoves;
+            }
+        }
+
+        public AgentField CurrentField => Board[Position.X, Position.Y];
+        public AgentField GetFieldAt((int X, int Y) position) => Board[position.X, position.Y];
 
         public bool HoldsPiece = false;
         public PieceState PieceState = PieceState.Unknown;
@@ -17,9 +56,6 @@ namespace GameLib
 
         public Team Team;
         public DateTime Start;
-
-        public int[] TeamIds; // We did add teamIds here becouse DecisionModule will use them for communication and it does get AgentState
-        public int TeamLeaderId;
 
         private bool wantsToBeLeader;
 
@@ -72,6 +108,7 @@ namespace GameLib
                 throw new PieceOperationException("Picking up piece when agent has one already");
 
             HoldsPiece = true;
+            Board.SetDistance(Position.X, Position.Y, -1);
             PieceState = PieceState.Unknown;
         }
 
