@@ -5,10 +5,11 @@
 
 Project purpose is to simulate gameplay between two teams, Red and Blue. Each team's objective is to be the first one to discover all goals hidden on the rectangular bord by placing a piece on them.
 
-Project is divided into two types of modules:
+Project is divided into three types of modules:
 
  - Game Master Module
  - Agent Module
+ - GUI
 
 ~~Project is divided into three applications:~~
 
@@ -43,6 +44,7 @@ Architecture is divided into:
  - Communication library and it's testing project
  - Game logic library and it's testing project
  - Console application
+ - GUI application that shows current state of the game
 
 In the future our plan is to divide the project into three different types of applications by separating Agent's Modules and moving messages transmission into a dedicated Communication Server.
 
