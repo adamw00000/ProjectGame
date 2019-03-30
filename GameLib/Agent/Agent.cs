@@ -19,9 +19,9 @@ namespace GameLib
         private readonly AgentState state;
         private AgentGameRules rules;
 
-        private Message awaitedForResponse;
+        private Action awaitedForResponse;
         private bool waitForResponse;
-        private int LastActionTimestamp;
+        private MoveDirection lastMoveDirection;
 
         // Not used - did u miss it somewhere?
         //private int isWinning = -1;
@@ -73,22 +73,13 @@ namespace GameLib
         {
             while (!state.GameEnded)
             {
-                AgentMessage actionTemp = (AgentMessage)await decisionModule.ChooseAction(id, state);
-                Message action = (Message)actionTemp;
+                Action action = await decisionModule.ChooseAction(id, state);
                 Thread.Sleep(Math.Max(1, state.WaitUntilTime - state.CurrentTimestamp()));
+                action.Execute(this);
                 logger.Debug($"Agent {id} sent action request: {action}");
-                connection.Send(action);
 
-
-                if (action is ActionCommunicationRequestWithData)
+                if (!waitForResponse)
                     continue;
-
-                if (action is ActionCommunicationAgreementWithData response && !response.AcceptsCommunication)
-                    continue;
-
-                LastActionTimestamp = actionTemp.Timestamp;
-                waitForResponse = true;
-                awaitedForResponse = action;
 
                 do
                 {
@@ -136,9 +127,9 @@ namespace GameLib
             logger.Debug($"Agent {id} - rules for the game are:\n{rules.ToString()}");
         }
 
-        public void HandlePickPieceResponse(int timestamp, int waitUntilTime)
+        public void HandlePickPieceResponse(int timestamp, int waitUntilTime, string messageId)
         {
-            if (awaitedForResponse is ActionPickPiece)
+            if (true/*awaitedForResponse is ActionPickPieceMessage*/)
             {
                 logger.Debug($"Agent {id} picked up piece");
                 state.PickUpPiece();
@@ -152,9 +143,9 @@ namespace GameLib
             }
         }
 
-        public void HandlePutPieceResponse(int timestamp, int waitUntilTime, PutPieceResult putPieceResult)
+        public void HandlePutPieceResponse(int timestamp, int waitUntilTime, PutPieceResult putPieceResult, string messageId)
         {
-            if (awaitedForResponse is ActionPutPiece)
+            if (true/*awaitedForResponse is ActionPutPieceMessage*/)
             {
                 logger.Debug($"Agent {id} put piece on the board, result: {putPieceResult.ToString()}");
                 state.PlacePiece(putPieceResult);
@@ -168,9 +159,9 @@ namespace GameLib
             }
         }
 
-        public void HandleDestroyPieceResponse(int timestamp, int waitUntilTime)
+        public void HandleDestroyPieceResponse(int timestamp, int waitUntilTime, string messageId)
         {
-            if (awaitedForResponse is ActionDestroyPiece)
+            if (true/*awaitedForResponse is ActionDestroyPieceMessage*/)
             {
                 logger.Debug($"Agent {id} destroyed his piece");
                 state.HoldsPiece = false;
@@ -184,12 +175,12 @@ namespace GameLib
             }
         }
 
-        public void HandleMoveResponse(int timestamp, int waitUntilTime, int distance)
+        public void HandleMoveResponse(int timestamp, int waitUntilTime, int distance, string messageId)
         {
-            if (awaitedForResponse is ActionMove move)
+            if (true/*awaitedForResponse is ActionMoveMessage move*/)
             {
                 logger.Debug($"Agent {id} - current time: {state.CurrentTimestamp()}, wait until: {waitUntilTime}");
-                state.Move(move.MoveDirection, distance);
+                state.Move(lastMoveDirection, distance); //Needs to be fixed with collection of actions
                 state.WaitUntilTime = waitUntilTime;
                 waitForResponse = false;
 
@@ -202,9 +193,9 @@ namespace GameLib
             }
         }
 
-        public void HandleDiscoverResponse(int timestamp, int waitUntilTime, DiscoveryResult closestPieces)
+        public void HandleDiscoverResponse(int timestamp, int waitUntilTime, DiscoveryResult closestPieces, string messageId)
         {
-            if (awaitedForResponse is ActionDiscovery)
+            if (true/*awaitedForResponse is ActionDiscoveryMessage*/)
             {
                 logger.Debug($"Agent {id} discovered his surroundings");
                 state.Discover(closestPieces, timestamp);
@@ -218,9 +209,9 @@ namespace GameLib
             }
         }
 
-        public void HandleCheckPieceResponse(int timestamp, int waitUntilTime, bool isValid)
+        public void HandleCheckPieceResponse(int timestamp, int waitUntilTime, bool isValid, string messageId)
         {
-            if (awaitedForResponse is ActionCheckPiece)
+            if (true/*awaitedForResponse is ActionCheckPieceMessage*/)
             {
                 logger.Debug($"Agent {id} checked his piece validity - it is {(isValid ? "valid" : "invalid")}");
                 state.WaitUntilTime = waitUntilTime;
@@ -241,7 +232,7 @@ namespace GameLib
             decisionModule.AddSenderToCommunicationQueue(state, requesterId);
         }
 
-        public void HandleCommunicationResponse(int timestamp, int waitUntilTime, int senderId, bool agreement, object data)
+        public void HandleCommunicationResponse(int timestamp, int waitUntilTime, int senderId, bool agreement, object data, string messageId)
         {
             try
             {
@@ -257,35 +248,24 @@ namespace GameLib
             }
         }
 
-        public void HandleTimePenaltyError(int timestamp, int requestTimestamp, int waitUntilTime)
+        public void HandleTimePenaltyError(int timestamp, int waitUntilTime, string messageId)
         {
             logger.Warn($"Agent {id} tried to move during penalty.");
             
             state.WaitUntilTime = waitUntilTime;
-            if (requestTimestamp == LastActionTimestamp)
-            {
-                waitForResponse = false;
-            }
+            waitForResponse = false;
         }
 
-        public void HandleInvalidMoveDirectionError(int timestamp, int requestTimestamp)
+        public void HandleInvalidMoveDirectionError(int timestamp, string messageId)
         {
             logger.Warn($"Agent {id} tried to make invalid move.");
-
-            if (requestTimestamp == LastActionTimestamp)
-            {
-                waitForResponse = false;
-            }
+            waitForResponse = false;
         }
 
-        public void HandleInvalidActionError(int timestamp, int requestTimestamp)
+        public void HandleInvalidActionError(int timestamp, string messageId)
         {
             logger.Warn($"Agent {id} tried to perform invalid action.");
-
-            if (requestTimestamp == LastActionTimestamp)
-            {
-                waitForResponse = false;
-            }
+            waitForResponse = false;
         }
 
         public void EndGame(int winningTeam, int timestamp)
@@ -294,6 +274,62 @@ namespace GameLib
 
             state.GameEnded = true;
             waitForResponse = false;
+        }
+
+        public void Move(MoveDirection direction)
+        {
+            waitForResponse = true;
+            lastMoveDirection = direction;
+            Message message = new ActionMoveMessage(id, direction, "");
+            connection.Send(message);
+        }
+
+        public void CheckPiece()
+        {
+            waitForResponse = true;
+            Message message = new ActionCheckPieceMessage(id, "");
+            connection.Send(message);
+        }
+
+        public void DestroyPiece()
+        {
+            waitForResponse = true;
+            Message message = new ActionDestroyPieceMessage(id, "");
+            connection.Send(message);
+        }
+
+        public void PutPiece()
+        {
+            waitForResponse = true;
+            Message message = new ActionPutPieceMessage(id, "");
+            connection.Send(message);
+        }
+
+        public void PickPiece()
+        {
+            waitForResponse = true;
+            Message message = new ActionPickPieceMessage(id, "");
+            connection.Send(message);
+        }
+
+        public void Communicate(int targetId, object data)
+        {
+            Message message = new ActionCommunicationRequestWithDataMessage(id, targetId, data, "");
+            connection.Send(message);
+        }
+
+        public void Discover()
+        {
+            waitForResponse = true;
+            Message message = new ActionDiscoveryMessage(id, "");
+            connection.Send(message);
+        }
+
+        public void AgreeOnCommunication(int requesterId, bool agreement, object data)
+        {
+            waitForResponse = agreement;
+            Message message = new ActionCommunicationAgreementWithDataMessage(id, requesterId, agreement, data, "");
+            connection.Send(message);
         }
     }
 }

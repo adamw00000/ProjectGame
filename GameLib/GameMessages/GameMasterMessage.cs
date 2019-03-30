@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GameLib.GameMessages
 {
-    abstract class GameMasterMessage : Message
+    public abstract class GameMasterMessage : Message
     {
         public readonly int Timestamp;
 
@@ -13,5 +13,12 @@ namespace GameLib.GameMessages
         {
             Timestamp = timestamp;
         }
+
+        public override void Handle(object handler)
+        {
+            Handle((Agent)handler);
+        }
+
+        public abstract void Handle(Agent agent);
     }
 }

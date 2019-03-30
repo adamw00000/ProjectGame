@@ -9,11 +9,11 @@ namespace GameLib
     {
         protected List<int> communicationQueue = new List<int>();
         protected bool isLeaderRequestPending;
-        protected IAction previousAction;
+        protected Action previousAction;
         
         public CommunicationDataProcessor DataProcessor { get; } = new CommunicationDataProcessor();
 
-        public abstract Task<IAction> ChooseAction(int agentId, AgentState agentState);
+        public abstract Task<Action> ChooseAction(int agentId, AgentState agentState);
 
         public void SaveCommunicationResult(int senderId, bool agreement, DateTime timestamp, object data, AgentState agentState)
         {

@@ -1,0 +1,20 @@
+﻿using System;
+using GameLib.GameMessages;
+
+namespace GameLib.Actions
+{
+    internal class ActionCheckPieceResponse : ActionResponseMessage
+    {
+        public readonly bool IsValid;
+
+        public ActionCheckPieceResponse(int agentId, int timestamp, int waitUntilTime, bool isValid, string messageId = "") : base(agentId, timestamp, waitUntilTime, messageId) //MessageId temporrary "" because managing it is different task
+        {
+            this.IsValid = isValid;
+        }
+        
+        public override void Handle(Agent agent)
+        {
+            agent.HandleCheckPieceResponse(Timestamp, WaitUntilTime, IsValid, MessageId);
+        }
+    }
+}
