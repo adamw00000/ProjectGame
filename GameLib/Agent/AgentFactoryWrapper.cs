@@ -14,10 +14,8 @@ namespace GameLib
             this.agentFactory = agentFactory;
             this.id = id;
         }
-        private string GetMessageId()
-        {
-            return Guid.NewGuid().ToString();
-        }
+
+        private string GetMessageId() => Guid.NewGuid().ToString();
 
         public ActionMessage MoveMessage(MoveDirection direction)
         {
