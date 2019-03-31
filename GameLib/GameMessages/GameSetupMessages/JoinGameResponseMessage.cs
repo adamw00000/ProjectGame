@@ -8,7 +8,7 @@ namespace GameLib
     {
         public readonly bool IsConnected;
 
-        public JoinGameResponseMessage(int agentId, bool isConnected) : base(agentId, -1)
+        public JoinGameResponseMessage(int agentId, bool isConnected) : base(agentId)
         {
             IsConnected = isConnected;
         }

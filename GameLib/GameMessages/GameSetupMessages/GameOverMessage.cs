@@ -4,7 +4,7 @@ using System.Text;
 
 namespace GameLib
 {
-    class GameOverMessage : GameMasterMessage
+    class GameOverMessage : GameMasterGameMessage
     {
         public readonly Team WinningTeam;
 

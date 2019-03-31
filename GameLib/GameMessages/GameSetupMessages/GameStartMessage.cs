@@ -9,7 +9,7 @@ namespace GameLib
         public readonly AgentGameRules Rules;
         public readonly long AbsoluteStart;
 
-        public GameStartMessage(int agentId, AgentGameRules rules, long absStart) : base(agentId, -1)
+        public GameStartMessage(int agentId, AgentGameRules rules, long absStart) : base(agentId)
         {
             Rules = rules;
             AbsoluteStart = absStart;
