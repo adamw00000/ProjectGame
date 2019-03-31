@@ -23,15 +23,19 @@ namespace GameLib
         private bool waitForResponse;
         private MoveDirection lastMoveDirection;
 
+        private AgentFactoryWrapper messageFactory;
+
         // Not used - did u miss it somewhere?
         //private int isWinning = -1;
 
-        public Agent(int tempId, DecisionModuleBase decisionModule, IConnection connection)
+        public Agent(int tempId, DecisionModuleBase decisionModule, IConnection connection, IAgentFactory agentFactory)
         {
             this.tempId = tempId;
             this.decisionModule = decisionModule;
             this.state = new AgentState();
             this.connection = connection;
+
+            this.messageFactory = new AgentFactoryWrapper(id, agentFactory);
             logger.Info($"Agent with temporary id {tempId} created.");
         }
 
@@ -280,55 +284,55 @@ namespace GameLib
         {
             waitForResponse = true;
             lastMoveDirection = direction;
-            Message message = new ActionMoveMessage(id, direction, "");
+            Message message = messageFactory.MoveMessage(direction);
             connection.Send(message);
         }
 
         public void CheckPiece()
         {
             waitForResponse = true;
-            Message message = new ActionCheckPieceMessage(id, "");
+            Message message = messageFactory.CheckPieceMessage();
             connection.Send(message);
         }
 
         public void DestroyPiece()
         {
             waitForResponse = true;
-            Message message = new ActionDestroyPieceMessage(id, "");
+            Message message = messageFactory.DestroyMessage();
             connection.Send(message);
         }
 
         public void PutPiece()
         {
             waitForResponse = true;
-            Message message = new ActionPutPieceMessage(id, "");
+            Message message = messageFactory.PutPieceMessage();
             connection.Send(message);
         }
 
         public void PickPiece()
         {
             waitForResponse = true;
-            Message message = new ActionPickPieceMessage(id, "");
+            Message message = messageFactory.PickPieceMessage();
             connection.Send(message);
         }
 
         public void Communicate(int targetId, object data)
         {
-            Message message = new ActionCommunicationRequestWithDataMessage(id, targetId, data, "");
+            Message message = messageFactory.CommunicationRequestMessage(targetId, data);
             connection.Send(message);
         }
 
         public void Discover()
         {
             waitForResponse = true;
-            Message message = new ActionDiscoveryMessage(id, "");
+            Message message = messageFactory.DiscoveryMessage();
             connection.Send(message);
         }
 
         public void AgreeOnCommunication(int requesterId, bool agreement, object data)
         {
             waitForResponse = agreement;
-            Message message = new ActionCommunicationAgreementWithDataMessage(id, requesterId, agreement, data, "");
+            Message message = messageFactory.CommunicationAgreementMessage(requesterId, agreement, data);
             connection.Send(message);
         }
     }
