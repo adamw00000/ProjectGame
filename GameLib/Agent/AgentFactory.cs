@@ -1,5 +1,6 @@
 ﻿using ConnectionLib;
 using GameLib.Actions;
+using GameLib.GameMessages;
 
 namespace GameLib
 {
@@ -43,6 +44,11 @@ namespace GameLib
         public ActionMessage PutPieceMessage(int agentId, string messageId)
         {
             return new ActionPutPieceMessage(agentId, messageId);
+        }
+
+        public Message JoinGameMessage(Team choosenTeam, bool wantsToBeLeader)
+        {
+            return new JoinGameMessage(0, (int)choosenTeam, wantsToBeLeader);
         }
     }
 }

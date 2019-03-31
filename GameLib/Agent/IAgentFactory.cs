@@ -13,5 +13,6 @@ namespace GameLib
         ActionMessage MoveMessage(int agentId, MoveDirection direction, string messageId);
         ActionMessage PickPieceMessage(int agentId, string messageId);
         ActionMessage PutPieceMessage(int agentId, string messageId);
+        Message JoinGameMessage(Team choosenTeam, bool wantsToBeLeader);
     }
 }

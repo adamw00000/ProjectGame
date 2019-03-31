@@ -23,6 +23,7 @@ namespace GameLib
         private bool waitForResponse;
         private MoveDirection lastMoveDirection;
 
+        private IAgentFactory unwrappedMessageFactory;
         private AgentFactoryWrapper messageFactory;
 
         // Not used - did u miss it somewhere?
@@ -35,7 +36,7 @@ namespace GameLib
             this.state = new AgentState();
             this.connection = connection;
 
-            this.messageFactory = new AgentFactoryWrapper(id, agentFactory);
+            unwrappedMessageFactory = agentFactory;
             logger.Info($"Agent with temporary id {tempId} created.");
         }
 
@@ -43,7 +44,8 @@ namespace GameLib
         {
             state.JoinGame(choosenTeam, wantsToBeLeader);
             
-            Message joinMessage = new JoinGameMessage(tempId, (int)choosenTeam, wantsToBeLeader); //used to be "JoinGameMessage(id,... )". By mistake?
+            Message joinMessage = unwrappedMessageFactory.JoinGameMessage(choosenTeam, wantsToBeLeader);
+
             connection.Send(joinMessage);
             logger.Debug($"Agent with temporary id {tempId} sent JoinGameMessage. He wants to join team {(choosenTeam == Team.Blue ? "Blue" : "Red")} and {(wantsToBeLeader ? "wants" : "doesn't want")} to be a leader.");
 
@@ -52,6 +54,7 @@ namespace GameLib
                 Message message = connection.Receive();
                 message.Handle(this);
             }
+
             logger.Info($"Agent with temporary id {tempId}: the game has started. {(state.IsInGame ? "He joined the game successfully, received id " + id + " and he " + (state.IsLeader ? "is" : "is not") + " a leader" : "He failed to join the game")}.");
         }
 
@@ -60,6 +63,8 @@ namespace GameLib
             JoinGame(choosenTeam, wantsToBeLeader);
             if(state.IsInGame)
             {
+                messageFactory = new AgentFactoryWrapper(id, unwrappedMessageFactory);
+
                 try
                 {
                     logger.Info($"Agent {id} entered the game successfully, starting the main loop.");
