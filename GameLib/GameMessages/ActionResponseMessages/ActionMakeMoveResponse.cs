@@ -1,7 +1,6 @@
 ﻿using System;
-using GameLib.GameMessages;
 
-namespace GameLib.Actions
+namespace GameLib
 {
     internal class ActionMakeMoveResponse : ActionResponseMessage
     {

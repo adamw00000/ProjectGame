@@ -16,7 +16,7 @@ namespace ProjectGame
             LocalCommunicationServer cs = new LocalCommunicationServer();
             GMLocalConnection gMLocalConnection = new GMLocalConnection(cs);
             GameRules rules = new GameRules(teamSize: 2, baseTimePenalty: 1, goalCount: 1, badPieceProbability: 0, pieceSpawnInterval: 250, boardHeight: 3, boardWidth: 4, goalAreaHeight: 1);
-            GameMaster gm = new GameMaster(rules, gMLocalConnection);
+            GameMaster gm = new GameMaster(rules, gMLocalConnection, new GameMasterMessageFactory());
 
             Task.Run(() => { gm.ListenJoiningAndStart(); });
             //Task gmListener = gm.ListenJoiningAndStart();

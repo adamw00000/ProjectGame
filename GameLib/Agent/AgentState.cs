@@ -175,7 +175,7 @@ namespace GameLib
             return (int)(DateTime.UtcNow - Start).TotalMilliseconds;
         }
 
-        public void HandleStartGameMessage(int agentId, AgentGameRules rules, int timestamp, long absoluteStart)
+        public void HandleStartGameMessage(int agentId, AgentGameRules rules, long absoluteStart)
         {
             Setup(rules);
 

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace GameLib.GameMessages
+namespace GameLib
 {
     public abstract class GameMasterMessage : Message
     {

@@ -1,6 +1,4 @@
 ﻿using ConnectionLib;
-using GameLib.Actions;
-using GameLib.GameMessages;
 using System;
 using System.Linq;
 using System.Threading;
@@ -23,8 +21,7 @@ namespace GameLib
         private bool waitForResponse;
         private MoveDirection lastMoveDirection;
 
-        // Not used - did u miss it somewhere?
-        //private int isWinning = -1;
+        public bool? IsWinning { get; private set; } = null;
 
         public Agent(int tempId, DecisionModuleBase decisionModule, IConnection connection)
         {
@@ -115,14 +112,14 @@ namespace GameLib
             state.IsInGame = isConnected;
         }
 
-        public void HandleStartGameMessage(int agentId, AgentGameRules rules, int timestamp, long absoluteStart)
+        public void HandleStartGameMessage(int agentId, AgentGameRules rules, long absoluteStart)
         {
             logger.Debug($"Agent with temporary id {tempId} received StartGameMessage, he received id {agentId}");
 
             this.rules = rules;
             this.id = agentId;
 
-            state.HandleStartGameMessage(agentId, rules, timestamp, absoluteStart);
+            state.HandleStartGameMessage(agentId, rules, absoluteStart);
 
             logger.Debug($"Agent {id} - rules for the game are:\n{rules.ToString()}");
         }
@@ -268,10 +265,11 @@ namespace GameLib
             waitForResponse = false;
         }
 
-        public void EndGame(int winningTeam, int timestamp)
+        public void EndGame(Team winningTeam, int timestamp)
         {
-            logger.Debug($"Agent {id} finished the game, he {(winningTeam == (int)state.Team ? "won" : "lost")}.");
-
+            IsWinning = winningTeam == state.Team;
+            logger.Debug($"Agent {id} finished the game, he {(IsWinning.Value ? "won" : "lost")}.");
+         
             state.GameEnded = true;
             waitForResponse = false;
         }

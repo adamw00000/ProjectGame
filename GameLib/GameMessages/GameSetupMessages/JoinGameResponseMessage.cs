@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GameLib.GameMessages
+namespace GameLib
 {
     class JoinGameResponseMessage : GameMasterMessage
     {
         public readonly bool IsConnected;
 
-        public JoinGameResponseMessage(int agentId, int timestamp, bool isConnected) : base(agentId, timestamp)
+        public JoinGameResponseMessage(int agentId, bool isConnected) : base(agentId, -1)
         {
             IsConnected = isConnected;
         }

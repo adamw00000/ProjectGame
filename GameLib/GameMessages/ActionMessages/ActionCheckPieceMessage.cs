@@ -1,7 +1,5 @@
 ﻿using ConnectionLib;
-using GameLib.GameMessages;
-
-namespace GameLib.Actions
+namespace GameLib
 {
     internal class ActionCheckPieceMessage : ActionMessage
     {

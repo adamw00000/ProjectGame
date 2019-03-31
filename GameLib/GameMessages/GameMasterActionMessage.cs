@@ -1,6 +1,4 @@
-﻿using GameLib.GameMessages;
-
-namespace GameLib.Actions
+﻿namespace GameLib
 {
     public abstract class GameMasterActionMessage : GameMasterMessage
     {
