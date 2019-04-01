@@ -11,7 +11,7 @@ namespace GameLib.Actions
 
         public readonly int WaitUntilTime;
 
-        public RequestTimePenaltyError(int agentId, int timestamp, int waitUntilTime, string messageId = "") : base(agentId, timestamp, messageId) //MessageId temporrary "" because managing it is different task
+        public RequestTimePenaltyError(int agentId, int timestamp, int waitUntilTime, string messageId) : base(agentId, timestamp, messageId) //MessageId temporrary "" because managing it is different task
         {
             WaitUntilTime = waitUntilTime;
         }

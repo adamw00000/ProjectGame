@@ -19,7 +19,7 @@ namespace GameLib.Actions
 
         public override void Handle(GameMaster gameMaster)
         {
-            gameMaster.CommunicationAgreementWithData(SenderId, AgentId, AcceptsCommunication, data);
+            gameMaster.CommunicationAgreementWithData(SenderId, AgentId, AcceptsCommunication, data, MessageId);
         }
     }
 }
