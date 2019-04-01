@@ -9,7 +9,7 @@ namespace GameLib.Actions
         public readonly bool Agreement;
         public int SenderId;
 
-        public ActionCommunicationResponseWithData(int agentId, int timestamp, int waitUntilTime, int senderId, bool agreement, object data, string messageId) : base(agentId, timestamp, waitUntilTime, messageId) //MessageId temporrary "" because managing it is different task
+        public ActionCommunicationResponseWithData(int agentId, int timestamp, int waitUntilTime, int senderId, bool agreement, object data, string messageId) : base(agentId, timestamp, waitUntilTime, messageId)
         {
             this.data = data;
             this.SenderId = senderId;

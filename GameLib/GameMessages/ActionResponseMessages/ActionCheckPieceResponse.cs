@@ -7,7 +7,7 @@ namespace GameLib.Actions
     {
         public readonly bool IsValid;
 
-        public ActionCheckPieceResponse(int agentId, int timestamp, int waitUntilTime, bool isValid, string messageId) : base(agentId, timestamp, waitUntilTime, messageId) //MessageId temporrary "" because managing it is different task
+        public ActionCheckPieceResponse(int agentId, int timestamp, int waitUntilTime, bool isValid, string messageId) : base(agentId, timestamp, waitUntilTime, messageId)
         {
             this.IsValid = isValid;
         }
