@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using GameLib;
-using GameLib.GameMessages;
-
-namespace GameLib.Actions
+namespace GameLib
 {
     class ActionMoveMessage : ActionMessage
     {

@@ -1,5 +1,5 @@
 ﻿using ConnectionLib;
-using GameLib.Actions;
+using GameLib;
 using System;
 
 namespace GameLib

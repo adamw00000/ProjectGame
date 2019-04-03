@@ -1,11 +1,10 @@
-﻿using GameLib.GameMessages;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace GameLib.Actions
+namespace GameLib
 {
-    abstract public class ActionErrorMessage : GameMasterMessage
+    abstract public class ActionErrorMessage : GameMasterGameMessage
     {
         public readonly string MessageId;
 

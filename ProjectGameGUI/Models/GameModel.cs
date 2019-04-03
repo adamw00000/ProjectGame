@@ -38,7 +38,7 @@ namespace ProjectGameGUI.Models
             LocalCommunicationServer cs = new LocalCommunicationServer();
             GMLocalConnection gMLocalConnection = new GMLocalConnection(cs);
             GameRules rules = new GameRules(teamSize: 2, baseTimePenalty: 50, boardHeight: 8, boardWidth: 4);
-            gameMaster = new GameMaster(rules, gMLocalConnection);
+            gameMaster = new GameMaster(rules, gMLocalConnection, new GameMasterMessageFactory());
 
             this.mainWindowViewModel.WindowWidth = width * DisplaySettings.FieldWidth;
             this.mainWindowViewModel.WindowHeight = height * DisplaySettings.FieldHeight;

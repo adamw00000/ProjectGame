@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GameLib.GameMessages
+namespace GameLib
 {
-    class GameOverMessage : GameMasterMessage
+    class GameOverMessage : GameMasterGameMessage
     {
-        public readonly int WinningTeam;
+        public readonly Team WinningTeam;
 
-        public GameOverMessage(int agentId, int timestamp, int winningTeam) : base(agentId, timestamp)
+        public GameOverMessage(int agentId, int timestamp, Team winningTeam) : base(agentId, timestamp)
         {
             WinningTeam = winningTeam;
         }

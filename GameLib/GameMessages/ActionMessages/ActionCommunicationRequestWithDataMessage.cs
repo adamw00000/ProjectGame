@@ -1,7 +1,6 @@
-﻿using GameLib.GameMessages;
-using System;
+﻿using System;
 
-namespace GameLib.Actions
+namespace GameLib
 {
     internal class ActionCommunicationRequestWithDataMessage : ActionMessage
     {

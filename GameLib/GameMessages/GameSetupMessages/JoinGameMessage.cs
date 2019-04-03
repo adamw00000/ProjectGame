@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GameLib.GameMessages
+namespace GameLib
 {
     class JoinGameMessage : AgentMessage
     {

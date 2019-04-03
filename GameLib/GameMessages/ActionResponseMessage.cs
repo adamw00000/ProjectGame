@@ -1,8 +1,6 @@
-﻿using GameLib.GameMessages;
-
-namespace GameLib.Actions
+﻿namespace GameLib
 {
-    abstract public class ActionResponseMessage : GameMasterMessage
+    abstract public class ActionResponseMessage : GameMasterGameMessage
     {
         public readonly int WaitUntilTime;
         public readonly string MessageId;

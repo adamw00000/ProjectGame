@@ -1,6 +1,6 @@
 ﻿using ConnectionLib;
-using GameLib.Actions;
-using GameLib.GameMessages;
+using GameLib;
+using GameLib;
 
 namespace GameLib
 {
