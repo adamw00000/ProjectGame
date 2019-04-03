@@ -4,19 +4,22 @@ namespace GameLib
 {
     public struct AgentField
     {
-        private int distance;
+        public AgentFieldState IsGoal { get; set; }
 
-        public int Distance
+        public int Distance { get; private set; }
+        public int Timestamp { get; private set; }
+
+        public void SetDistance(int distance, int timestamp)
         {
-            get => distance;
-            set
-            {
-                distance = value;
-                Timestamp = DateTime.UtcNow;
-            }
+            this.Distance = distance;
+            this.Timestamp = timestamp;
         }
 
-        public DateTime Timestamp { get; set; }
-        public AgentFieldState IsGoal { get; set; }
+        public AgentField(int distance, AgentFieldState fieldState, int timestamp)
+        {
+            this.Distance = distance;
+            this.IsGoal = fieldState;
+            this.Timestamp = timestamp;
+        }
     }
 }

@@ -40,11 +40,12 @@ namespace GameLib
                 logger.Debug(e, $"Agent {agentId} didn't join the game :");
             }
             connection.Send(response);
-            
+
             if (state.PlayerStates.Count == rules.TeamSize * 2)
             {
                 logger.Info("Both teams are full - preparing to start the game");
                 start = DateTime.UtcNow;
+                long absoluteStartGameTimestamp = (long)(start - new DateTime(1970, 1, 1)).TotalMilliseconds;
                 state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, rules.TeamSize);
                 var rulesDict = state.GetAgentGameRules();
                 gameStarted = true;
@@ -53,7 +54,7 @@ namespace GameLib
                 foreach (var (playerId, state) in state.PlayerStates)
                 {
                     logger.Debug($"Agent {playerId} is in {state.Team}{(state.IsLeader ? " and is leader}" : "")}");
-                    Message startGameMessage = messageFactory.CreateGameStartMessage(playerId, (long)(start - new DateTime()).TotalMilliseconds, rulesDict[playerId]);
+                    Message startGameMessage = messageFactory.CreateGameStartMessage(playerId, absoluteStartGameTimestamp, rulesDict[playerId]);
                     connection.Send(startGameMessage);
                 }
                 logger.Info("Game started");
@@ -292,7 +293,7 @@ namespace GameLib
                 state.DestroyPiece(agentId);
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 logger.Debug($"Agent {agentId} destroyed piece");
-                response = messageFactory.CreateDestoryPieceResponseMessage(agentId, timestamp, waitUntil, ""); 
+                response = messageFactory.CreateDestoryPieceResponseMessage(agentId, timestamp, waitUntil, "");
             }
             catch (PendingLeaderCommunicationException e)
             {
@@ -381,7 +382,7 @@ namespace GameLib
             {
                 int timestamp = CurrentTimestamp();
                 logger.Debug($"Request of agent {requesterAgentId} was rejected by {targetAgentId}");
-                Message response = messageFactory.CreateCommunicationResponseWithDataMessage(requesterAgentId, timestamp, 
+                Message response = messageFactory.CreateCommunicationResponseWithDataMessage(requesterAgentId, timestamp,
                     CalculateDelay(requesterAgentId).waitUntil, targetAgentId, false, null, "");
                 connection.Send(response);
                 return;

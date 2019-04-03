@@ -69,7 +69,7 @@ namespace GameLib
             Board = new AgentBoard(rules);
         }
 
-        public void Move(MoveDirection direction, int distance)
+        public void Move(MoveDirection direction, int distance, int timestamp)
         {
             var oldPosition = Position;
 
@@ -99,16 +99,16 @@ namespace GameLib
                 throw new InvalidMoveException();
             }
 
-            Board.SetDistance(Position.X, Position.Y, distance);
+            Board.SetDistance(Position.X, Position.Y, distance, timestamp);
         }
 
-        public void PickUpPiece()
+        public void PickUpPiece(int timestamp)
         {
             if (HoldsPiece)
                 throw new PieceOperationException("Picking up piece when agent has one already");
 
             HoldsPiece = true;
-            Board.SetDistance(Position.X, Position.Y, -1);
+            Board.SetDistance(Position.X, Position.Y, -1, timestamp);
             PieceState = PieceState.Unknown;
         }
 
@@ -125,14 +125,14 @@ namespace GameLib
             HoldsPiece = false;
             PieceState = PieceState.Unknown;
         }
-        
+
         public void PlacePiece(PutPieceResult putResult)
         {
-            if(!HoldsPiece)
+            if (!HoldsPiece)
             {
                 throw new PieceOperationException("Agent is not holding a piece");
             }
-            switch(putResult)
+            switch (putResult)
             {
                 case PutPieceResult.PieceGoalRealized:
                     Board.BoardTable[Position.X, Position.Y].IsGoal = AgentFieldState.DiscoveredGoal;
@@ -182,7 +182,7 @@ namespace GameLib
             this.IsLeader = agentId == rules.TeamLeaderId;
             this.TeamIds = (int[])rules.AgentIdsFromTeam.Clone();
             this.TeamLeaderId = rules.TeamLeaderId;
-            this.Start = (new DateTime()).AddMilliseconds(absoluteStart);
+            this.Start = (new DateTime(1970, 1, 1)).AddMilliseconds(absoluteStart);
             this.GameStarted = true;
         }
     }

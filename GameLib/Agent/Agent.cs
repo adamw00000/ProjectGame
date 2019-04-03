@@ -129,7 +129,7 @@ namespace GameLib
             if (true/*awaitedForResponse is ActionPickPieceMessage*/)
             {
                 logger.Debug($"Agent {id} picked up piece");
-                state.PickUpPiece();
+                state.PickUpPiece(timestamp);
                 state.WaitUntilTime = waitUntilTime;
                 waitForResponse = false;
             }
@@ -177,7 +177,7 @@ namespace GameLib
             if (true/*awaitedForResponse is ActionMoveMessage move*/)
             {
                 logger.Debug($"Agent {id} - current time: {state.CurrentTimestamp()}, wait until: {waitUntilTime}");
-                state.Move(lastMoveDirection, distance); //Needs to be fixed with collection of actions
+                state.Move(lastMoveDirection, distance, timestamp); //Needs to be fixed with collection of actions
                 state.WaitUntilTime = waitUntilTime;
                 waitForResponse = false;
 

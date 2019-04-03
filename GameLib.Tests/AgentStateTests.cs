@@ -27,27 +27,27 @@ namespace GameLib.Tests
             return state;
         }
 
-        private static AgentField[,] GetFields()
-        {
-            return new AgentField[3, 3]
-                {
-                    {
-                        new AgentField { Distance = 2, IsGoal = AgentFieldState.Unknown, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
-                        new AgentField { Distance = 1, IsGoal = AgentFieldState.DiscoveredGoal, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
-                        new AgentField { Distance = 2, IsGoal = AgentFieldState.DiscoveredNotGoal, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
-                    },
-                    {
-                        new AgentField { Distance = 1, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
-                        new AgentField { Distance = 0, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
-                        new AgentField { Distance = 1, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
-                    },
-                    {
-                        new AgentField { Distance = 2, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
-                        new AgentField { Distance = 1, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
-                        new AgentField { Distance = 2, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
-                    }
-                };
-        }
+        //private static AgentField[,] GetFields()
+        //{
+        //    return new AgentField[3, 3]
+        //        {
+        //            {
+        //                new AgentField { Distance = 2, IsGoal = AgentFieldState.Unknown, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
+        //                new AgentField { Distance = 1, IsGoal = AgentFieldState.DiscoveredGoal, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
+        //                new AgentField { Distance = 2, IsGoal = AgentFieldState.DiscoveredNotGoal, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
+        //            },
+        //            {
+        //                new AgentField { Distance = 1, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
+        //                new AgentField { Distance = 0, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
+        //                new AgentField { Distance = 1, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
+        //            },
+        //            {
+        //                new AgentField { Distance = 2, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
+        //                new AgentField { Distance = 1, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
+        //                new AgentField { Distance = 2, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
+        //            }
+        //        };
+        //}
 
         [Theory]
         [InlineData(1, 4)]
@@ -90,7 +90,7 @@ namespace GameLib.Tests
             var state = GetSetUpState(rules);
             var distance = 1;
 
-            state.Move(direction, distance);
+            state.Move(direction, distance, 0);
 
             var expectedX = rules.AgentStartX;
             var expectedY = rules.AgentStartY;
@@ -125,7 +125,7 @@ namespace GameLib.Tests
             var state = GetSetUpState(rules);
             var distance = 1;
 
-            Should.Throw<InvalidMoveException>(() => state.Move(direction, distance));
+            Should.Throw<InvalidMoveException>(() => state.Move(direction, distance, 0));
         }
 
         [Theory]
@@ -137,8 +137,8 @@ namespace GameLib.Tests
             var rules = GetDefaultRules();
             var state = GetSetUpState(rules);
 
-            var callTime = DateTime.UtcNow.AddMilliseconds(-1);
-            state.Move(MoveDirection.Down, distance);
+            var callTime = 0;
+            state.Move(MoveDirection.Down, distance, 1);
 
             var field = state.Board[state.Position.X, state.Position.Y];
             field.Distance.ShouldBe(distance);
@@ -152,7 +152,7 @@ namespace GameLib.Tests
             var state = GetSetUpState(rules);
             state.HoldsPiece = false;
 
-            state.PickUpPiece();
+            state.PickUpPiece(0);
 
             state.HoldsPiece.ShouldBe(true);
             state.PieceState.ShouldBe(PieceState.Unknown);
@@ -166,9 +166,9 @@ namespace GameLib.Tests
             int x = 1;
             int y = 1;
             state.Position = (x, y);
-            state.Board.SetDistance(x, y, 5);
+            state.Board.SetDistance(x, y, 5, 0);
 
-            state.PickUpPiece();
+            state.PickUpPiece(0);
 
             state.Board[x, y].Distance.ShouldBe(-1);
         }
@@ -179,7 +179,7 @@ namespace GameLib.Tests
             var state = GetState();
             state.HoldsPiece = true;
 
-            Should.Throw<PieceOperationException>(() => state.PickUpPiece(), "Picking up piece when agent has one already");
+            Should.Throw<PieceOperationException>(() => state.PickUpPiece(0), "Picking up piece when agent has one already");
         }
 
         [Theory]
@@ -282,7 +282,7 @@ namespace GameLib.Tests
             var rules = GetDefaultRules();
             var state = GetSetUpState(rules);
             var resultBoard = new AgentBoard(rules);
-            SetupCommunicationBoards(state.Board, resultBoard, DateTime.MaxValue, distance);
+            SetupCommunicationBoards(state.Board, resultBoard, int.MaxValue, distance);
 
             state.UpdateBoardWithCommunicationData(resultBoard);
 
@@ -302,7 +302,7 @@ namespace GameLib.Tests
             var rules = GetDefaultRules();
             var state = GetSetUpState(rules);
             var resultBoard = new AgentBoard(rules);
-            SetupCommunicationBoards(state.Board, resultBoard, DateTime.MinValue, distance);
+            SetupCommunicationBoards(state.Board, resultBoard, 0, distance);
 
             state.UpdateBoardWithCommunicationData(resultBoard);
 
@@ -315,15 +315,14 @@ namespace GameLib.Tests
             }
         }
 
-        private static void SetupCommunicationBoards(AgentBoard agentBoard, AgentBoard resultBoard, in DateTime value, int distance)
+        private static void SetupCommunicationBoards(AgentBoard agentBoard, AgentBoard resultBoard, int value, int distance)
         {
             for (int i = 0; i < resultBoard.Height; i++)
             {
                 for (int j = 0; j < resultBoard.Width; j++)
                 {
-                    agentBoard.BoardTable[i, j].Distance = -1;
-                    resultBoard.BoardTable[i, j].Distance = distance;
-                    resultBoard.BoardTable[i, j].Timestamp = value;
+                    agentBoard.BoardTable[i, j].SetDistance(-1, 1000);
+                    resultBoard.BoardTable[i, j].SetDistance(distance, value);
                 }
             }
         }
