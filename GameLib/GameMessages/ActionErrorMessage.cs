@@ -9,7 +9,7 @@ namespace GameLib.Actions
     {
         public readonly string MessageId;
 
-        public ActionErrorMessage(int agentId, int timestamp, string messageId) : base(agentId, timestamp) //MessageId temporrary "" because managing it is different task
+        public ActionErrorMessage(int agentId, int timestamp, string messageId) : base(agentId, timestamp)
         {
             MessageId = messageId;
         }

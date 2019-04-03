@@ -2,6 +2,7 @@
 using GameLib.Actions;
 using GameLib.GameMessages;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +20,8 @@ namespace GameLib
         private readonly AgentState state;
         private AgentGameRules rules;
 
-        private Action awaitedForResponse;
+        private HashSet<string> awaitedMessages = new HashSet<string>();
+        private string lastMessageId;
         private bool waitForResponse;
         private MoveDirection lastMoveDirection;
 
@@ -138,99 +140,124 @@ namespace GameLib
 
         public void HandlePickPieceResponse(int timestamp, int waitUntilTime, string messageId)
         {
-            if (true/*awaitedForResponse is ActionPickPieceMessage*/)
+            if (awaitedMessages.Contains(messageId))
             {
+                awaitedMessages.Remove(messageId);
                 logger.Debug($"Agent {id} picked up piece");
                 state.PickUpPiece();
                 state.WaitUntilTime = waitUntilTime;
-                waitForResponse = false;
+
+                logger.Debug($"Agent {id} - waiting for message {lastMessageId}, received {messageId}");
+                if (lastMessageId == messageId)
+                    waitForResponse = false;
             }
             else
             {
-                logger.Error($"Agent {id} - wrong action response received - PickPiece response expected");
-                //throw new InvalidOperationException("Wrong action result received");
+                logger.Error($"Agent {id} - unexpected response received, response id: {messageId}");
+                throw new InvalidOperationException("Wrong action result received");
             }
         }
 
         public void HandlePutPieceResponse(int timestamp, int waitUntilTime, PutPieceResult putPieceResult, string messageId)
         {
-            if (true/*awaitedForResponse is ActionPutPieceMessage*/)
+            if (awaitedMessages.Contains(messageId))
             {
+                awaitedMessages.Remove(messageId);
                 logger.Debug($"Agent {id} put piece on the board, result: {putPieceResult.ToString()}");
                 state.PlacePiece(putPieceResult);
                 state.WaitUntilTime = waitUntilTime;
-                waitForResponse = false;
+
+                logger.Debug($"Agent {id} - waiting for message {lastMessageId}, received {messageId}");
+                if (lastMessageId == messageId)
+                    waitForResponse = false;
             }
             else
             {
-                logger.Error($"Agent {id} - wrong action response received - PutPiece response expected");
-                //throw new InvalidOperationException("Wrong action result received");
+                logger.Error($"Agent {id} - unexpected response received, response id: {messageId}");
+                throw new InvalidOperationException("Wrong action result received");
             }
         }
 
         public void HandleDestroyPieceResponse(int timestamp, int waitUntilTime, string messageId)
         {
-            if (true/*awaitedForResponse is ActionDestroyPieceMessage*/)
+            if (awaitedMessages.Contains(messageId))
             {
+                awaitedMessages.Remove(messageId);
                 logger.Debug($"Agent {id} destroyed his piece");
                 state.HoldsPiece = false;
                 state.WaitUntilTime = waitUntilTime;
-                waitForResponse = false;
+
+                logger.Debug($"Agent {id} - waiting for message {lastMessageId}, received {messageId}");
+                if (lastMessageId == messageId)
+                    waitForResponse = false;
             }
             else
             {
-                logger.Error($"Agent {id} - wrong action response received - Destroy response expected");
-                //throw new InvalidOperationException("Wrong action result received");
+                logger.Error($"Agent {id} - unexpected response received, response id: {messageId}");
+                throw new InvalidOperationException("Wrong action result received");
             }
         }
 
         public void HandleMoveResponse(int timestamp, int waitUntilTime, int distance, string messageId)
         {
-            if (true/*awaitedForResponse is ActionMoveMessage move*/)
+            if (awaitedMessages.Contains(messageId))
             {
+                awaitedMessages.Remove(messageId);
                 logger.Debug($"Agent {id} - current time: {state.CurrentTimestamp()}, wait until: {waitUntilTime}");
                 state.Move(lastMoveDirection, distance); //Needs to be fixed with collection of actions
                 state.WaitUntilTime = waitUntilTime;
-                waitForResponse = false;
+
+                logger.Debug($"Agent {id} - waiting for message {lastMessageId}, received {messageId}");
+                if (lastMessageId == messageId)
+                    waitForResponse = false;
 
                 logger.Debug($"Agent {id} moved, his new position: {state.Position}, distance to closest Piece: {distance}");
             }
             else
             {
-                logger.Error($"Agent {id} - wrong action response received - Move response expected");
-                //throw new InvalidOperationException("Wrong action result received");
+                logger.Error($"Agent {id} - unexpected response received, response id: {messageId}");
+                throw new InvalidOperationException("Wrong action result received");
             }
         }
 
         public void HandleDiscoverResponse(int timestamp, int waitUntilTime, DiscoveryResult closestPieces, string messageId)
         {
-            if (true/*awaitedForResponse is ActionDiscoveryMessage*/)
+            if (awaitedMessages.Contains(messageId))
             {
+                awaitedMessages.Remove(messageId);
                 logger.Debug($"Agent {id} discovered his surroundings");
                 state.Discover(closestPieces, timestamp);
                 state.WaitUntilTime = waitUntilTime;
-                waitForResponse = false;
+
+                logger.Debug($"Agent {id} - waiting for message {lastMessageId}, received {messageId}");
+                if (lastMessageId == messageId)
+                    waitForResponse = false;
             }
             else
             {
-                logger.Error($"Agent {id} - wrong action response received - Discover response expected");
-                //throw new InvalidOperationException("Wrong action result received");
+                logger.Error($"Agent {id} - unexpected response received, response id: {messageId}");
+                throw new InvalidOperationException("Wrong action result received");
             }
         }
 
         public void HandleCheckPieceResponse(int timestamp, int waitUntilTime, bool isValid, string messageId)
         {
-            if (true/*awaitedForResponse is ActionCheckPieceMessage*/)
+            if (awaitedMessages.Contains(messageId))
             {
+                awaitedMessages.Remove(messageId);
                 logger.Debug($"Agent {id} checked his piece validity - it is {(isValid ? "valid" : "invalid")}");
                 state.WaitUntilTime = waitUntilTime;
-                waitForResponse = false;
+
+                logger.Debug($"Agent {id} - waiting for message {lastMessageId}, received {messageId}");
+                if (lastMessageId == messageId)
+                    waitForResponse = false;
+
                 state.PieceState = isValid ? PieceState.Valid : PieceState.Invalid;
             }
             else
             {
-                logger.Error($"Agent {id} - wrong action response received - CheckPiece response expected");
-                //throw new InvalidOperationException("Wrong action result received");
+                logger.Error($"Agent {id} - unexpected response received, response id: {messageId}");
+                throw new InvalidOperationException("Wrong action result received");
             }
         }
 
@@ -245,11 +272,23 @@ namespace GameLib
         {
             try
             {
-                logger.Debug($"Agent {id} received communication response from agent {senderId}, he " + (agreement ? "agreed" : "didn't agree") + " for the communication");
-                decisionModule.SaveCommunicationResult(senderId, agreement, state.Start.AddMilliseconds(timestamp), data, state);
-                
-                state.WaitUntilTime = waitUntilTime;
-                waitForResponse = false;
+                if (awaitedMessages.Contains(messageId))
+                {
+                    awaitedMessages.Remove(messageId);
+                    logger.Debug($"Agent {id} received communication response from agent {senderId}, he " + (agreement ? "agreed" : "didn't agree") + " for the communication");
+                    decisionModule.SaveCommunicationResult(senderId, agreement, state.Start.AddMilliseconds(timestamp), data, state);
+
+                    state.WaitUntilTime = waitUntilTime;
+
+                    logger.Debug($"Agent {id} - waiting for message {lastMessageId}, received {messageId}");
+                    if (lastMessageId == messageId)
+                        waitForResponse = false;
+                }
+                else
+                {
+                    logger.Error($"Agent {id} - unexpected response received, response id: {messageId}");
+                    throw new InvalidOperationException("Wrong action result received");
+                }
             }
             catch (InvalidCommunicationDataException e)
             {
@@ -289,55 +328,63 @@ namespace GameLib
         {
             waitForResponse = true;
             lastMoveDirection = direction;
-            Message message = messageFactory.MoveMessage(direction);
-            connection.Send(message);
+            (Message message, string messageId) = messageFactory.MoveMessage(direction);
+            SendAndAddToCollection(message, messageId);
         }
 
         public void CheckPiece()
         {
             waitForResponse = true;
-            Message message = messageFactory.CheckPieceMessage();
-            connection.Send(message);
+            (Message message, string messageId) = messageFactory.CheckPieceMessage();
+            SendAndAddToCollection(message, messageId);
         }
 
         public void DestroyPiece()
         {
             waitForResponse = true;
-            Message message = messageFactory.DestroyMessage();
-            connection.Send(message);
+            (Message message, string messageId) = messageFactory.DestroyMessage();
+            SendAndAddToCollection(message, messageId);
         }
 
         public void PutPiece()
         {
             waitForResponse = true;
-            Message message = messageFactory.PutPieceMessage();
-            connection.Send(message);
+            (Message message, string messageId) = messageFactory.PutPieceMessage();
+            SendAndAddToCollection(message, messageId);
         }
 
         public void PickPiece()
         {
             waitForResponse = true;
-            Message message = messageFactory.PickPieceMessage();
-            connection.Send(message);
+            (Message message, string messageId) = messageFactory.PickPieceMessage();
+            SendAndAddToCollection(message, messageId);
         }
 
         public void Communicate(int targetId, object data)
         {
-            Message message = messageFactory.CommunicationRequestMessage(targetId, data);
-            connection.Send(message);
+            (Message message, string messageId) = messageFactory.CommunicationRequestMessage(targetId, data);
+            SendAndAddToCollection(message, messageId);
         }
 
         public void Discover()
         {
             waitForResponse = true;
-            Message message = messageFactory.DiscoveryMessage();
-            connection.Send(message);
+            (Message message, string messageId) = messageFactory.DiscoveryMessage();
+            SendAndAddToCollection(message, messageId);
         }
 
         public void AgreeOnCommunication(int requesterId, bool agreement, object data)
         {
             waitForResponse = agreement;
-            Message message = messageFactory.CommunicationAgreementMessage(requesterId, agreement, data);
+            (Message message, string messageId) = messageFactory.CommunicationAgreementMessage(requesterId, agreement, data);
+            SendAndAddToCollection(message, messageId);
+        }
+
+        private void SendAndAddToCollection(Message message, string messageId)
+        {
+            awaitedMessages.Add(messageId);
+            lastMessageId = messageId;
+            logger.Debug($"Agent {id} sent message {messageId}");
             connection.Send(message);
         }
     }

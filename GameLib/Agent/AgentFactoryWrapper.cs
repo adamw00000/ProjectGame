@@ -17,52 +17,52 @@ namespace GameLib
 
         private string GetMessageId() => Guid.NewGuid().ToString();
 
-        public ActionMessage MoveMessage(MoveDirection direction)
+        public (Message message, string messageId) MoveMessage(MoveDirection direction)
         {
             string messageId = GetMessageId();
-            return agentFactory.MoveMessage(id, direction, messageId);
+            return (agentFactory.MoveMessage(id, direction, messageId), messageId);
         }
 
-        public ActionMessage CheckPieceMessage()
+        public (Message message, string messageId) CheckPieceMessage()
         {
             string messageId = GetMessageId();
-            return agentFactory.CheckPieceMessage(id, messageId);
+            return (agentFactory.CheckPieceMessage(id, messageId), messageId);
         }
 
-        public ActionMessage CommunicationAgreementMessage(int senderId, bool acceptsCommunication, object data)
+        public (Message message, string messageId) CommunicationAgreementMessage(int senderId, bool acceptsCommunication, object data)
         {
             string messageId = GetMessageId();
-            return agentFactory.CommunicationAgreementMessage(id, senderId, acceptsCommunication, data, messageId);
+            return (agentFactory.CommunicationAgreementMessage(id, senderId, acceptsCommunication, data, messageId), messageId);
         }
 
-        public ActionMessage CommunicationRequestMessage(int targetId, object data)
+        public (Message message, string messageId) CommunicationRequestMessage(int targetId, object data)
         {
             string messageId = GetMessageId();
-            return agentFactory.CommunicationRequestMessage(id, targetId, data, messageId);
+            return (agentFactory.CommunicationRequestMessage(id, targetId, data, messageId), messageId);
         }
 
-        public ActionMessage DestroyMessage()
+        public (Message message, string messageId) DestroyMessage()
         {
             string messageId = GetMessageId();
-            return agentFactory.DestroyMessage(id, messageId);
+            return (agentFactory.DestroyMessage(id, messageId), messageId);
         }
 
-        public ActionMessage DiscoveryMessage()
+        public (Message message, string messageId) DiscoveryMessage()
         {
             string messageId = GetMessageId();
-            return agentFactory.DiscoveryMessage(id, messageId);
+            return (agentFactory.DiscoveryMessage(id, messageId), messageId);
         }
 
-        public ActionMessage PickPieceMessage()
+        public (Message message, string messageId) PickPieceMessage()
         {
             string messageId = GetMessageId();
-            return agentFactory.PickPieceMessage(id, messageId);
+            return (agentFactory.PickPieceMessage(id, messageId), messageId);
         }
 
-        public ActionMessage PutPieceMessage()
+        public (Message message, string messageId) PutPieceMessage()
         {
             string messageId = GetMessageId();
-            return agentFactory.PutPieceMessage(id, messageId);
+            return (agentFactory.PutPieceMessage(id, messageId), messageId);
         }
     }
 }

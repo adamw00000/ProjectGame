@@ -15,7 +15,8 @@ namespace GameLib
         private readonly GameRules gameRules;
         public int UndiscoveredRedGoalsLeft;
         public int UndiscoveredBlueGoalsLeft;
-        private readonly Dictionary<(int senderId, int targetId), object> CommunicationData = new Dictionary<(int senderId, int targetId), object>();
+        private readonly Dictionary<(int senderId, int targetId), (object data, string senderMessageId)?> CommunicationData = 
+            new Dictionary<(int senderId, int targetId), (object data, string senderMessageId)?>();
 
         public readonly GameMasterBoard Board;
         public Dictionary<int, PlayerState> PlayerStates = new Dictionary<int, PlayerState>();
@@ -356,7 +357,7 @@ namespace GameLib
             PlayerStates[playerId] = player;
         }
 
-        public void SaveCommunicationData(int senderId, int targetId, object data)
+        public void SaveCommunicationData(int senderId, int targetId, object data, string senderMessageId)
         {
             PlayerState senderPlayer = PlayerStates[senderId];
             
@@ -368,18 +369,18 @@ namespace GameLib
                 logger.Debug($"Agent {targetId} has now pending leader communication!");
             }
 
-            CommunicationData[(senderId, targetId)] = data;
+            CommunicationData[(senderId, targetId)] = (data, senderMessageId);
         }
 
-        public object GetCommunicationData(int senderId, int targetId)
+        public (object data, string senderMessageId) GetCommunicationData(int senderId, int targetId)
         {
-            if (CommunicationData.TryGetValue((senderId, targetId), out object data))
+            if (CommunicationData.TryGetValue((senderId, targetId), out (object data, string senderMessageId)? responseData))
             {
-                if (data == null)
+                if (!responseData.HasValue)
                     throw new CommunicationException($"Communication data for pair ({senderId}, {targetId}) doesn't exist!");
 
                 CommunicationData[(senderId, targetId)] = null;
-                return data;
+                return responseData.Value;
             }
             else
             {
