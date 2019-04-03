@@ -17,10 +17,10 @@ namespace ProjectGameGUI.Models
     {
         private Task[] agentTasks;
         private GameMaster gameMaster;
-        private GameMasterState gameMasterState => gameMaster.state;
-        private int width => gameMasterState.Board.Width;
-        private int height => gameMasterState.Board.Height;
-        private int goalAreaHeight => gameMasterState.Board.GoalAreaHeight;
+        private GameMasterStateSnapshot gameMasterStateSnapShot => gameMaster.GameMasterStateSnapshot;
+        private int width => gameMasterStateSnapShot.Board.Width;
+        private int height => gameMasterStateSnapShot.Board.Height;
+        private int goalAreaHeight => gameMasterStateSnapShot.Board.GoalAreaHeight;
         private MainWindowViewModel mainWindowViewModel;
         private List<Field> fields = new List<Field>();
         private List<Player> players = new List<Player>();
@@ -130,7 +130,7 @@ namespace ProjectGameGUI.Models
                     field.X = x;
                     field.Y = height - y - 1; //avalonia displays it upside down
                     field.Team = Team.Blue;
-                    field.IsUndiscoveredGoal = gameMasterState.Board[x, y].IsGoal;
+                    field.IsUndiscoveredGoal = gameMasterStateSnapShot.Board[x, y].IsGoal;
                     field.Name = $"({x},{y})";
                     fields.Add(field);
                 }
@@ -150,7 +150,7 @@ namespace ProjectGameGUI.Models
                     field.X = x;
                     field.Y = height - y - 1; //avalonia displays it upside down
                     field.Team = Team.Red;
-                    field.IsUndiscoveredGoal = gameMasterState.Board[x, y].IsGoal;
+                    field.IsUndiscoveredGoal = gameMasterStateSnapShot.Board[x, y].IsGoal;
                     field.Name = $"({x},{y})";
                     fields.Add(field);
                 }
@@ -160,12 +160,10 @@ namespace ProjectGameGUI.Models
         private void PreparePlayers()
         {
             players.Clear();
-            var states = new Dictionary<int, PlayerState>(gameMasterState.PlayerStates);
-
-            foreach (var (id, playerstate) in states)
+            
+            foreach (var (id, playerstate) in gameMasterStateSnapShot.PlayerStates)
             {
                 Player player = new Player();
-
                 if (playerstate.Piece != null)
                 {
                     Piece piece = new Piece();
@@ -195,14 +193,13 @@ namespace ProjectGameGUI.Models
         private void PreparePieces()
         {
             pieces.Clear();
-            var states = new List<(int x, int y)>(gameMasterState.Board.PiecesPositions);
 
-            foreach (var piecePos in states)
+            foreach (var piecePos in gameMasterStateSnapShot.Board.PiecesPositions)
             {
                 Piece piece = new Piece();
                 piece.X = piecePos.x;
                 piece.Y = height - piecePos.y - 1;
-                piece.IsValid = gameMasterState.Board[piecePos.x, piecePos.y].Piece.IsValid;
+                piece.IsValid = gameMasterStateSnapShot.Board[piecePos.x, piecePos.y].Piece.IsValid;
                 pieces.Add(piece);
             }
         }

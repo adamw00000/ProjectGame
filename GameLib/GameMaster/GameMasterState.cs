@@ -18,7 +18,7 @@ namespace GameLib
         private readonly Dictionary<(int senderId, int targetId), object> CommunicationData = new Dictionary<(int senderId, int targetId), object>();
 
         public readonly GameMasterBoard Board;
-        public Dictionary<int, PlayerState> PlayerStates = new Dictionary<int, PlayerState>();
+        public readonly Dictionary<int, PlayerState> PlayerStates = new Dictionary<int, PlayerState>();
 
         public GameMasterState(GameRules rules)
         {
