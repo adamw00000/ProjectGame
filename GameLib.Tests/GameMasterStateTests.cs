@@ -935,7 +935,7 @@ namespace GameLib.Tests
 
             object message1 = 15;
 
-            Should.Throw<DelayException>(() => state.SaveCommunicationData(senderId, targetId, message1));
+            Should.Throw<DelayException>(() => state.SaveCommunicationData(senderId, targetId, message1, ""));
         }
 
         [Fact]
@@ -953,11 +953,11 @@ namespace GameLib.Tests
             object message1 = 15;
             object message2 = 125;
 
-            state.SaveCommunicationData(senderId, targetId, message1);
-            state.SaveCommunicationData(senderId, targetId, message2);
+            state.SaveCommunicationData(senderId, targetId, message1, "1");
+            state.SaveCommunicationData(senderId, targetId, message2, "2");
 
             var result = state.GetCommunicationData(senderId, targetId);
-            result.ShouldBe(message2);
+            result.ShouldBe((message2, "2"));
         }
 
         [Fact]
@@ -971,7 +971,7 @@ namespace GameLib.Tests
             state.PlayerStates.Add(senderId, new PlayerState(-1, -1, isLeader: true));
             state.PlayerStates.Add(targetId, new PlayerState(-1, -1));
 
-            state.SaveCommunicationData(senderId, targetId, "");
+            state.SaveCommunicationData(senderId, targetId, "", "");
 
             state.PlayerStates[targetId].PendingLeaderCommunication.ShouldBe(true);
         }
@@ -987,7 +987,7 @@ namespace GameLib.Tests
             state.PlayerStates.Add(senderId, new PlayerState(-1, -1, isLeader: true));
             state.PlayerStates.Add(targetId, new PlayerState(-1, -1));
 
-            state.SaveCommunicationData(senderId, targetId, "");
+            state.SaveCommunicationData(senderId, targetId, "", "");
             state.DelayCommunicationPartners(senderId, targetId);
 
             state.PlayerStates[targetId].PendingLeaderCommunication.ShouldBe(false);

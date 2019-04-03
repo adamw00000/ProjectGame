@@ -8,7 +8,7 @@
 
         public override void Handle(GameMaster gameMaster)
         {
-            gameMaster.Discover(AgentId);
+            gameMaster.Discover(AgentId, MessageId);
         }
     }
 }

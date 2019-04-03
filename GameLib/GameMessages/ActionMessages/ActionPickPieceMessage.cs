@@ -8,7 +8,7 @@
 
         public override void Handle(GameMaster gameMaster)
         {
-            gameMaster.PickPiece(AgentId);
+            gameMaster.PickPiece(AgentId, MessageId);
         }
     }
 }

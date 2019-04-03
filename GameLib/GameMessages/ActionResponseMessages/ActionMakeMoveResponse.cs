@@ -6,7 +6,7 @@ namespace GameLib
     {
         private readonly int closestPieceDistance;
 
-        public ActionMakeMoveResponse(int agentId, int timestamp, int waitUntilTime, int closestPieceDistance, string messageId = "") : base(agentId, timestamp, waitUntilTime, messageId) //MessageId temporrary "" because managing it is different task
+        public ActionMakeMoveResponse(int agentId, int timestamp, int waitUntilTime, int closestPieceDistance, string messageId) : base(agentId, timestamp, waitUntilTime, messageId)
         {
             this.closestPieceDistance = closestPieceDistance;
         }

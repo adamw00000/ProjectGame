@@ -5,7 +5,7 @@ namespace GameLib
     {
         public readonly PutPieceResult PutPieceResult;
 
-        public ActionPutPieceResponse(int agentId, int timestamp, int waitUntilTime, PutPieceResult putPieceResult, string messageId = "") : base(agentId, timestamp, waitUntilTime, messageId) //MessageId temporrary "" because managing it is different task
+        public ActionPutPieceResponse(int agentId, int timestamp, int waitUntilTime, PutPieceResult putPieceResult, string messageId) : base(agentId, timestamp, waitUntilTime, messageId)
         {
             this.PutPieceResult = putPieceResult;
         }

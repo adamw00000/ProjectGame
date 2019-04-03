@@ -10,7 +10,7 @@ namespace GameLib
 
         public override void Handle(GameMaster gameMaster)
         {
-            gameMaster.CheckPiece(AgentId);
+            gameMaster.CheckPiece(AgentId, MessageId);
         }
     }
 }
