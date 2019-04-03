@@ -50,9 +50,9 @@ namespace GameLib.Tests
         }
 
         [Theory]
-        [InlineData(1, 4)]
-        [InlineData(0, 7)]
-        public void Setup_WhenCalled_SetsAgentsPosition(int X, int Y)
+        [InlineData(4, 1)]
+        [InlineData(7, 0)]
+        public void Setup_WhenCalled_SetsAgentsPositions(int X, int Y)
         {
             var state = GetState();
             var rules = new AgentGameRules(boardWidth: 8, boardHeight: 8, agentStartX: X, agentStartY: Y, teamSize: 2, agentIdsFromTeam: new int[] { 0, 1 }, leaderId: 0);
@@ -97,19 +97,19 @@ namespace GameLib.Tests
             switch (direction)
             {
                 case MoveDirection.Left:
-                    expectedY--;
-                    break;
-
-                case MoveDirection.Right:
-                    expectedY++;
-                    break;
-
-                case MoveDirection.Up:
                     expectedX--;
                     break;
 
-                case MoveDirection.Down:
+                case MoveDirection.Right:
                     expectedX++;
+                    break;
+
+                case MoveDirection.Up:
+                    expectedY++;
+                    break;
+
+                case MoveDirection.Down:
+                    expectedY--;
                     break;
             }
             state.Position.X.ShouldBe(expectedX);
@@ -118,7 +118,7 @@ namespace GameLib.Tests
 
         [Theory]
         [InlineData(MoveDirection.Left)]
-        [InlineData(MoveDirection.Up)]
+        [InlineData(MoveDirection.Down)]
         public void Move_WhenMoveIsInvalid_ThrowsInvalidMoveException(MoveDirection direction)
         {
             var rules = new AgentGameRules(boardWidth: 8, boardHeight: 8, agentStartX: 0, agentStartY: 0, teamSize: 2, agentIdsFromTeam: new int[] { 0, 1 }, leaderId: 0);
@@ -140,7 +140,7 @@ namespace GameLib.Tests
             var callTime = DateTime.UtcNow.AddMilliseconds(-1);
             state.Move(MoveDirection.Down, distance);
 
-            var field = state.Board[state.Position.X, state.Position.Y];
+            AgentField field = state.Board[state.Position.X, state.Position.Y];
             field.Distance.ShouldBe(distance);
             field.Timestamp.ShouldBeGreaterThan(callTime);
         }
@@ -148,13 +148,29 @@ namespace GameLib.Tests
         [Fact]
         public void PickUpPiece_WhenAgentDoesntHavePiece_UpdatesPieceState()
         {
-            var state = GetState();
+            var rules = GetDefaultRules();
+            var state = GetSetUpState(rules);
             state.HoldsPiece = false;
 
             state.PickUpPiece();
 
             state.HoldsPiece.ShouldBe(true);
             state.PieceState.ShouldBe(PieceState.Unknown);
+        }
+
+        [Fact]
+        public void PickUpPiece_WhenAgentDoesntHavePiece_SetsDistanceToMinusOne()
+        {
+            var rules = GetDefaultRules();
+            var state = GetSetUpState(rules);
+            int x = 1;
+            int y = 1;
+            state.Position = (x, y);
+            state.Board.SetDistance(x, y, 5);
+
+            state.PickUpPiece();
+
+            state.Board[x, y].Distance.ShouldBe(-1);
         }
 
         [Fact]
@@ -270,11 +286,11 @@ namespace GameLib.Tests
 
             state.UpdateBoardWithCommunicationData(resultBoard);
 
-            for (int i = 0; i < state.Board.Height; i++)
+            for (int x = 0; x < state.Board.Width; x++)
             {
-                for (int j = 0; j < state.Board.Width; j++)
+                for (int y = 0; y < state.Board.Height; y++)
                 {
-                    state.Board[i, j].Distance.ShouldBe(distance);
+                    state.Board[x, y].Distance.ShouldBe(distance);
                 }
             }
         }
@@ -290,24 +306,24 @@ namespace GameLib.Tests
 
             state.UpdateBoardWithCommunicationData(resultBoard);
 
-            for (int i = 0; i < state.Board.Height; i++)
+            for (int x = 0; x < state.Board.Width; x++)
             {
-                for (int j = 0; j < state.Board.Width; j++)
+                for (int y = 0; y < state.Board.Height; y++)
                 {
-                    state.Board[i, j].Distance.ShouldBe(-1);
+                    state.Board[x, y].Distance.ShouldBe(-1);
                 }
             }
         }
 
         private static void SetupCommunicationBoards(AgentBoard agentBoard, AgentBoard resultBoard, in DateTime value, int distance)
         {
-            for (int i = 0; i < resultBoard.Height; i++)
+            for (int x = 0; x < resultBoard.Width; x++)
             {
-                for (int j = 0; j < resultBoard.Width; j++)
+                for (int y = 0; y < resultBoard.Height; y++)
                 {
-                    agentBoard.BoardTable[i, j].Distance = -1;
-                    resultBoard.BoardTable[i, j].Distance = distance;
-                    resultBoard.BoardTable[i, j].Timestamp = value;
+                    agentBoard.BoardTable[x, y].Distance = -1;
+                    resultBoard.BoardTable[x, y].Distance = distance;
+                    resultBoard.BoardTable[x, y].Timestamp = value;
                 }
             }
         }

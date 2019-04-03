@@ -5,14 +5,14 @@ namespace GameLib.Actions
 {
     internal class ActionCheckPiece : AgentMessage, IAction
     {
-        public ActionCheckPiece(int agentId) : base(agentId)
+        public ActionCheckPiece(int agentId, int timestamp) : base(agentId, timestamp)
         {
 
         }
 
         public void Handle(GameMaster gameMaster)
         {
-            gameMaster.CheckPiece(AgentId);
+            gameMaster.CheckPiece(AgentId, Timestamp);
         }
 
         public override void Handle(object handler)

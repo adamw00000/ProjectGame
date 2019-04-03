@@ -131,7 +131,8 @@ namespace GameLib
         {
             return (int)(DateTime.UtcNow - start).TotalMilliseconds;
         }
-        public void MoveAgent(int agentId, MoveDirection moveDirection)
+
+        public void MoveAgent(int agentId, MoveDirection moveDirection, int requestTimestamp)
         {
             logger.Debug($"Agent {agentId} wants to move {moveDirection.ToString()}");
             Message response;
@@ -142,21 +143,27 @@ namespace GameLib
                 logger.Debug($"Agent {agentId} moved {moveDirection.ToString()}");
                 response = new ActionMakeMoveResponse(agentId, timestamp, waitUntil, distance);
             }
+            catch (PendingLeaderCommunicationException e)
+            {
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
+                logger.Warn(e, $"Agent {agentId} couldn't move: ");
+                response = new InvalidAction(agentId, CurrentTimestamp(), requestTimestamp);
+            }
             catch (DelayException e)
             {
                 logger.Warn(e, $"Agent {agentId} tried move during penalty: ");
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
-                response = new RequestTimePenaltyError(agentId, timestamp, waitUntil);
+                response = new RequestTimePenaltyError(agentId, timestamp, waitUntil, requestTimestamp);
             }
             catch (InvalidMoveException e)
             {
                 logger.Warn(e, $"Agent {agentId} couldn't move: ");
-                response = new InvalidMoveDirectionError(agentId, CurrentTimestamp());
+                response = new InvalidMoveDirectionError(agentId, CurrentTimestamp(), requestTimestamp);
             }
             connection.Send(response);
         }
 
-        public void PickPiece(int agentId)
+        public void PickUpPiece(int agentId, int requestTimestamp)
         {
             logger.Debug($"Agent {agentId} wants to pick up a piece");
             Message response;
@@ -167,21 +174,27 @@ namespace GameLib
                 logger.Debug($"Agent {agentId} picked up a piece");
                 response = new ActionPickPieceResponse(agentId, timestamp, waitUntil);
             }
+            catch (PendingLeaderCommunicationException e)
+            {
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
+                logger.Warn(e, $"Agent {agentId} couldn't pick up a piece: ");
+                response = new InvalidAction(agentId, CurrentTimestamp(), requestTimestamp);
+            }
             catch (DelayException e)
             {
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 logger.Warn(e, $"Agent {agentId} couldn't pick up a piece: ");
-                response = new RequestTimePenaltyError(agentId, timestamp, waitUntil);
+                response = new RequestTimePenaltyError(agentId, timestamp, waitUntil, requestTimestamp);
             }
             catch (PieceOperationException e)
             {
                 logger.Warn(e, $"Agent {agentId} couldn't pick up a piece: ");
-                response = new InvalidAction(agentId, CurrentTimestamp());
+                response = new InvalidAction(agentId, CurrentTimestamp(), requestTimestamp);
             }
             connection.Send(response);
         }
 
-        public void PutPiece(int agentId)
+        public void PutPiece(int agentId, int requestTimestamp)
         {
             logger.Debug($"Agent {agentId} wants to put a piece");
             Message response;
@@ -192,16 +205,22 @@ namespace GameLib
                 logger.Debug($"Agent {agentId} put a piece");
                 response = new ActionPutPieceResponse(agentId, timestamp, waitUntil, result);
             }
+            catch (PendingLeaderCommunicationException e)
+            {
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
+                logger.Warn(e, $"Agent {agentId} couldn't put a piece: ");
+                response = new InvalidAction(agentId, CurrentTimestamp(), requestTimestamp);
+            }
             catch (DelayException e)
             {
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 logger.Debug(e, $"Agent {agentId} couldn't put a piece: ");
-                response = new RequestTimePenaltyError(agentId, timestamp, waitUntil);
+                response = new RequestTimePenaltyError(agentId, timestamp, waitUntil, requestTimestamp);
             }
             catch (PieceOperationException e)
             {
                 logger.Debug(e, $"Agent {agentId} couldn't put a piece: ");
-                response = new InvalidAction(agentId, CurrentTimestamp());
+                response = new InvalidAction(agentId, CurrentTimestamp(), requestTimestamp);
             }
             connection.Send(response);
             if (state.GameEnded)
@@ -211,11 +230,12 @@ namespace GameLib
                 foreach (var (id, agplayerId) in state.PlayerStates)
                 {
                     Message message = new GameOverMessage(id, timestamp, (int)state.Winner);
+                    connection.Send(message);
                 }
             }
         }
 
-        public void Discover(int agentId)
+        public void Discover(int agentId, int requestTimestamp)
         {
             logger.Debug($"Agent {agentId} wants to discover nearby pieces");
             Message response;
@@ -226,16 +246,22 @@ namespace GameLib
                 logger.Debug($"Agent {agentId} made action discovery successfully");
                 response = new ActionDiscoverResponse(agentId, timestamp, waitUntil, discoveryResult);
             }
+            catch (PendingLeaderCommunicationException e)
+            {
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
+                logger.Warn(e, $"Agent {agentId} couldn't make discovery action: ");
+                response = new InvalidAction(agentId, CurrentTimestamp(), requestTimestamp);
+            }
             catch (DelayException e)
             {
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 logger.Warn(e, $"Agent {agentId} couldn't make discovery action: ");
-                response = new RequestTimePenaltyError(agentId, timestamp, waitUntil);
+                response = new RequestTimePenaltyError(agentId, timestamp, waitUntil, requestTimestamp);
             }
             connection.Send(response);
         }
 
-        public void CheckPiece(int agentId)
+        public void CheckPiece(int agentId, int requestTimestamp)
         {
             logger.Debug($"Agent {agentId} wants to check piece");
             Message response;
@@ -246,21 +272,27 @@ namespace GameLib
                 logger.Debug($"Agent {agentId} checked his piece - it's {(result ? "valid" : "not valid")}");
                 response = new ActionCheckPieceResponse(agentId, timestamp, waitUntil, result);
             }
+            catch (PendingLeaderCommunicationException e)
+            {
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
+                logger.Warn(e, $"Agent {agentId} couldn't check his piece: ");
+                response = new InvalidAction(agentId, CurrentTimestamp(), requestTimestamp);
+            }
             catch (DelayException e)
             {
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 logger.Warn(e, $"Agent {agentId} couldn't check his piece: ");
-                response = new RequestTimePenaltyError(agentId, timestamp, waitUntil);
+                response = new RequestTimePenaltyError(agentId, timestamp, waitUntil, requestTimestamp);
             }
             catch (PieceOperationException e)
             {
                 logger.Warn(e, $"Agent {agentId} couldn't check his piece: ");
-                response = new InvalidAction(agentId, CurrentTimestamp());
+                response = new InvalidAction(agentId, CurrentTimestamp(), requestTimestamp);
             }
             connection.Send(response);
         }
 
-        public void DestroyPiece(int agentId)
+        public void DestroyPiece(int agentId, int requestTimestamp)
         {
             logger.Debug($"Agent {agentId} wants to destroy piece");
             Message response;
@@ -271,21 +303,27 @@ namespace GameLib
                 logger.Debug($"Agent {agentId} destroyed piece");
                 response = new ActionDestroyPieceResponse(agentId, timestamp, waitUntil);
             }
+            catch (PendingLeaderCommunicationException e)
+            {
+                (int timestamp, int waitUntil) = CalculateDelay(agentId);
+                logger.Warn(e, $"Agent {agentId} couldn't destroy piece: ");
+                response = new InvalidAction(agentId, CurrentTimestamp(), requestTimestamp);
+            }
             catch (DelayException e)
             {
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 logger.Warn(e, $"Agent {agentId} couldn't destroy piece: ");
-                response = new RequestTimePenaltyError(agentId, timestamp, waitUntil);
+                response = new RequestTimePenaltyError(agentId, timestamp, waitUntil, requestTimestamp);
             }
             catch (PieceOperationException e)
             {
                 logger.Warn(e, $"Agent {agentId} couldn't destroy piece: ");
-                response = new InvalidAction(agentId, CurrentTimestamp());
+                response = new InvalidAction(agentId, CurrentTimestamp(), requestTimestamp);
             }
             connection.Send(response);
         }
 
-        public void CommunicationRequestWithData(int requesterAgentId, int targetAgentId, object data)
+        public void CommunicationRequestWithData(int requesterAgentId, int targetAgentId, object data, int requestTimestamp)
         {
             logger.Debug($"Agent {requesterAgentId} wants to communicate with {targetAgentId} and data {data.ToString()}");
             try
@@ -295,22 +333,42 @@ namespace GameLib
                 Message request = new ActionCommunicationRequest(requesterAgentId, targetAgentId, CurrentTimestamp());
                 connection.Send(request);
             }
+            catch (PendingLeaderCommunicationException e)
+            {
+                (int timestamp, int waitUntil) = CalculateDelay(requesterAgentId);
+                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {data.ToString()}: ");
+                Message response = new InvalidAction(requesterAgentId, CurrentTimestamp(), requestTimestamp);
+                connection.Send(response);
+            }
             catch (DelayException e)
             {
                 (int timestamp, int waitUntil) = CalculateDelay(requesterAgentId);
                 logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {data.ToString()}");
-                Message response = new RequestTimePenaltyError(requesterAgentId, timestamp, waitUntil);
+                Message response = new RequestTimePenaltyError(requesterAgentId, timestamp, waitUntil, requestTimestamp);
                 connection.Send(response);
             }
         }
 
-        public void CommunicationAgreementWithData(int requesterAgentId, int targetAgentId, bool agreement, object targetData)
+        public void CommunicationAgreementWithData(int requesterAgentId, int targetAgentId, bool agreement, object targetData, int requestTimestamp)
         {
             logger.Debug($"Agent {requesterAgentId} was tried to be answered by {targetAgentId} and data {(targetData == null ? "null" : targetData.ToString())}");
+            try
+            {
+                state.VerifyLeaderCommunicationState(requesterAgentId, targetAgentId, agreement);
+            }
+            catch (PendingLeaderCommunicationException e)
+            {
+                int timestamp = CurrentTimestamp();
+                logger.Warn(e, $"Error during proccesing answer from {targetAgentId} to {requesterAgentId} with data {targetData.ToString()} (pending leader communication): ");
+                Message response = new InvalidAction(targetAgentId, timestamp, requestTimestamp);
+                connection.Send(response);
+                return;
+            }
+
             if (targetData == null)
             {
                 logger.Warn($"Agent {targetAgentId} sent null as targetData");
-                Message response = new InvalidAction(targetAgentId, CurrentTimestamp());
+                Message response = new InvalidAction(targetAgentId, CurrentTimestamp(), requestTimestamp);
                 connection.Send(response);
                 return;
             }
@@ -323,7 +381,7 @@ namespace GameLib
             {
                 int timestamp = CurrentTimestamp();
                 logger.Warn(e, $"Error during proccesing answer from {targetAgentId} to {requesterAgentId} with data {targetData.ToString()}: ");
-                Message response = new InvalidAction(targetAgentId, timestamp);
+                Message response = new InvalidAction(targetAgentId, timestamp, requestTimestamp);
                 connection.Send(response);
                 return;
             }

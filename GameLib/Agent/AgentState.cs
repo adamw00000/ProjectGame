@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace GameLib
 {
@@ -9,6 +10,46 @@ namespace GameLib
         public bool GameStarted { get; set; } = false;
         public bool GameEnded { get; set; } = false;
         public bool IsLeader { get; private set; }
+        public int[] TeamIds { get; private set; }
+        public int TeamLeaderId { get; private set; }
+
+        public bool IsInTaskArea => Position.Y >= Board.GoalAreaHeight &&
+                                    Position.Y < Board.Height - Board.GoalAreaHeight; //changed
+        public bool IsInGoalArea
+        {
+            get
+            {
+                if (Team == Team.Blue)
+                    return Position.Y < Board.GoalAreaHeight && Position.Y >= 0;
+                else
+                    return Position.Y >= Board.Height - Board.GoalAreaHeight && Position.Y < Board.Height;
+            }
+        }
+
+        public List<MoveDirection> PossibleMoves
+        {
+            get
+            {
+                List<MoveDirection> possibleMoves = new List<MoveDirection>();
+
+                if ((Team == Team.Red && Position.Y < Board.Height - 1) || (Team == Team.Blue && Position.Y < Board.Height - Board.GoalAreaHeight - 1))
+                    possibleMoves.Add(MoveDirection.Up);
+
+                if ((Team == Team.Red && Position.Y > Board.GoalAreaHeight) || (Team == Team.Blue && Position.Y > 0))
+                    possibleMoves.Add(MoveDirection.Down);
+
+                if (Position.X > 0)
+                    possibleMoves.Add(MoveDirection.Left);
+
+                if (Position.X < Board.Width - 1)
+                    possibleMoves.Add(MoveDirection.Right);
+
+                return possibleMoves;
+            }
+        }
+
+        public AgentField CurrentField => Board[Position.X, Position.Y];
+        public AgentField GetFieldAt((int X, int Y) position) => Board[position.X, position.Y];
 
         public bool HoldsPiece = false;
         public PieceState PieceState = PieceState.Unknown;
@@ -19,9 +60,6 @@ namespace GameLib
         public DateTime Start;
 
         private bool wantsToBeLeader;
-        private int[] teamIds; // We did add teamIds here becouse DecisionModule will use them for communication and it does get AgentState
-        private int teamLeaderId;
-
 
         public AgentState()
         {
@@ -40,24 +78,31 @@ namespace GameLib
             switch (direction)
             {
                 case MoveDirection.Left:
-                    Position.Y--;
-                    break;
-
-                case MoveDirection.Right:
-                    Position.Y++;
-                    break;
-
-                case MoveDirection.Up:
                     Position.X--;
                     break;
 
-                case MoveDirection.Down:
+                case MoveDirection.Right:
                     Position.X++;
+                    break;
+
+                case MoveDirection.Up:
+                    Position.Y++;
+                    break;
+
+                case MoveDirection.Down:
+                    Position.Y--;
                     break;
             }
 
-            if (Position.X >= Board.Height || Position.X < 0 ||
-                Position.Y >= Board.Width || Position.Y < 0)
+            if (Position.Y >= Board.Height || Position.Y < 0 ||
+                Position.X >= Board.Width || Position.X < 0)
+            {
+                Position = oldPosition;
+                throw new InvalidMoveException();
+            }
+
+            if ((Team == Team.Blue && Position.Y > Board.Height - Board.GoalAreaHeight - 1) ||
+                (Team == Team.Red && Position.Y < Board.GoalAreaHeight))
             {
                 Position = oldPosition;
                 throw new InvalidMoveException();
@@ -72,6 +117,7 @@ namespace GameLib
                 throw new PieceOperationException("Picking up piece when agent has one already");
 
             HoldsPiece = true;
+            Board.SetDistance(Position.X, Position.Y, -1);
             PieceState = PieceState.Unknown;
         }
 
@@ -88,14 +134,14 @@ namespace GameLib
             HoldsPiece = false;
             PieceState = PieceState.Unknown;
         }
-        
+
         public void PlacePiece(PutPieceResult putResult)
         {
-            if(!HoldsPiece)
+            if (!HoldsPiece)
             {
                 throw new PieceOperationException("Agent is not holding a piece");
             }
-            switch(putResult)
+            switch (putResult)
             {
                 case PutPieceResult.PieceGoalRealized:
                     Board.BoardTable[Position.X, Position.Y].IsGoal = AgentFieldState.DiscoveredGoal;
@@ -143,8 +189,8 @@ namespace GameLib
             Setup(rules);
 
             this.IsLeader = agentId == rules.TeamLeaderId;
-            this.teamIds = (int[])rules.AgentIdsFromTeam.Clone();
-            this.teamLeaderId = rules.TeamLeaderId;
+            this.TeamIds = (int[])rules.AgentIdsFromTeam.Clone();
+            this.TeamLeaderId = rules.TeamLeaderId;
             this.Start = (new DateTime()).AddMilliseconds(absoluteStart);
             this.GameStarted = true;
         }

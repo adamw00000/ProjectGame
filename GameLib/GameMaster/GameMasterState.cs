@@ -34,21 +34,24 @@ namespace GameLib
         {
             List<PlayerState> reds = new List<PlayerState>(PlayerStates.Values.Where(player => player.Team == Team.Red));
             List<PlayerState> blues = new List<PlayerState>(PlayerStates.Values.Where(player => player.Team == Team.Blue));
+
             for (int i = 0; i < teamSize; i++)
             {
                 PlayerState redPlayer = reds[i];
                 PlayerState bluePlayer = blues[i];
-                int rowRed = i / width; //top
-                int rowBlue = height - 1 - i / width; //bottom
+                int rowBlue = i / width; //top
+                int rowRed = height - 1 - i / width; //bottom
                 int columnRed = width / 2 + Distance(i % width) * Side(i); //from center, outwards
                 int columnBlue = (width - 1) / 2 + Distance(i % width) * Side(i + 1);
-                redPlayer.Position = (rowRed, columnRed);
-                bluePlayer.Position = (rowBlue, columnBlue);
+                redPlayer.Position = (columnRed, rowRed);
+                bluePlayer.Position = (columnBlue, rowBlue);
             }
+
             int Distance(int n)
             {
                 return n % 2 == 0 ? n / 2 : n / 2 + 1;
             }
+
             int Side(int n)
             {
                 return n % 2 == 0 ? 1 : -1;
@@ -99,27 +102,27 @@ namespace GameLib
         public int Move(int playerId, MoveDirection direction)
         {
             var player = PlayerStates[playerId];
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
+
+            CheckEligibility(player);
 
             var newPosition = player.Position;
 
             switch (direction)
             {
                 case MoveDirection.Left:
-                    newPosition.Y--;
-                    break;
-
-                case MoveDirection.Right:
-                    newPosition.Y++;
-                    break;
-
-                case MoveDirection.Up:
                     newPosition.X--;
                     break;
 
-                case MoveDirection.Down:
+                case MoveDirection.Right:
                     newPosition.X++;
+                    break;
+
+                case MoveDirection.Up:
+                    newPosition.Y++;
+                    break;
+
+                case MoveDirection.Down:
+                    newPosition.Y--;
                     break;
             }
 
@@ -141,11 +144,19 @@ namespace GameLib
             return Board[newPosition.X, newPosition.Y].Distance;
         }
 
+        private static void CheckEligibility(PlayerState player)
+        {
+            if (player.PendingLeaderCommunication)
+                throw new PendingLeaderCommunicationException();
+            if (!player.IsEligibleForAction)
+                throw new DelayException();
+        }
+
         private bool IsOnBoard((int, int) newPosition)
         {
             (int x, int y) = newPosition;
-            return x < Board.Height && x >= 0 &&
-                y < Board.Width && y >= 0;
+            return y < Board.Height && y >= 0 &&
+                x < Board.Width && x >= 0;
         }
 
         private bool IsAnyAgentOn((int X, int Y) newPosition)
@@ -164,8 +175,7 @@ namespace GameLib
         {
             PlayerState player = PlayerStates[playerId];
 
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
+            CheckEligibility(player);
 
             if (player.Piece != null)
                 throw new PieceOperationException("Cannot pick up piece if you already have one!");
@@ -189,8 +199,7 @@ namespace GameLib
         {
             PlayerState player = PlayerStates[playerId];
 
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
+            CheckEligibility(player);
 
             if (player.Piece == null)
                 throw new PieceOperationException("Player doesn't have a piece!");
@@ -271,8 +280,7 @@ namespace GameLib
         {
             PlayerState player = PlayerStates[playerId];
 
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
+            CheckEligibility(player);
 
             if (player.Piece == null)
                 throw new PieceOperationException("Player doesn't have a piece!");
@@ -286,8 +294,7 @@ namespace GameLib
         {
             PlayerState player = PlayerStates[playerId];
 
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
+            CheckEligibility(player);
 
             if (player.Piece == null)
                 throw new PieceOperationException("Player doesn't have a piece!");
@@ -301,8 +308,7 @@ namespace GameLib
         {
             PlayerState player = PlayerStates[playerId];
 
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
+            CheckEligibility(player);
 
             DelayPlayer(playerId, gameRules.DiscoverMultiplier);
 
@@ -331,7 +337,13 @@ namespace GameLib
 
         public void DelayCommunicationPartners(int senderId, int targetId)
         {
-            PlayerState player = PlayerStates[targetId];
+            PlayerState senderPlayer = PlayerStates[senderId];
+
+            if (senderPlayer.IsLeader)
+            {
+                logger.Debug($"Agent {targetId} no longer has pending leader communication!");
+                PlayerStates[targetId].PendingLeaderCommunication = false;
+            }
 
             AddDelay(targetId, gameRules.CommunicationMultiplier);
             AddDelay(senderId, gameRules.CommunicationMultiplier);
@@ -349,10 +361,15 @@ namespace GameLib
 
         public void SaveCommunicationData(int senderId, int targetId, object data)
         {
-            PlayerState player = PlayerStates[targetId];
+            PlayerState senderPlayer = PlayerStates[senderId];
 
-            if (!player.IsEligibleForAction)
-                throw new DelayException();
+            CheckEligibility(senderPlayer);
+
+            if (senderPlayer.IsLeader)
+            {
+                PlayerStates[targetId].PendingLeaderCommunication = true;
+                logger.Debug($"Agent {targetId} has now pending leader communication!");
+            }
 
             CommunicationData[(senderId, targetId)] = data;
         }
@@ -371,6 +388,18 @@ namespace GameLib
             {
                 throw new CommunicationException($"Communication data for pair ({senderId}, {targetId}) doesn't exist!");
             }
+        }
+
+        public void VerifyLeaderCommunicationState(int senderId, int targetId, bool agreement)
+        {
+            var senderPlayer = PlayerStates[senderId];
+            var targetPlayer = PlayerStates[targetId];
+
+            if (targetPlayer.PendingLeaderCommunication && !senderPlayer.IsLeader)
+                throw new PendingLeaderCommunicationException();
+
+            if (targetPlayer.PendingLeaderCommunication && senderPlayer.IsLeader && !agreement)
+                throw new PendingLeaderCommunicationException();
         }
 
         public void JoinGame(int agentId, int teamId, bool wantToBeLeader)

@@ -5,20 +5,20 @@ namespace GameLib
     public class AgentBoard
     {
         public readonly AgentField[,] BoardTable;
-        public int Height => BoardTable.GetLength(0);
-        public int Width => BoardTable.GetLength(1);
+        public int Height => BoardTable.GetLength(1);
+        public int Width => BoardTable.GetLength(0); //changed
         public int GoalAreaHeight { get; }
 
         public AgentBoard(AgentGameRules rules)
         {
-            BoardTable = new AgentField[rules.BoardHeight, rules.BoardWidth];
+            BoardTable = new AgentField[rules.BoardWidth, rules.BoardHeight];
             GoalAreaHeight = rules.GoalAreaHeight;
 
-            void FillBoardRow(int i, bool isGoalArea)
+            void FillBoardRow(int y, bool isGoalArea)
             {
-                for (int j = 0; j < Width; j++)
+                for (int x = 0; x < Width; x++)
                 {
-                    BoardTable[i, j] = new AgentField()
+                    BoardTable[x, y] = new AgentField()
                     {
                         Distance = -1,
                         Timestamp = DateTime.UtcNow,
@@ -27,19 +27,19 @@ namespace GameLib
                 }
             }
 
-            for (int i = 0; i < GoalAreaHeight; i++)
+            for (int y = 0; y < GoalAreaHeight; y++)
             {
-                FillBoardRow(i, true);
+                FillBoardRow(y, true);
             }
 
-            for (int i = GoalAreaHeight; i < Height - GoalAreaHeight; i++)
+            for (int y = GoalAreaHeight; y < Height - GoalAreaHeight; y++)
             {
-                FillBoardRow(i, false);
+                FillBoardRow(y, false);
             }
 
-            for (int i = Height - GoalAreaHeight; i < Height; i++)
+            for (int y = Height - GoalAreaHeight; y < Height; y++)
             {
-                FillBoardRow(i, true);
+                FillBoardRow(y, true);
             }
         }
 
@@ -64,7 +64,7 @@ namespace GameLib
 
         public void ApplyDiscoveryResult(DiscoveryResult discoveryResult, int timestamp)
         {
-            foreach(var (x,y,distance) in discoveryResult.Fields)
+            foreach (var (x, y, distance) in discoveryResult.Fields)
             {
                 if (!IsInBounds(x, y))
                     throw new InvalidDiscoveryResultException($"({x},{y}) is outside the board");
@@ -75,30 +75,30 @@ namespace GameLib
 
         public void ApplyCommunicationResult(AgentBoard partnerBoard)
         {
-            for (int i = 0; i < Height; i++)
+            for (int x = 0; x < Width; x++)
             {
-                for (int j = 0; j < Width; j++)
+                for (int y = 0; y < Height; y++)
                 {
-                    if (BoardTable[i, j].IsGoal == AgentFieldState.Unknown)
-                        BoardTable[i, j].IsGoal = partnerBoard[i, j].IsGoal;
+                    if (BoardTable[x, y].IsGoal == AgentFieldState.Unknown)
+                        BoardTable[x, y].IsGoal = partnerBoard[x, y].IsGoal;
 
-                    if (IsResultBoardOlder(partnerBoard, i, j))
+                    if (IsResultBoardOlder(partnerBoard, x, y))
                         continue;
 
-                    BoardTable[i, j].Distance = partnerBoard[i, j].Distance;
-                    BoardTable[i, j].Timestamp = partnerBoard[i, j].Timestamp;
+                    BoardTable[x, y].Distance = partnerBoard[x, y].Distance;
+                    BoardTable[x, y].Timestamp = partnerBoard[x, y].Timestamp;
                 }
             }
         }
 
-        private bool IsResultBoardOlder(AgentBoard resultBoard, int i, int j)
+        private bool IsResultBoardOlder(AgentBoard resultBoard, int x, int y)
         {
-            return BoardTable[i, j].Timestamp >= resultBoard[i, j].Timestamp;
+            return BoardTable[x, y].Timestamp >= resultBoard[x, y].Timestamp;
         }
 
         private bool IsInBounds(int x, int y)
         {
-            return x >= 0 && y >= 0 && x < Height && y < Width;
+            return x >= 0 && y >= 0 && x < Width && y < Height;
         }
     }
 }

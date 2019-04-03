@@ -6,6 +6,7 @@ namespace GameLib.Actions
 {
     interface IActionError
     {
+        int RequestTimestamp { get; }
         void Handle(Agent agent);
     }
 }

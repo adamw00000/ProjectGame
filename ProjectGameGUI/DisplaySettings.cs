@@ -42,8 +42,8 @@ namespace ProjectGameGUI
         public static Grid GetPlayerControl(Player player)
         {
             Grid grid = new Grid();
-            Grid.SetRow(grid, player.X);
-            Grid.SetColumn(grid, player.Y);
+            Grid.SetRow(grid, player.Y);
+            Grid.SetColumn(grid, player.X);
             grid.VerticalAlignment = VerticalAlignment.Center;
             grid.HorizontalAlignment = HorizontalAlignment.Center;
 
@@ -83,10 +83,11 @@ namespace ProjectGameGUI
         {
             Border border = new Border();
             border.BorderBrush = BorderBrush;
-            Grid.SetRow(border, field.X);
-            Grid.SetColumn(border, field.Y);
-            border.ZIndex = 0;
+            Grid.SetRow(border, field.Y);
+            Grid.SetColumn(border, field.X);
+            border.ZIndex = -1;
             border.BorderThickness = new Avalonia.Thickness(BorderThickness);
+
             switch(field.Team)
             {
                 case GameLib.Team.Blue:
@@ -97,7 +98,7 @@ namespace ProjectGameGUI
                     break;
                 default:
                     border.Background = TaskAreaColor;
-                    return border;
+                    break;
             }
             if(field.IsUndiscoveredGoal)
             {
@@ -135,9 +136,9 @@ namespace ProjectGameGUI
             ellipse.Fill = piece.IsValid ? ValidPieceColor : InvalidPieceColor;
             ellipse.VerticalAlignment = VerticalAlignment.Center;
             ellipse.HorizontalAlignment = HorizontalAlignment.Center;
-            Grid.SetRow(ellipse, piece.X);
-            Grid.SetColumn(ellipse, piece.Y);
-            ellipse.ZIndex = 1;
+            Grid.SetRow(ellipse, piece.Y);
+            Grid.SetColumn(ellipse, piece.X);
+            ellipse.ZIndex = 0;
             return ellipse;
         }
 
