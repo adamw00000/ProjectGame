@@ -250,13 +250,13 @@ namespace GameLib
 
         public object Clone()
         {
-            GameMasterBoard gmb = new GameMasterBoard(Height, Width, GoalAreaHeight);
+            GameMasterBoard gmb = new GameMasterBoard(Width, Height, GoalAreaHeight);
             
-            for (int i = 0; i < Height; i++)
+            for (int x = 0; x < Width; x++)
             {
-                for (int j = 0; j < Width; j++)
+                for (int y = 0; y < Height; y++)
                 {
-                    gmb.BoardTable[i, j] = (GameMasterField)BoardTable[i, j].Clone();
+                    gmb.BoardTable[x, y] = (GameMasterField)BoardTable[x, y].Clone();
                 }
             }
             gmb.PieceCount = PieceCount;

@@ -130,7 +130,7 @@ namespace ProjectGameGUI.Models
                     field.X = x;
                     field.Y = height - y - 1; //avalonia displays it upside down
                     field.Team = Team.Blue;
-                    field.IsUndiscoveredGoal = gameMasterState.Board[x, y].IsGoal;
+                    field.IsUndiscoveredGoal = gameMasterStateSnapShot.Board[x, y].IsGoal;
                     field.Name = $"({x},{y})";
                     fields.Add(field);
                 }
@@ -150,7 +150,7 @@ namespace ProjectGameGUI.Models
                     field.X = x;
                     field.Y = height - y - 1; //avalonia displays it upside down
                     field.Team = Team.Red;
-                    field.IsUndiscoveredGoal = gameMasterState.Board[x, y].IsGoal;
+                    field.IsUndiscoveredGoal = gameMasterStateSnapShot.Board[x, y].IsGoal;
                     field.Name = $"({x},{y})";
                     fields.Add(field);
                 }
@@ -199,7 +199,7 @@ namespace ProjectGameGUI.Models
                 Piece piece = new Piece();
                 piece.X = piecePos.x;
                 piece.Y = height - piecePos.y - 1;
-                piece.IsValid = gameMasterState.Board[piecePos.x, piecePos.y].Piece.IsValid;
+                piece.IsValid = gameMasterStateSnapShot.Board[piecePos.x, piecePos.y].Piece.IsValid;
                 pieces.Add(piece);
             }
         }
