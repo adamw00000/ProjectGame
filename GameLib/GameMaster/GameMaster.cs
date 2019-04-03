@@ -122,6 +122,7 @@ namespace GameLib
         {
             return (int)(DateTime.UtcNow - start).TotalMilliseconds;
         }
+
         public void MoveAgent(int agentId, MoveDirection moveDirection, int requestTimestamp)
         {
             logger.Debug($"Agent {agentId} wants to move {moveDirection.ToString()}");
@@ -153,7 +154,7 @@ namespace GameLib
             connection.Send(response);
         }
 
-        public void PickPiece(int agentId, int requestTimestamp)
+        public void PickUpPiece(int agentId, int requestTimestamp)
         {
             logger.Debug($"Agent {agentId} wants to pick up a piece");
             Message response;

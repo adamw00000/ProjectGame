@@ -34,21 +34,24 @@ namespace GameLib
         {
             List<PlayerState> reds = new List<PlayerState>(PlayerStates.Values.Where(player => player.Team == Team.Red));
             List<PlayerState> blues = new List<PlayerState>(PlayerStates.Values.Where(player => player.Team == Team.Blue));
+
             for (int i = 0; i < teamSize; i++)
             {
                 PlayerState redPlayer = reds[i];
                 PlayerState bluePlayer = blues[i];
-                int rowRed = i / width; //top
-                int rowBlue = height - 1 - i / width; //bottom
+                int rowBlue = i / width; //top
+                int rowRed = height - 1 - i / width; //bottom
                 int columnRed = width / 2 + Distance(i % width) * Side(i); //from center, outwards
                 int columnBlue = (width - 1) / 2 + Distance(i % width) * Side(i + 1);
-                redPlayer.Position = (rowRed, columnRed);
-                bluePlayer.Position = (rowBlue, columnBlue);
+                redPlayer.Position = (columnRed, rowRed);
+                bluePlayer.Position = (columnBlue, rowBlue);
             }
+
             int Distance(int n)
             {
                 return n % 2 == 0 ? n / 2 : n / 2 + 1;
             }
+
             int Side(int n)
             {
                 return n % 2 == 0 ? 1 : -1;
@@ -107,19 +110,19 @@ namespace GameLib
             switch (direction)
             {
                 case MoveDirection.Left:
-                    newPosition.Y--;
-                    break;
-
-                case MoveDirection.Right:
-                    newPosition.Y++;
-                    break;
-
-                case MoveDirection.Up:
                     newPosition.X--;
                     break;
 
-                case MoveDirection.Down:
+                case MoveDirection.Right:
                     newPosition.X++;
+                    break;
+
+                case MoveDirection.Up:
+                    newPosition.Y++;
+                    break;
+
+                case MoveDirection.Down:
+                    newPosition.Y--;
                     break;
             }
 
@@ -152,8 +155,8 @@ namespace GameLib
         private bool IsOnBoard((int, int) newPosition)
         {
             (int x, int y) = newPosition;
-            return x < Board.Height && x >= 0 &&
-                y < Board.Width && y >= 0;
+            return y < Board.Height && y >= 0 &&
+                x < Board.Width && x >= 0;
         }
 
         private bool IsAnyAgentOn((int X, int Y) newPosition)
@@ -359,7 +362,7 @@ namespace GameLib
         public void SaveCommunicationData(int senderId, int targetId, object data)
         {
             PlayerState senderPlayer = PlayerStates[senderId];
-            
+
             CheckEligibility(senderPlayer);
 
             if (senderPlayer.IsLeader)

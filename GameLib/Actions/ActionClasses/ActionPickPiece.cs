@@ -10,7 +10,7 @@ namespace GameLib.Actions
 
         public void Handle(GameMaster gameMaster)
         {
-            gameMaster.PickPiece(AgentId, Timestamp);
+            gameMaster.PickUpPiece(AgentId, Timestamp);
         }
         public override void Handle(object handler)
         {
