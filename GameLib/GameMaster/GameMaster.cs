@@ -338,6 +338,13 @@ namespace GameLib
                 Message response = messageFactory.CreateTimePenaltyErrorMessage(requesterAgentId, timestamp, waitUntil, messageId);
                 connection.Send(response);
             }
+            catch (CommunicationInProgressException e)
+            {
+                int timestamp = CurrentTimestamp();
+                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {data.ToString()}");
+                Message response = messageFactory.CreateInvalidActionErrorMessage(requesterAgentId, timestamp, messageId);
+                connection.Send(response);
+            }
         }
 
         public void CommunicationAgreementWithData(int requesterAgentId, int targetAgentId, bool agreement, object targetData, string targetMessageId)

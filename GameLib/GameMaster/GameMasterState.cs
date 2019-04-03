@@ -15,7 +15,7 @@ namespace GameLib
         private readonly GameRules gameRules;
         public int UndiscoveredRedGoalsLeft;
         public int UndiscoveredBlueGoalsLeft;
-        private readonly Dictionary<(int senderId, int targetId), (object data, string senderMessageId)?> CommunicationData = 
+        private readonly Dictionary<(int senderId, int targetId), (object data, string senderMessageId)?> CommunicationData =
             new Dictionary<(int senderId, int targetId), (object data, string senderMessageId)?>();
 
         public readonly GameMasterBoard Board;
@@ -360,8 +360,13 @@ namespace GameLib
         public void SaveCommunicationData(int senderId, int targetId, object data, string senderMessageId)
         {
             PlayerState senderPlayer = PlayerStates[senderId];
-            
+
             CheckEligibility(senderPlayer);
+
+            if (CommunicationData.ContainsKey((senderId, targetId)) && CommunicationData[(senderId, targetId)] != null)
+            {
+                throw new CommunicationInProgressException($"Agent {senderId} waits for response from {targetId}");
+            }
 
             if (senderPlayer.IsLeader)
             {

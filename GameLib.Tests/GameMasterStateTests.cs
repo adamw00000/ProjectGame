@@ -939,7 +939,7 @@ namespace GameLib.Tests
         }
 
         [Fact]
-        public void GetCommunicationData_WhenCalled_ReturnsMostRecentDataForThePair()
+        public void SaveCommunicationData_WhenCalledTwoice_ThrowsCommunicationInProgressException()
         {
             var rules = Helper.GetStaticDefaultRules();
             var state = Helper.GetGameMasterState(rules);
@@ -954,10 +954,7 @@ namespace GameLib.Tests
             object message2 = 125;
 
             state.SaveCommunicationData(senderId, targetId, message1, "1");
-            state.SaveCommunicationData(senderId, targetId, message2, "2");
-
-            var result = state.GetCommunicationData(senderId, targetId);
-            result.ShouldBe((message2, "2"));
+            Should.Throw<CommunicationInProgressException>(() => state.SaveCommunicationData(senderId, targetId, message2, "2"));
         }
 
         [Fact]

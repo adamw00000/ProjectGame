@@ -167,4 +167,19 @@ namespace GameLib
         {
         }
     }
+
+    public class CommunicationInProgressException : Exception
+    {
+        public CommunicationInProgressException()
+        {
+        }
+
+        public CommunicationInProgressException(string message) : base(message)
+        {
+        }
+
+        public CommunicationInProgressException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
 }
