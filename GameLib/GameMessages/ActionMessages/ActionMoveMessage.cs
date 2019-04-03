@@ -15,7 +15,7 @@ namespace GameLib
 
         public override void Handle(GameMaster gameMaster)
         {
-            gameMaster.MoveAgent(AgentId, MoveDirection);
+            gameMaster.MoveAgent(AgentId, MoveDirection, MessageId);
         }
     }
 }

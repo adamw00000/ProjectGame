@@ -6,7 +6,7 @@ namespace GameLib
 {
     class InvalidAction : ActionErrorMessage
     {
-        public InvalidAction(int agentId, int timestamp, string messageId = "") : base(agentId, timestamp, messageId) //MessageId temporrary "" because managing it is different task
+        public InvalidAction(int agentId, int timestamp, string messageId) : base(agentId, timestamp, messageId)
         {
         }
 

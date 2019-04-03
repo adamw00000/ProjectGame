@@ -9,7 +9,7 @@
 
         public override void Handle(GameMaster gameMaster)
         {
-            gameMaster.DestroyPiece(AgentId);
+            gameMaster.DestroyPiece(AgentId, MessageId);
         }
     }
 }

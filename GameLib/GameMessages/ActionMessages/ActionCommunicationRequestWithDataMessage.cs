@@ -16,7 +16,7 @@ namespace GameLib
 
         public override void Handle(GameMaster gameMaster)
         {
-            gameMaster.CommunicationRequestWithData(AgentId, TargetId, data);
+            gameMaster.CommunicationRequestWithData(AgentId, TargetId, data, MessageId);
         }
     }
 }
