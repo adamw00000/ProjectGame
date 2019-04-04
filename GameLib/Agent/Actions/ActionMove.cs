@@ -15,7 +15,7 @@ namespace GameLib
 
         public override void Execute(Agent agent)
         {
-            agent.Move(Direction);
+            agent.Move(this);
         }
     }
 }

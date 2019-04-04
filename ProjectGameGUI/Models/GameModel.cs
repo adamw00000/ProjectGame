@@ -17,10 +17,10 @@ namespace ProjectGameGUI.Models
     {
         private Task[] agentTasks;
         private GameMaster gameMaster;
-        private GameMasterState gameMasterState => gameMaster.state;
-        private int width => gameMasterState.Board.Width;
-        private int height => gameMasterState.Board.Height;
-        private int goalAreaHeight => gameMasterState.Board.GoalAreaHeight;
+        private GameMasterStateSnapshot gameMasterStateSnapShot => gameMaster.GameMasterStateSnapshot;
+        private int width => gameMasterStateSnapShot.Board.Width;
+        private int height => gameMasterStateSnapShot.Board.Height;
+        private int goalAreaHeight => gameMasterStateSnapShot.Board.GoalAreaHeight;
         private MainWindowViewModel mainWindowViewModel;
         private List<Field> fields = new List<Field>();
         private List<Player> players = new List<Player>();
@@ -54,12 +54,12 @@ namespace ProjectGameGUI.Models
             {
                 //Agent Agent1 = new Agent(2 * i + 2, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
                 //Agent Agent1 = new Agent(2 * i + 2, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
-                Agent Agent1 = new Agent(2 * i + 2, new BasicDecisionModule(), new AgentLocalConnection(cs), new AgentFactory());
+                Agent Agent1 = new Agent(2 * i + 2, new BasicDecisionModule(), new AgentLocalConnection(cs), new AgentMessageFactory());
                 agentTasks[2 * i] = Task.Run(async () => await Agent1.Run(Team.Red));
 
                 //Agent Agent2 = new Agent(2 * i + 3, new RandomDecisionModule(actionPriorities), new AgentLocalConnection(cs));
                 //Agent Agent2 = new Agent(2 * i + 3, new InteractiveDecisionModule(), new AgentLocalConnection(cs));
-                Agent Agent2 = new Agent(2 * i + 3, new BasicDecisionModule(), new AgentLocalConnection(cs), new AgentFactory());
+                Agent Agent2 = new Agent(2 * i + 3, new BasicDecisionModule(), new AgentLocalConnection(cs), new AgentMessageFactory());
                 agentTasks[2 * i + 1] = Task.Run(async () => await Agent2.Run(Team.Blue));
             }
 
@@ -73,6 +73,7 @@ namespace ProjectGameGUI.Models
             Task inputReaderTask = InteractiveInputProvider.ReadInput();
             await inputReaderTask;
         }
+
         private async Task UpdateLoop()
         {
             while (true)
@@ -121,36 +122,36 @@ namespace ProjectGameGUI.Models
         private void PrepareFields()
         {
             fields.Clear();
-            for (int j = 0; j < width; j++)
+            for (int x = 0; x < width; x++)
             {
-                for (int i = 0; i < goalAreaHeight; i++)
+                for (int y = 0; y < goalAreaHeight; y++)
                 {
                     Field field = new Field();
-                    field.X = i;
-                    field.Y = j;
-                    field.Team = Team.Red;
-                    field.IsUndiscoveredGoal = gameMasterState.Board[i, j].IsGoal;
-                    field.Name = $"({i},{j})";
+                    field.X = x;
+                    field.Y = height - y - 1; //avalonia displays it upside down
+                    field.Team = Team.Blue;
+                    field.IsUndiscoveredGoal = gameMasterStateSnapShot.Board[x, y].IsGoal;
+                    field.Name = $"({x},{y})";
                     fields.Add(field);
                 }
-                for (int i = goalAreaHeight; i < height - goalAreaHeight; i++)
+                for (int y = goalAreaHeight; y < height - goalAreaHeight; y++)
                 {
                     Field field = new Field();
-                    field.X = i;
-                    field.Y = j;
+                    field.X = x;
+                    field.Y = height - y - 1; //avalonia displays it upside down
                     field.Team = null;
                     field.IsUndiscoveredGoal = false;
-                    field.Name = $"({i},{j})";
+                    field.Name = $"({x},{y})";
                     fields.Add(field);
                 }
-                for (int i = height - goalAreaHeight; i < height; i++)
+                for (int y = height - goalAreaHeight; y < height; y++)
                 {
                     Field field = new Field();
-                    field.X = i;
-                    field.Y = j;
-                    field.Team = Team.Blue;
-                    field.IsUndiscoveredGoal = gameMasterState.Board[i, j].IsGoal;
-                    field.Name = $"({i},{j})";
+                    field.X = x;
+                    field.Y = height - y - 1; //avalonia displays it upside down
+                    field.Team = Team.Red;
+                    field.IsUndiscoveredGoal = gameMasterStateSnapShot.Board[x, y].IsGoal;
+                    field.Name = $"({x},{y})";
                     fields.Add(field);
                 }
             }
@@ -159,17 +160,15 @@ namespace ProjectGameGUI.Models
         private void PreparePlayers()
         {
             players.Clear();
-            var states = new Dictionary<int, PlayerState>(gameMasterState.PlayerStates);
-
-            foreach (var (id, playerstate) in states)
+            
+            foreach (var (id, playerstate) in gameMasterStateSnapShot.PlayerStates)
             {
                 Player player = new Player();
-
                 if (playerstate.Piece != null)
                 {
                     Piece piece = new Piece();
                     piece.IsValid = playerstate.Piece.IsValid;
-                    (piece.X, piece.Y) = playerstate.Position;
+                    //(piece.X, piece.Y) = playerstate.Position; // not useful
                     player.HeldPiece = piece;
                 }
                 TextBlock textId = new TextBlock();
@@ -184,7 +183,8 @@ namespace ProjectGameGUI.Models
                 }
 
                 player.Team = playerstate.Team;
-                (player.X, player.Y) = playerstate.Position;
+                player.X = playerstate.Position.X;
+                player.Y = height - playerstate.Position.Y - 1; //avalonia displays it upside down
                 player.IsActive = InteractiveInputProvider.ActiveAgents.Contains(c);
                 players.Add(player);
             }
@@ -193,13 +193,13 @@ namespace ProjectGameGUI.Models
         private void PreparePieces()
         {
             pieces.Clear();
-            var states = new List<(int x, int y)>(gameMasterState.Board.PiecesPositions);
 
-            foreach (var piecePos in states)
+            foreach (var piecePos in gameMasterStateSnapShot.Board.PiecesPositions)
             {
                 Piece piece = new Piece();
-                (piece.X, piece.Y) = piecePos;
-                piece.IsValid = gameMasterState.Board[piecePos.x, piecePos.y].Piece.IsValid;
+                piece.X = piecePos.x;
+                piece.Y = height - piecePos.y - 1;
+                piece.IsValid = gameMasterStateSnapShot.Board[piecePos.x, piecePos.y].Piece.IsValid;
                 pieces.Add(piece);
             }
         }

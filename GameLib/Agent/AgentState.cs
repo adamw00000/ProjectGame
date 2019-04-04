@@ -13,17 +13,16 @@ namespace GameLib
         public int[] TeamIds { get; private set; }
         public int TeamLeaderId { get; private set; }
 
-        public bool IsInTaskArea => Position.X >= Board.GoalAreaHeight &&
-                                    Position.X < Board.Height - Board.GoalAreaHeight &&
-                                    Position.X >= 0 && Position.X < Board.Height;
+        public bool IsInTaskArea => Position.Y >= Board.GoalAreaHeight &&
+                                    Position.Y < Board.Height - Board.GoalAreaHeight; //changed
         public bool IsInGoalArea
         {
             get
             {
-                if (Team == Team.Red)
-                    return Position.X < Board.GoalAreaHeight && Position.X >= 0;
+                if (Team == Team.Blue)
+                    return Position.Y < Board.GoalAreaHeight && Position.Y >= 0;
                 else
-                    return Position.X >= Board.Height - Board.GoalAreaHeight && Position.X < Board.Height;
+                    return Position.Y >= Board.Height - Board.GoalAreaHeight && Position.Y < Board.Height;
             }
         }
 
@@ -32,14 +31,17 @@ namespace GameLib
             get
             {
                 List<MoveDirection> possibleMoves = new List<MoveDirection>();
-                if ((Team == Team.Red && Position.X > 0) || (Team == Team.Blue && Position.X > Board.GoalAreaHeight))
+
+                if ((Team == Team.Red && Position.Y < Board.Height - 1) || (Team == Team.Blue && Position.Y < Board.Height - Board.GoalAreaHeight - 1))
                     possibleMoves.Add(MoveDirection.Up);
-                if ((Team == Team.Red && Position.X < Board.Height - Board.GoalAreaHeight - 1) || (Team == Team.Blue && Position.X < Board.Height - 1))
+
+                if ((Team == Team.Red && Position.Y > Board.GoalAreaHeight) || (Team == Team.Blue && Position.Y > 0))
                     possibleMoves.Add(MoveDirection.Down);
 
-                if (Position.Y > 0)
+                if (Position.X > 0)
                     possibleMoves.Add(MoveDirection.Left);
-                if (Position.Y < Board.Width - 1)
+
+                if (Position.X < Board.Width - 1)
                     possibleMoves.Add(MoveDirection.Right);
 
                 return possibleMoves;
@@ -76,27 +78,34 @@ namespace GameLib
             switch (direction)
             {
                 case MoveDirection.Left:
-                    Position.Y--;
-                    break;
-
-                case MoveDirection.Right:
-                    Position.Y++;
-                    break;
-
-                case MoveDirection.Up:
                     Position.X--;
                     break;
 
-                case MoveDirection.Down:
+                case MoveDirection.Right:
                     Position.X++;
+                    break;
+
+                case MoveDirection.Up:
+                    Position.Y++;
+                    break;
+
+                case MoveDirection.Down:
+                    Position.Y--;
                     break;
             }
 
-            if (Position.X >= Board.Height || Position.X < 0 ||
-                Position.Y >= Board.Width || Position.Y < 0)
+            if (Position.Y >= Board.Height || Position.Y < 0 ||
+                Position.X >= Board.Width || Position.X < 0)
             {
                 Position = oldPosition;
-                throw new OutOfBoardMoveException("Agent went out of board");
+                throw new OutOfBoardMoveException("Agent tried to go ouf of board");
+            }
+
+            if ((Team == Team.Blue && Position.Y > Board.Height - Board.GoalAreaHeight - 1) ||
+                (Team == Team.Red && Position.Y < Board.GoalAreaHeight))
+            {
+                Position = oldPosition;
+                throw new OutOfBoardMoveException("Agent tried to go into enemy goal area");
             }
 
             Board.SetDistance(Position.X, Position.Y, distance, timestamp);

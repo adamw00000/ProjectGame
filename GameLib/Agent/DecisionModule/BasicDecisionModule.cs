@@ -203,12 +203,12 @@ namespace GameLib
                 }
                 else
                 {
-                    return SeekPiece(agentState, agentState.Board[X, Y].Distance, X, Y, agentState.Board.Width, agentState.Board.Height);
+                    return SeekPiece(agentState, agentState.Board[X, Y].Distance, X, Y);
                 }
             }
         }
 
-        private MoveDirection SeekPiece(AgentState agentState, int distance, int x, int y, int boardWidth, int boardHeight)
+        private MoveDirection SeekPiece(AgentState agentState, int distance, int x, int y)
         {
             if (previousDistance > distance)
             {

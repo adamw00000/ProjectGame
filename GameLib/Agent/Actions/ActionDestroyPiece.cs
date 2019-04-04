@@ -8,7 +8,7 @@ namespace GameLib
     {
         public override void Execute(Agent agent)
         {
-            agent.DestroyPiece();
+            agent.DestroyPiece(this);
         }
     }
 }

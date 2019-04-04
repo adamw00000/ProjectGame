@@ -17,7 +17,7 @@ namespace GameLib
 
         public override void Execute(Agent agent)
         {
-            agent.Communicate(TargetId, Data);
+            agent.Communicate(this);
         }
     }
 }

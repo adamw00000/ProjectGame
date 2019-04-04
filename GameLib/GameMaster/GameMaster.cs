@@ -10,10 +10,19 @@ namespace GameLib
         private readonly IGameMasterMessageFactory messageFactory;
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public GameMasterState state; //GUI needs it
+        private GameMasterState state;
         private readonly GameRules rules;
         private DateTime start;
         public bool gameStarted = false;
+
+        public GameMasterStateSnapshot GameMasterStateSnapshot
+        {
+            get
+            {
+                return new GameMasterStateSnapshot(state);
+            }
+
+        }
 
         public GameMaster(GameRules rules, IConnection connection, IGameMasterMessageFactory messageFactory)
         {
@@ -127,7 +136,7 @@ namespace GameLib
                 int distance = state.Move(agentId, moveDirection);
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 logger.Debug($"Agent {agentId} moved {moveDirection.ToString()}");
-                response = messageFactory.CreateMakeMoveResponseMessage(agentId, timestamp, waitUntil, distance, messageId);
+                response = messageFactory.CreateMoveResponseMessage(agentId, timestamp, waitUntil, distance, messageId);
             }
             catch (PendingLeaderCommunicationException e)
             {
@@ -291,7 +300,7 @@ namespace GameLib
                 state.DestroyPiece(agentId);
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 logger.Debug($"Agent {agentId} destroyed piece");
-                response = messageFactory.CreateDestoryPieceResponseMessage(agentId, timestamp, waitUntil, messageId); 
+                response = messageFactory.CreateDestroyPieceResponseMessage(agentId, timestamp, waitUntil, messageId); 
             }
             catch (PendingLeaderCommunicationException e)
             {

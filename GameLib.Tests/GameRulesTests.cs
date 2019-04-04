@@ -144,9 +144,12 @@ namespace GameLib.Tests
 
             Should.Throw<InvalidRulesException>(() => rules = new GameRules(communicationMultiplier: communicationMultiplier));
         }
+
         //-----------------------AgentGameRules-----------------------
+
         [Theory]
         [InlineData(1, -1)]
+        [InlineData(8, 1)]
         [InlineData(1, 8)]
         [InlineData(-1, 6)]
         public void AgentGameRules_WhenAgentStartsOutsideTheBoard_ThrowsException(int x, int y)
@@ -155,6 +158,7 @@ namespace GameLib.Tests
 
             Should.Throw<InvalidRulesException>(() => rules = new AgentGameRules(agentStartX: x, agentStartY: y));
         }
+
         [Theory]
         [InlineData(4, 4)]
         [InlineData(2, 5)]

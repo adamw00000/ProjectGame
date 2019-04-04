@@ -8,7 +8,7 @@ namespace GameLib
     {
         public override void Execute(Agent agent)
         {
-            agent.PickPiece();
+            agent.PickPiece(this);
         }
     }
 }
