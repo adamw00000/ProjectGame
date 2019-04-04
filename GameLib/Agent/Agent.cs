@@ -359,7 +359,7 @@ namespace GameLib
 
         public void Communicate(ActionCommunicate action)
         {
-            (Message message, string messageId) = messageFactory.CommunicationRequestMessage(action.TargetId, action.data);
+            (Message message, string messageId) = messageFactory.CommunicationRequestMessage(action.TargetId, action.Data);
             SendAndAddToCollection(message, messageId, action);
         }
 
