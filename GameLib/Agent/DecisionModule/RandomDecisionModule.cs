@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using GameLib.Actions;
 
 namespace GameLib
 {
@@ -39,47 +38,47 @@ namespace GameLib
             }
         }
 
-        public override Task<IAction> ChooseAction(int agentId, AgentState agentState)
+        public override Task<Action> ChooseAction(int agentId, AgentState agentState)
         {
-            IAction action;
+            Action action;
 
             int value = random.Next(1, prefixSumArray[actionCount - 1] + 1);
             if (value <= prefixSumArray[0])
             {
-                action = new ActionCheckPiece(agentId, CurrentTimestamp(agentState));
-                logger.Debug($"Agent {agentId} chose action ActionCheckPiece");
+                action = new ActionCheckPiece();
+                logger.Debug($"Agent {agentId} chose action ActionCheckPieceMessage");
             }
             else if (value <= prefixSumArray[1])
             {
-                action = new ActionDestroyPiece(agentId, CurrentTimestamp(agentState));
+                action = new ActionDestroyPiece();
                 logger.Debug($"Agent {agentId} chose action ActionDestroyPiece");
             }
             else if (value <= prefixSumArray[2])
             {
-                action = new ActionPickPiece(agentId, CurrentTimestamp(agentState));
+                action = new ActionPickPiece();
                 logger.Debug($"Agent {agentId} chose action ActionPickPiece");
             }
             else if (value <= prefixSumArray[3])
             {
                 var direction = (MoveDirection)random.Next(4);
-                action = new ActionMove(agentId, direction, CurrentTimestamp(agentState)); 
+                action = new ActionMove(direction);
                 logger.Debug($"Agent {agentId} chose action ActionMove with direction {direction}");
             }
             else if (value <= prefixSumArray[4])
             {
-                action = new ActionDiscovery(agentId, CurrentTimestamp(agentState));
+                action = new ActionDiscovery();
                 logger.Debug($"Agent {agentId} chose action ActionDiscovery");
             }
             else if (value <= prefixSumArray[5])
             {
-                action = new ActionPutPiece(agentId, CurrentTimestamp(agentState));
+                action = new ActionPutPiece();
                 logger.Debug($"Agent {agentId} chose action ActionPutPiece");
             }
             else if (value <= prefixSumArray[6])
             {
                 var teammate = agentState.TeamIds[random.Next(agentState.TeamIds.Length)];
                 var requestData = DataProcessor.CreateCommunicationDataForCommunicationWith(teammate, agentState);
-                action = new ActionCommunicationRequestWithData(agentId, CurrentTimestamp(agentState), teammate, requestData);
+                action = new ActionCommunicate(teammate,requestData);
                 logger.Debug($"Agent {agentId} chose action ActionCommunicationRequestWithData with agent {teammate} with data {requestData}");
             }
             else
@@ -87,7 +86,7 @@ namespace GameLib
                 var randomTeammate = agentState.TeamIds[random.Next(agentState.TeamIds.Length)];
                 var responseData = DataProcessor.CreateCommunicationDataForCommunicationWith(randomTeammate, agentState);
                 bool agreement = (random.Next(2) == 1) ? true : false;
-                action = new ActionCommunicationAgreementWithData(agentId, CurrentTimestamp(agentState), randomTeammate, agreement, responseData);
+                action = new ActionCommunicationAgreement(randomTeammate, agreement, responseData);
                 logger.Debug($"Agent {agentId} chose action ActionCommunicationAgreementWithData with agent {randomTeammate} with data {responseData} - he {(agreement ? "agrees" : "doesn't agree")} for the communication");
             }
             System.Threading.Thread.Sleep(1000); //necessary for GUI

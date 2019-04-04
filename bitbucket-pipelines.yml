@@ -16,6 +16,6 @@ pipelines:
             - dotnet restore
             - dotnet build ConnectionLib
             - dotnet build GameLib
-            - dotnet build ProjectGame
+            - dotnet build ProjectGameGUI
             - dotnet test GameLib.Tests
             - dotnet test ConnectionLib.Tests

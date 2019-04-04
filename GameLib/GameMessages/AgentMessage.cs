@@ -3,15 +3,19 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace GameLib.GameMessages
+namespace GameLib
 {
-    abstract class AgentMessage : Message
+    public abstract class AgentMessage : Message
     {
-        public int Timestamp;
-
-        public AgentMessage(int agentId, int timestamp) : base(agentId)
+        public AgentMessage(int agentId) : base(agentId)
         {
-            this.Timestamp = timestamp;
         }
+
+        public override void Handle(object handler)
+        {
+            Handle((GameMaster)handler);
+        }
+
+        public abstract void Handle(GameMaster gameMaster);
     }
 }
