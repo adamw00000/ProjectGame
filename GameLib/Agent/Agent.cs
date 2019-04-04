@@ -131,7 +131,7 @@ namespace GameLib
 
             state.HandleStartGameMessage(agentId, rules, absoluteStart);
 
-            logger.Debug($"Agent {id} - rules for the game are:\n{rules.ToString()}");
+            logger.Debug($"Agent {id} - rules for the game are:\n{rules}");
         }
 
         public void HandlePickPieceResponse(int timestamp, int waitUntilTime, string messageId)
@@ -159,7 +159,7 @@ namespace GameLib
             if (awaitedMessages.ContainsKey(messageId))
             {
                 awaitedMessages.Remove(messageId);
-                logger.Debug($"Agent {id} put piece on the board, result: {putPieceResult.ToString()}");
+                logger.Debug($"Agent {id} put piece on the board, result: {putPieceResult}");
                 state.PlacePiece(putPieceResult);
                 state.WaitUntilTime = waitUntilTime;
 

@@ -36,7 +36,7 @@ namespace GameLib
         public void JoinGame(int agentId, int teamId, bool wantToBeLeader)
         {
             Message response;
-            logger.Debug($"Agent {agentId} wants to join the game as {((Team)teamId).ToString()} and {(wantToBeLeader ? "wants" : "does not want")} to be leader");
+            logger.Debug($"Agent {agentId} wants to join the game as {(Team)teamId} and {(wantToBeLeader ? "wants" : "does not want")} to be leader");
             try
             {
                 state.JoinGame(agentId, teamId, wantToBeLeader);
@@ -59,7 +59,7 @@ namespace GameLib
                 var rulesDict = state.GetAgentGameRules();
                 gameStarted = true;
                 logger.Debug("Game started - sending messages...");
-                logger.Debug($"Game rules are \n{rules.ToString()}");
+                logger.Debug($"Game rules are \n{rules}");
                 foreach (var (playerId, state) in state.PlayerStates)
                 {
                     logger.Debug($"Agent {playerId} is in {state.Team}{(state.IsLeader ? " and is leader}" : "")}");
@@ -100,13 +100,13 @@ namespace GameLib
                         int timespan = Math.Max(0, (int)(nextPieceGeneratingTime - DateTime.UtcNow).TotalMilliseconds);
                         if (connection.TryReceive(out Message message, timespan))
                         {
-                            logger.Trace(message.ToString() + " handling started");
+                            logger.Trace(message + " handling started");
                             message.Handle(this);
-                            logger.Trace(message.ToString() + " handling finished");
+                            logger.Trace(message + " handling finished");
                         }
                     }
                 }
-                logger.Info($"Game ended - the winner is {state.Winner.ToString()}");
+                logger.Info($"Game ended - the winner is {state.Winner}");
             }
             catch (Exception e)
             {
@@ -129,13 +129,13 @@ namespace GameLib
         }
         public void MoveAgent(int agentId, MoveDirection moveDirection, string messageId)
         {
-            logger.Debug($"Agent {agentId} wants to move {moveDirection.ToString()}");
+            logger.Debug($"Agent {agentId} wants to move {moveDirection}");
             Message response;
             try
             {
                 int distance = state.Move(agentId, moveDirection);
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
-                logger.Debug($"Agent {agentId} moved {moveDirection.ToString()}");
+                logger.Debug($"Agent {agentId} moved {moveDirection}");
                 response = messageFactory.CreateMoveResponseMessage(agentId, timestamp, waitUntil, distance, messageId);
             }
             catch (PendingLeaderCommunicationException e)
@@ -324,32 +324,32 @@ namespace GameLib
 
         public void CommunicationRequestWithData(int requesterAgentId, int targetAgentId, object data, string messageId)
         {
-            logger.Debug($"Agent {requesterAgentId} wants to communicate with {targetAgentId} and data {data.ToString()}");
+            logger.Debug($"Agent {requesterAgentId} wants to communicate with {targetAgentId} and {(data == null ? "no data" : $"data {data}")}");
             try
             {
                 state.SaveCommunicationData(requesterAgentId, targetAgentId, data, messageId);
-                logger.Debug($"Agent {requesterAgentId} successfully requested agent {targetAgentId} to communicate with data {data.ToString()}");
+                logger.Debug($"Agent {requesterAgentId} successfully requested agent {targetAgentId} to communicate with {(data == null ? "no data" : $"data {data}")}");
                 Message request = messageFactory.CreateCommunicationRequestMessage(requesterAgentId, targetAgentId, CurrentTimestamp());
                 connection.Send(request);
             }
             catch (PendingLeaderCommunicationException e)
             {
                 (int timestamp, int waitUntil) = CalculateDelay(requesterAgentId);
-                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {data.ToString()}: ");
+                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and {(data == null ? "no data" : $"data {data}")}: ");
                 Message response = messageFactory.CreateInvalidActionErrorMessage(requesterAgentId, CurrentTimestamp(), messageId);
                 connection.Send(response);
             }
             catch (DelayException e)
             {
                 (int timestamp, int waitUntil) = CalculateDelay(requesterAgentId);
-                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {data.ToString()}");
+                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {(data == null ? "no data" : $"data {data}")}");
                 Message response = messageFactory.CreateTimePenaltyErrorMessage(requesterAgentId, timestamp, waitUntil, messageId);
                 connection.Send(response);
             }
             catch (CommunicationInProgressException e)
             {
                 int timestamp = CurrentTimestamp();
-                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {data.ToString()}");
+                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {data}");
                 Message response = messageFactory.CreateInvalidActionErrorMessage(requesterAgentId, timestamp, messageId);
                 connection.Send(response);
             }
@@ -357,7 +357,7 @@ namespace GameLib
 
         public void CommunicationAgreementWithData(int requesterAgentId, int targetAgentId, bool agreement, object targetData, string targetMessageId)
         {
-            logger.Debug($"Agent {requesterAgentId} was tried to be answered by {targetAgentId} and data {(targetData == null ? "null" : targetData.ToString())}");
+            logger.Debug($"Agent {requesterAgentId} was tried to be answered by {targetAgentId} and {(targetData == null ? "no data" : $"data {targetData}")}");
             try
             {
                 state.VerifyLeaderCommunicationState(requesterAgentId, targetAgentId, agreement);
@@ -365,13 +365,13 @@ namespace GameLib
             catch (PendingLeaderCommunicationException e)
             {
                 int timestamp = CurrentTimestamp();
-                logger.Warn(e, $"Error during proccesing answer from {targetAgentId} to {requesterAgentId} with data {(targetData == null ? "null" : targetData.ToString())} (pending leader communication): ");
+                logger.Warn(e, $"Error during proccesing answer from {targetAgentId} to {requesterAgentId} with {(targetData == null ? "no data" : $"data {targetData}")} (pending leader communication): ");
                 Message response = messageFactory.CreateInvalidActionErrorMessage(targetAgentId, timestamp, targetMessageId);
                 connection.Send(response);
                 return;
             }
 
-            if (targetData == null)
+            if (agreement && targetData == null)
             {
                 logger.Warn($"Agent {targetAgentId} sent null as targetData");
                 Message response = messageFactory.CreateInvalidActionErrorMessage(targetAgentId, CurrentTimestamp(), targetMessageId);
@@ -387,17 +387,18 @@ namespace GameLib
             catch (CommunicationException e) //if communication data does not exist
             {
                 int timestamp = CurrentTimestamp();
-                logger.Warn(e, $"Error during proccesing answer from {targetAgentId} to {requesterAgentId} with data {targetData.ToString()}: ");
+                logger.Warn(e, $"Error during proccesing answer from {targetAgentId} to {requesterAgentId} with {(targetData == null ? "no data" : $"data {targetData}")}: ");
                 Message response = messageFactory.CreateInvalidActionErrorMessage(targetAgentId, timestamp, targetMessageId);
                 connection.Send(response);
                 return;
             }
 
+            // I had to change the order because we need to get MessageId before sending response
             if (!agreement)
             {
                 int timestamp = CurrentTimestamp();
                 logger.Debug($"Request of agent {requesterAgentId} was rejected by {targetAgentId}");
-                Message response = messageFactory.CreateCommunicationResponseWithDataMessage(requesterAgentId, timestamp, 
+                Message response = messageFactory.CreateCommunicationResponseWithDataMessage(requesterAgentId, timestamp,
                     CalculateDelay(requesterAgentId).waitUntil, targetAgentId, false, null, senderData.senderMessageId);
                 connection.Send(response);
                 return;
@@ -408,7 +409,7 @@ namespace GameLib
             Message responseToSender, responseToTarget;
             (int timestamp1, int waitUntil1) = CalculateDelay(requesterAgentId);
             (int timestamp2, int waitUntil2) = CalculateDelay(targetAgentId);
-            logger.Debug($"Agent {requesterAgentId} was answered by {targetAgentId} and data {(targetData.ToString())}");
+            logger.Debug($"Agent {requesterAgentId} was answered by {targetAgentId} and data {targetData}");
             responseToSender = messageFactory.CreateCommunicationResponseWithDataMessage(requesterAgentId, timestamp1, waitUntil1, targetAgentId, true, targetData, senderData.senderMessageId);
             responseToTarget = messageFactory.CreateCommunicationResponseWithDataMessage(targetAgentId, timestamp2, waitUntil2, requesterAgentId, true, senderData.data, targetMessageId);
 

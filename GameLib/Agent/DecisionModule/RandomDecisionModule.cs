@@ -89,8 +89,6 @@ namespace GameLib
                 action = new ActionCommunicationAgreement(randomTeammate, agreement, responseData);
                 logger.Debug($"Agent {agentId} chose action ActionCommunicationAgreementWithData with agent {randomTeammate} with data {responseData} - he {(agreement ? "agrees" : "doesn't agree")} for the communication");
             }
-            System.Threading.Thread.Sleep(1000); //necessary for GUI
-            Console.WriteLine(action.ToString());
 
             return Task.FromResult(action);
         }
