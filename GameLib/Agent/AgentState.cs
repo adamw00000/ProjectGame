@@ -96,7 +96,7 @@ namespace GameLib
                 Position.Y >= Board.Width || Position.Y < 0)
             {
                 Position = oldPosition;
-                throw new InvalidMoveException();
+                throw new OutOfBoardMoveException("Agent went out of board");
             }
 
             Board.SetDistance(Position.X, Position.Y, distance, timestamp);

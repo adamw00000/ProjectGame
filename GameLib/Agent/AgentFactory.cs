@@ -1,6 +1,5 @@
 ﻿using ConnectionLib;
 using GameLib;
-using GameLib;
 
 namespace GameLib
 {

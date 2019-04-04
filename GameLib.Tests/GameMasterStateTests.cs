@@ -137,7 +137,7 @@ namespace GameLib.Tests
         [Theory]
         [InlineData(0, 0, MoveDirection.Left)]
         [InlineData(7, 7, MoveDirection.Right)]
-        public void Move_WhenAgentMovesOutsideBoard_ThrowsInvalidMoveException(int agentX, int agentY, MoveDirection direction)
+        public void Move_WhenAgentMovesOutsideBoard_ThrowsOutOfBoardMoveException(int agentX, int agentY, MoveDirection direction)
         {
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);
@@ -145,31 +145,31 @@ namespace GameLib.Tests
 
             state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY));
 
-            Should.Throw<InvalidMoveException>(() => state.Move(agentId, direction), "Agent tried to move out of board!");
+            Should.Throw<OutOfBoardMoveException>(() => state.Move(agentId, direction), "Agent tried to move out of board!");
             state.PlayerStates[0].LastActionDelay.ShouldBe(0);
         }
 
         [Fact]
-        public void Move_WhenAgentMovesOnAnotherAgent_ThrowsInvalidMoveException()
+        public void Move_WhenAgentMovesOnAnotherAgent_ThrowsAgentCollisionMoveException()
         {
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);
             var agentId = 0;
-            var agentX = 1;
+            var agentX = 3;
             var agentY = 1;
             var direction = MoveDirection.Up;
 
             state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY));
             state.PlayerStates.Add(agentId + 1, new PlayerState(agentX - 1, agentY));
 
-            Should.Throw<InvalidMoveException>(() => state.Move(agentId, direction), "Agent tried to on the space occupied by another agent!");
+            Should.Throw<AgentCollisionMoveException>(() => state.Move(agentId, direction), "Agent tried to on the space occupied by another agent!");
             state.PlayerStates[0].LastActionDelay.ShouldBe(0);
         }
 
         [Theory]
         [InlineData(6, 0, Team.Red, MoveDirection.Down)]
         [InlineData(2, 2, Team.Blue, MoveDirection.Up)]
-        public void Move_WhenAgentMovesToEnemyGoalArea_ThrowsInvalidMoveException(int agentX, int agentY, Team team, MoveDirection direction)
+        public void Move_WhenAgentMovesToEnemyGoalArea_ThrowsOutOfBoardMoveException(int agentX, int agentY, Team team, MoveDirection direction)
         {
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);
@@ -177,7 +177,23 @@ namespace GameLib.Tests
 
             state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY, team));
 
-            Should.Throw<InvalidMoveException>(() => state.Move(agentId, direction), "Agent tried to move onto enemy goal area!");
+            Should.Throw<OutOfBoardMoveException>(() => state.Move(agentId, direction), "Agent tried to move onto enemy goal area!");
+            state.PlayerStates[0].LastActionDelay.ShouldBe(0);
+        }
+
+        [Theory]
+        [InlineData(6, 0, Team.Red, MoveDirection.Down,7,0)]
+        [InlineData(2, 2, Team.Blue, MoveDirection.Up,1,2)]
+        public void Move_WhenAgentMovesOnAnotherAgentInEnemyGoalArea_ThrowsOutOfBoardMoveException(int agentX, int agentY, Team team, MoveDirection direction, int agent2X, int agent2Y)
+        {
+            var rules = Helper.GetDefaultRules();
+            var state = Helper.GetGameMasterState(rules);
+            var agentId = 0;
+            Team enemy = team == Team.Red ? Team.Blue : Team.Red;
+            state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY, team));
+            state.PlayerStates.Add(agentId + 1, new PlayerState(agent2X, agent2Y, enemy));
+
+            Should.Throw<OutOfBoardMoveException>(() => state.Move(agentId, direction), "Agent tried to move onto enemy goal area!");
             state.PlayerStates[0].LastActionDelay.ShouldBe(0);
         }
 

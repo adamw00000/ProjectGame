@@ -125,14 +125,14 @@ namespace GameLib
             }
 
             if (!IsOnBoard(newPosition))
-                throw new InvalidMoveException("Agent tried to move out of board!");
-
-            if (IsAnyAgentOn(newPosition))
-                throw new InvalidMoveException("Agent tried to on the space occupied by another agent!");
+                throw new OutOfBoardMoveException("Agent tried to move out of board!");
 
             var enemyTeam = player.Team == Team.Blue ? Team.Red : Team.Blue;
             if (Board.IsAgentInGoalArea(newPosition.X, newPosition.Y, enemyTeam))
-                throw new InvalidMoveException("Agent tried to move onto enemy goal area!");
+                throw new OutOfBoardMoveException("Agent tried to move onto enemy goal area!");
+
+            if (IsAnyAgentOn(newPosition))
+                throw new AgentCollisionMoveException("Agent tried to on the space occupied by another agent!");
 
             player.Position = newPosition;
             PlayerStates[playerId] = player;

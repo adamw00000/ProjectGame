@@ -119,13 +119,13 @@ namespace GameLib.Tests
         [Theory]
         [InlineData(MoveDirection.Left)]
         [InlineData(MoveDirection.Up)]
-        public void Move_WhenMoveIsInvalid_ThrowsInvalidMoveException(MoveDirection direction)
+        public void Move_WhenMoveGoesOutOfBoard_ThrowsOutOfBoardMoveException(MoveDirection direction)
         {
             var rules = new AgentGameRules(boardWidth: 8, boardHeight: 8, agentStartX: 0, agentStartY: 0, teamSize: 2, agentIdsFromTeam: new int[] { 0, 1 }, leaderId: 0);
             var state = GetSetUpState(rules);
             var distance = 1;
 
-            Should.Throw<InvalidMoveException>(() => state.Move(direction, distance, 0));
+            Should.Throw<OutOfBoardMoveException>(() => state.Move(direction, distance, 0));
         }
 
         [Theory]
