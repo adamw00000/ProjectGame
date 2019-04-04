@@ -23,12 +23,12 @@ namespace GameLib
         private bool waitForResponse;
         private MoveDirection lastMoveDirection;
 
-        private IAgentFactory unwrappedMessageFactory;
-        private AgentFactoryWrapper messageFactory;
+        private IAgentMessageFactory unwrappedMessageFactory;
+        private AgentMessageFactoryWrapper messageFactory;
 
         public bool? IsWinning { get; private set; } = null;
 
-        public Agent(int tempId, DecisionModuleBase decisionModule, IConnection connection, IAgentFactory agentFactory)
+        public Agent(int tempId, DecisionModuleBase decisionModule, IConnection connection, IAgentMessageFactory agentFactory)
         {
             this.tempId = tempId;
             this.decisionModule = decisionModule;
@@ -62,7 +62,7 @@ namespace GameLib
             JoinGame(choosenTeam, wantsToBeLeader);
             if(state.IsInGame)
             {
-                messageFactory = new AgentFactoryWrapper(id, unwrappedMessageFactory);
+                messageFactory = new AgentMessageFactoryWrapper(id, unwrappedMessageFactory);
 
                 try
                 {

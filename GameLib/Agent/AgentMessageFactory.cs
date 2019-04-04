@@ -4,7 +4,7 @@ using GameLib;
 
 namespace GameLib
 {
-    public class AgentFactory : IAgentFactory
+    public class AgentMessageFactory : IAgentMessageFactory
     {
         public ActionMessage CheckPieceMessage(int agentId, string messageId)
         {

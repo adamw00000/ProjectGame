@@ -4,12 +4,12 @@ using System;
 
 namespace GameLib
 {
-    internal class AgentFactoryWrapper
+    internal class AgentMessageFactoryWrapper
     {
-        private readonly IAgentFactory agentFactory;
+        private readonly IAgentMessageFactory agentFactory;
         private readonly int id;
 
-        public AgentFactoryWrapper(int id, IAgentFactory agentFactory)
+        public AgentMessageFactoryWrapper(int id, IAgentMessageFactory agentFactory)
         {
             this.agentFactory = agentFactory;
             this.id = id;

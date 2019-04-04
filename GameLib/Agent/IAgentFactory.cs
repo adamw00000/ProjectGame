@@ -3,7 +3,7 @@ using GameLib;
 
 namespace GameLib
 {
-    public interface IAgentFactory
+    public interface IAgentMessageFactory
     {
         ActionMessage CheckPieceMessage(int agentId, string messageId);
         ActionMessage CommunicationAgreementMessage(int agentId, int senderId, bool acceptsCommunication, object data, string messageId);
