@@ -10,9 +10,9 @@ namespace GameLib
         public bool Agreement;
         public object Data;
 
-        public ActionCommunicationAgreement(int requesteerId, bool agreement, object data)
+        public ActionCommunicationAgreement(int requesterId, bool agreement, object data)
         {
-            RequesterId = requesteerId;
+            RequesterId = requesterId;
             Agreement = agreement;
             Data = data;
         }
@@ -20,6 +20,11 @@ namespace GameLib
         public override void Execute(Agent agent)
         {
             agent.AgreeOnCommunication(this);
+        }
+
+        public override string ToString()
+        {
+            return $"ActionCommunicationAgreement (sender agent: {RequesterId}, agreement status: {Agreement}, data: {Data})";
         }
     }
 }

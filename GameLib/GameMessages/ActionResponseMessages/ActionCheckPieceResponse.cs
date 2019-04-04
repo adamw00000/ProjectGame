@@ -14,5 +14,10 @@ namespace GameLib
         {
             agent.HandleCheckPieceResponse(Timestamp, WaitUntilTime, IsValid, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"ActionCheckPieceResponse (agentId: {AgentId}, messageId: {MessageId}, is piece valid: {IsValid})";
+        }
     }
 }

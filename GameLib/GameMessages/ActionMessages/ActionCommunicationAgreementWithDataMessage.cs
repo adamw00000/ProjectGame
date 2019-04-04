@@ -20,5 +20,10 @@ namespace GameLib
         {
             gameMaster.CommunicationAgreementWithData(SenderId, AgentId, AcceptsCommunication, data, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"ActionCommunicationAgreementWithDataMessage (agentId: {AgentId}, messageId: {MessageId}, senderId: {SenderId}, agreement status: {AcceptsCommunication})";
+        }
     }
 }

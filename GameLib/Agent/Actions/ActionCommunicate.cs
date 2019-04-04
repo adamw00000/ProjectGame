@@ -19,5 +19,10 @@ namespace GameLib
         {
             agent.Communicate(this);
         }
+
+        public override string ToString()
+        {
+            return $"ActionCommunicate (target agent: {TargetId}, data: {Data})";
+        }
     }
 }

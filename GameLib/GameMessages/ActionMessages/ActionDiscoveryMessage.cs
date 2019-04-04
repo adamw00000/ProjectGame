@@ -10,5 +10,10 @@
         {
             gameMaster.Discover(AgentId, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"ActionDiscoveryMessage (agentId: {AgentId}, messageId: {MessageId})";
+        }
     }
 }

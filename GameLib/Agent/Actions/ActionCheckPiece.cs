@@ -10,5 +10,10 @@ namespace GameLib
         {
             agent.CheckPiece(this);
         }
+
+        public override string ToString()
+        {
+            return "ActionCheckPiece";
+        }
     }
 }

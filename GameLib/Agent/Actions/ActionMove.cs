@@ -17,5 +17,10 @@ namespace GameLib
         {
             agent.Move(this);
         }
+
+        public override string ToString()
+        {
+            return $"ActionMove (direction: {Direction})";
+        }
     }
 }

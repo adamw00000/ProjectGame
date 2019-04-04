@@ -13,5 +13,10 @@
         {
             agent.HandleCommunicationRequest(requesterId, Timestamp);
         }
+
+        public override string ToString()
+        {
+            return $"ActionCommunicationRequest (agentId: {AgentId}, senderId: {requesterId})";
+        }
     }
 }

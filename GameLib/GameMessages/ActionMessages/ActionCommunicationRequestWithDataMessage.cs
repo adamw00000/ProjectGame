@@ -18,5 +18,10 @@ namespace GameLib
         {
             gameMaster.CommunicationRequestWithData(AgentId, TargetId, data, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"ActionCommunicationAgreementWithDataMessage (agentId: {AgentId}, messageId: {MessageId}, targetId: {TargetId}, data: {data})";
+        }
     }
 }

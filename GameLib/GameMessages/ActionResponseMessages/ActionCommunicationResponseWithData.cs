@@ -18,5 +18,10 @@ namespace GameLib
         {
             agent.HandleCommunicationResponse(Timestamp, WaitUntilTime, SenderId, Agreement, data, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"ActionCommunicationResponseWithData (agentId: {AgentId}, messageId: {MessageId}, senderId: {SenderId}, data: {data}, agreement status: {Agreement})";
+        }
     }
 }

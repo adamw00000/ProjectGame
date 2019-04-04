@@ -19,5 +19,10 @@ namespace GameLib
         {
             agent.HandleTimePenaltyError(Timestamp, WaitUntilTime, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"RequestTimePenaltyError (agentId: {AgentId}, messageId: {MessageId})";
+        }
     }
 }

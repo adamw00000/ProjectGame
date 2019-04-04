@@ -14,9 +14,15 @@ namespace GameLib
             Rules = rules;
             AbsoluteStart = absStart;
         }
+
         public override void Handle(Agent agent)
         {
             agent.HandleStartGameMessage(AgentId, Rules, AbsoluteStart);
+        }
+
+        public override string ToString()
+        {
+            return $"GameStartMessage (agentId: {AgentId}, rules: {Rules}, absolute start timestamp: {AbsoluteStart})";
         }
     }
 }

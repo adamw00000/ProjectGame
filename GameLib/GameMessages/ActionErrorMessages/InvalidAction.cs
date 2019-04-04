@@ -14,5 +14,10 @@ namespace GameLib
         {
             agent.HandleInvalidActionError(Timestamp, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"InvalidAction (agentId: {AgentId}, messageId: {MessageId})";
+        }
     }
 }

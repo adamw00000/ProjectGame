@@ -10,5 +10,10 @@ namespace GameLib
         {
             agent.PutPiece(this);
         }
+
+        public override string ToString()
+        {
+            return "ActionPutPiece";
+        }
     }
 }

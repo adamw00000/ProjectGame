@@ -17,5 +17,10 @@ namespace GameLib
         {
             agent.HandleJoinResponse(IsConnected);
         }
+
+        public override string ToString()
+        {
+            return $"JoinGameResponseMessage (agentId: {AgentId}, was successfully connected: {IsConnected})";
+        }
     }
 }
