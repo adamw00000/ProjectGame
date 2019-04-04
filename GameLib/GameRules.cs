@@ -5,7 +5,8 @@ namespace GameLib
     public class GameRules
     {
         public int BoardWidth { get; }
-        public int BoardHeight { get; }
+        public int BoardHeight => TaskAreaHeight + 2 * GoalAreaHeight;
+        public int TaskAreaHeight { get; }
         public int GoalAreaHeight { get; }
         public int GoalCount { get; }
         public int TeamSize { get; }
@@ -67,7 +68,7 @@ namespace GameLib
                 throw new InvalidRulesException("Invalid communication multiplier");
 
             BoardWidth = boardWidth;
-            BoardHeight = boardHeight;
+            TaskAreaHeight = boardHeight - 2 * goalAreaHeight;
             GoalAreaHeight = goalAreaHeight;
             GoalCount = goalCount;
             TeamSize = teamSize;

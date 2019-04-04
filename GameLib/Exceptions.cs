@@ -18,17 +18,32 @@ namespace GameLib
         }
     }
 
-    public class InvalidMoveException : Exception
+    public class OutOfBoardMoveException : Exception
     {
-        public InvalidMoveException() : base()
+        public OutOfBoardMoveException()
         {
         }
 
-        public InvalidMoveException(string message) : base(message)
+        public OutOfBoardMoveException(string message) : base(message)
         {
         }
 
-        public InvalidMoveException(string message, Exception innerException) : base(message, innerException)
+        public OutOfBoardMoveException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
+
+    public class AgentCollisionMoveException : Exception
+    {
+        public AgentCollisionMoveException()
+        {
+        }
+
+        public AgentCollisionMoveException(string message) : base(message)
+        {
+        }
+
+        public AgentCollisionMoveException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }
@@ -164,6 +179,21 @@ namespace GameLib
         }
 
         public PendingLeaderCommunicationException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
+
+    public class CommunicationInProgressException : Exception
+    {
+        public CommunicationInProgressException()
+        {
+        }
+
+        public CommunicationInProgressException(string message) : base(message)
+        {
+        }
+
+        public CommunicationInProgressException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

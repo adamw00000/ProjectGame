@@ -20,10 +20,9 @@ namespace GameLib
                 {
                     BoardTable[x, y] = new AgentField()
                     {
-                        Distance = -1,
-                        Timestamp = DateTime.UtcNow,
                         IsGoal = isGoalArea ? AgentFieldState.Unknown : AgentFieldState.NA
                     };
+                    BoardTable[x, y].SetDistance(-1, -1);
                 }
             }
 
@@ -52,9 +51,9 @@ namespace GameLib
             }
         }
 
-        public void SetDistance(int x, int y, int distance)
+        public void SetDistance(int x, int y, int distance, int timestamp)
         {
-            BoardTable[x, y].Distance = distance;
+            BoardTable[x, y].SetDistance(distance, timestamp);
         }
 
         public void SetFieldState(int x, int y, AgentFieldState isGoal)
@@ -68,8 +67,7 @@ namespace GameLib
             {
                 if (!IsInBounds(x, y))
                     throw new InvalidDiscoveryResultException($"({x},{y}) is outside the board");
-                BoardTable[x, y].Distance = distance;
-                BoardTable[x, y].Timestamp = (new DateTime()).AddMilliseconds(timestamp);
+                BoardTable[x, y].SetDistance(distance, timestamp);
             }
         }
 
@@ -85,8 +83,7 @@ namespace GameLib
                     if (IsResultBoardOlder(partnerBoard, x, y))
                         continue;
 
-                    BoardTable[x, y].Distance = partnerBoard[x, y].Distance;
-                    BoardTable[x, y].Timestamp = partnerBoard[x, y].Timestamp;
+                    BoardTable[x, y].SetDistance(partnerBoard[x, y].Distance, partnerBoard[x, y].Timestamp);
                 }
             }
         }

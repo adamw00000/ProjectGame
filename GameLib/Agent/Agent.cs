@@ -140,7 +140,7 @@ namespace GameLib
             {
                 awaitedMessages.Remove(messageId);
                 logger.Debug($"Agent {id} picked up piece");
-                state.PickUpPiece();
+                state.PickUpPiece(timestamp);
                 state.WaitUntilTime = waitUntilTime;
 
                 logger.Debug($"Agent {id} - waiting for message {lastMessageId}, received {messageId}");
@@ -201,7 +201,7 @@ namespace GameLib
                 MoveDirection direction = ((ActionMove)awaitedMessages[messageId]).Direction;
                 awaitedMessages.Remove(messageId);
                 logger.Debug($"Agent {id} - current time: {state.CurrentTimestamp()}, wait until: {waitUntilTime}");
-                state.Move(direction, distance); //Needs to be fixed with collection of actions
+                state.Move(direction, distance, timestamp);
                 state.WaitUntilTime = waitUntilTime;
 
                 logger.Debug($"Agent {id} - waiting for message {lastMessageId}, received {messageId}");
