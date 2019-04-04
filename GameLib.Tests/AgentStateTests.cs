@@ -27,28 +27,6 @@ namespace GameLib.Tests
             return state;
         }
 
-        //private static AgentField[,] GetFields()
-        //{
-        //    return new AgentField[3, 3]
-        //        {
-        //            {
-        //                new AgentField { Distance = 2, IsGoal = AgentFieldState.Unknown, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
-        //                new AgentField { Distance = 1, IsGoal = AgentFieldState.DiscoveredGoal, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
-        //                new AgentField { Distance = 2, IsGoal = AgentFieldState.DiscoveredNotGoal, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
-        //            },
-        //            {
-        //                new AgentField { Distance = 1, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
-        //                new AgentField { Distance = 0, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
-        //                new AgentField { Distance = 1, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
-        //            },
-        //            {
-        //                new AgentField { Distance = 2, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
-        //                new AgentField { Distance = 1, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
-        //                new AgentField { Distance = 2, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
-        //            }
-        //        };
-        //}
-
         [Theory]
         [InlineData(4, 1)]
         [InlineData(7, 0)]
