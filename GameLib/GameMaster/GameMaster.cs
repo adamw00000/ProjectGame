@@ -355,14 +355,6 @@ namespace GameLib
                 return;
             }
 
-            if (targetData == null)
-            {
-                logger.Warn($"Agent {targetAgentId} sent null as targetData");
-                Message response = messageFactory.CreateInvalidActionErrorMessage(targetAgentId, CurrentTimestamp(), targetMessageId);
-                connection.Send(response);
-                return;
-            }
-
             (object data, string senderMessageId) senderData;
             try
             {
@@ -371,7 +363,7 @@ namespace GameLib
             catch (CommunicationException e) //if communication data does not exist
             {
                 int timestamp = CurrentTimestamp();
-                logger.Warn(e, $"Error during proccesing answer from {targetAgentId} to {requesterAgentId} with data {targetData.ToString()}: ");
+                logger.Warn(e, $"Error during proccesing answer from {targetAgentId} to {requesterAgentId} with data {(targetData == null ? "null" : targetData.ToString())}: ");
                 Message response = messageFactory.CreateInvalidActionErrorMessage(targetAgentId, timestamp, targetMessageId);
                 connection.Send(response);
                 return;
@@ -381,8 +373,16 @@ namespace GameLib
             {
                 int timestamp = CurrentTimestamp();
                 logger.Debug($"Request of agent {requesterAgentId} was rejected by {targetAgentId}");
-                Message response = messageFactory.CreateCommunicationResponseWithDataMessage(requesterAgentId, timestamp, 
+                Message response = messageFactory.CreateCommunicationResponseWithDataMessage(requesterAgentId, timestamp,
                     CalculateDelay(requesterAgentId).waitUntil, targetAgentId, false, null, senderData.senderMessageId);
+                connection.Send(response);
+                return;
+            }
+
+            if (targetData == null)
+            {
+                logger.Warn($"Agent {targetAgentId} sent null as targetData");
+                Message response = messageFactory.CreateInvalidActionErrorMessage(targetAgentId, CurrentTimestamp(), targetMessageId);
                 connection.Send(response);
                 return;
             }
