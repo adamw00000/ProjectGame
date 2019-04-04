@@ -43,7 +43,7 @@ namespace GameLib
         {
             state.JoinGame(choosenTeam, wantsToBeLeader);
             
-            Message joinMessage = unwrappedMessageFactory.JoinGameMessage(choosenTeam, wantsToBeLeader);
+            Message joinMessage = unwrappedMessageFactory.CreateJoinGameMessage(choosenTeam, wantsToBeLeader);
 
             connection.Send(joinMessage);
             logger.Debug($"Agent with temporary id {tempId} sent JoinGameMessage. He wants to join team {(choosenTeam == Team.Blue ? "Blue" : "Red")} and {(wantsToBeLeader ? "wants" : "doesn't want")} to be a leader.");
