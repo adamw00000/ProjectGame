@@ -39,16 +39,18 @@ namespace GameLib
             }
         }
 
-        public bool IsInTaskArea(AgentState agentState, (int X, int Y) position) =>
-                                    agentState.Position.X >= agentState.Board.GoalAreaHeight &&
-                                    agentState.Position.X < agentState.Board.Height - agentState.Board.GoalAreaHeight &&
-                                    agentState.Position.X >= 0 && agentState.Position.X < agentState.Board.Height;
+        // Not used, not CHANGED TO NEW COORDINATES
+        //public bool IsInTaskArea(AgentState agentState, (int X, int Y) position) =>
+        //                            agentState.Position.X >= agentState.Board.GoalAreaHeight &&
+        //                            agentState.Position.X < agentState.Board.Height - agentState.Board.GoalAreaHeight &&
+        //                            agentState.Position.X >= 0 && agentState.Position.X < agentState.Board.Height;
+
         public bool IsInGoalArea(AgentState agentState, (int X, int Y) position)
         {
-            if (agentState.Team == Team.Red)
-                return position.X < agentState.Board.GoalAreaHeight && position.X >= 0;
+            if (agentState.Team == Team.Blue)
+                return position.Y < agentState.Board.GoalAreaHeight && position.Y >= 0;
             else
-                return position.X >= agentState.Board.Height - agentState.Board.GoalAreaHeight && position.X < agentState.Board.Height;
+                return position.Y >= agentState.Board.Height - agentState.Board.GoalAreaHeight && position.Y < agentState.Board.Height;
         }
 
         public (int X, int Y) SimulateMove(AgentState state, MoveDirection direction)
@@ -58,19 +60,19 @@ namespace GameLib
             switch (direction)
             {
                 case MoveDirection.Left:
-                    newPosition.Y--;
-                    break;
-
-                case MoveDirection.Right:
-                    newPosition.Y++;
-                    break;
-
-                case MoveDirection.Up:
                     newPosition.X--;
                     break;
 
-                case MoveDirection.Down:
+                case MoveDirection.Right:
                     newPosition.X++;
+                    break;
+
+                case MoveDirection.Up:
+                    newPosition.Y++;
+                    break;
+
+                case MoveDirection.Down:
+                    newPosition.Y--;
                     break;
             }
 

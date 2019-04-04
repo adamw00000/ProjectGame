@@ -1,6 +1,8 @@
-﻿namespace GameLib
+﻿using System;
+
+namespace GameLib
 {
-    public struct GameMasterField
+    public struct GameMasterField: ICloneable
     {
         public int Distance { get; set; }
 
@@ -10,5 +12,16 @@
         public bool HasValidPiece => Piece?.IsValid == true;
 
         public bool IsGoal { get; set; }
+
+        public object Clone()
+        {
+            GameMasterField field = new GameMasterField();
+            field.Distance = Distance;
+            field.Piece = (Piece)Piece?.Clone();
+            field.IsGoal = IsGoal;
+            return field;
+
+        }
+
     }
 }

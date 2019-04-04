@@ -10,11 +10,21 @@ namespace GameLib
         private readonly IGameMasterMessageFactory messageFactory;
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public GameMasterState state; //GUI needs it
+        private GameMasterState state;
         private readonly GameRules rules;
         private DateTime start;
         public bool gameStarted = false;
 
+        public GameMasterStateSnapshot GameMasterStateSnapshot
+        {
+            get
+            {
+                return new GameMasterStateSnapshot(state);
+            }
+
+        }
+
+        public GameMaster(GameRules rules, IConnection connection)
         public GameMaster(GameRules rules, IConnection connection, IGameMasterMessageFactory messageFactory)
         {
             this.connection = connection;
