@@ -315,25 +315,25 @@ namespace GameLib
 
         public void CommunicationRequestWithData(int requesterAgentId, int targetAgentId, object data, string messageId)
         {
-            logger.Debug($"Agent {requesterAgentId} wants to communicate with {targetAgentId} and data {data.ToString()}");
+            logger.Debug($"Agent {requesterAgentId} wants to communicate with {targetAgentId} and {(data == null ? "no data" : $"data {data.ToString()}")}");
             try
             {
                 state.SaveCommunicationData(requesterAgentId, targetAgentId, data, messageId);
-                logger.Debug($"Agent {requesterAgentId} successfully requested agent {targetAgentId} to communicate with data {data.ToString()}");
+                logger.Debug($"Agent {requesterAgentId} successfully requested agent {targetAgentId} to communicate with {(data == null ? "no data" : $"data {data.ToString()}")}");
                 Message request = messageFactory.CreateCommunicationRequestMessage(requesterAgentId, targetAgentId, CurrentTimestamp());
                 connection.Send(request);
             }
             catch (PendingLeaderCommunicationException e)
             {
                 (int timestamp, int waitUntil) = CalculateDelay(requesterAgentId);
-                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {data.ToString()}: ");
+                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and {(data == null ? "no data" : $"data {data.ToString()}")}: ");
                 Message response = messageFactory.CreateInvalidActionErrorMessage(requesterAgentId, CurrentTimestamp(), messageId);
                 connection.Send(response);
             }
             catch (DelayException e)
             {
                 (int timestamp, int waitUntil) = CalculateDelay(requesterAgentId);
-                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {data.ToString()}");
+                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {(data == null ? "no data" : $"data {data.ToString()}")}");
                 Message response = messageFactory.CreateTimePenaltyErrorMessage(requesterAgentId, timestamp, waitUntil, messageId);
                 connection.Send(response);
             }
@@ -341,7 +341,7 @@ namespace GameLib
 
         public void CommunicationAgreementWithData(int requesterAgentId, int targetAgentId, bool agreement, object targetData, string targetMessageId)
         {
-            logger.Debug($"Agent {requesterAgentId} was tried to be answered by {targetAgentId} and data {(targetData == null ? "null" : targetData.ToString())}");
+            logger.Debug($"Agent {requesterAgentId} was tried to be answered by {targetAgentId} and {(targetData == null ? "no data" : $"data {targetData.ToString()}")}");
             try
             {
                 state.VerifyLeaderCommunicationState(requesterAgentId, targetAgentId, agreement);
@@ -349,7 +349,7 @@ namespace GameLib
             catch (PendingLeaderCommunicationException e)
             {
                 int timestamp = CurrentTimestamp();
-                logger.Warn(e, $"Error during proccesing answer from {targetAgentId} to {requesterAgentId} with data {(targetData == null ? "null" : targetData.ToString())} (pending leader communication): ");
+                logger.Warn(e, $"Error during proccesing answer from {targetAgentId} to {requesterAgentId} with {(targetData == null ? "no data" : $"data {targetData.ToString()}")} (pending leader communication): ");
                 Message response = messageFactory.CreateInvalidActionErrorMessage(targetAgentId, timestamp, targetMessageId);
                 connection.Send(response);
                 return;
@@ -363,12 +363,13 @@ namespace GameLib
             catch (CommunicationException e) //if communication data does not exist
             {
                 int timestamp = CurrentTimestamp();
-                logger.Warn(e, $"Error during proccesing answer from {targetAgentId} to {requesterAgentId} with data {(targetData == null ? "null" : targetData.ToString())}: ");
+                logger.Warn(e, $"Error during proccesing answer from {targetAgentId} to {requesterAgentId} with {(targetData == null ? "no data" : $"data {targetData.ToString()}")}: ");
                 Message response = messageFactory.CreateInvalidActionErrorMessage(targetAgentId, timestamp, targetMessageId);
                 connection.Send(response);
                 return;
             }
 
+            // I had to change the order becouse we need to get MessageId before sending response
             if (!agreement)
             {
                 int timestamp = CurrentTimestamp();
