@@ -17,7 +17,7 @@ namespace GameLib
 
         public override string ToString()
         {
-            return $"InvalidAction (agentId: {AgentId})";
+            return $"InvalidAction (agentId: {AgentId}, messageId: {MessageId})";
         }
     }
 }

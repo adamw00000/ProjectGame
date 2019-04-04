@@ -22,7 +22,7 @@ namespace GameLib
 
         public override string ToString()
         {
-            return $"RequestTimePenaltyError (agentId: {AgentId})";
+            return $"RequestTimePenaltyError (agentId: {AgentId}, messageId: {MessageId})";
         }
     }
 }

@@ -18,7 +18,7 @@ namespace GameLib
 
         public override string ToString()
         {
-            return $"InvalidMoveDirectionError (agentId: {AgentId})";
+            return $"InvalidMoveDirectionError (agentId: {AgentId}, messageId: {MessageId})";
         }
     }
 }
