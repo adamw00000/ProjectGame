@@ -377,7 +377,7 @@ namespace GameLib
                 return;
             }
 
-            // I had to change the order becouse we need to get MessageId before sending response
+            // I had to change the order because we need to get MessageId before sending response
             if (!agreement)
             {
                 int timestamp = CurrentTimestamp();
