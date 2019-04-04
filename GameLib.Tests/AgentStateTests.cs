@@ -27,28 +27,6 @@ namespace GameLib.Tests
             return state;
         }
 
-        private static AgentField[,] GetFields()
-        {
-            return new AgentField[3, 3]
-                {
-                    {
-                        new AgentField { Distance = 2, IsGoal = AgentFieldState.Unknown, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
-                        new AgentField { Distance = 1, IsGoal = AgentFieldState.DiscoveredGoal, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
-                        new AgentField { Distance = 2, IsGoal = AgentFieldState.DiscoveredNotGoal, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
-                    },
-                    {
-                        new AgentField { Distance = 1, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
-                        new AgentField { Distance = 0, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
-                        new AgentField { Distance = 1, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
-                    },
-                    {
-                        new AgentField { Distance = 2, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-100) },
-                        new AgentField { Distance = 1, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-200) },
-                        new AgentField { Distance = 2, IsGoal = AgentFieldState.NA, Timestamp = DateTime.UtcNow.AddMilliseconds(-300) }
-                    }
-                };
-        }
-
         [Theory]
         [InlineData(4, 1)]
         [InlineData(7, 0)]
@@ -90,7 +68,7 @@ namespace GameLib.Tests
             var state = GetSetUpState(rules);
             var distance = 1;
 
-            state.Move(direction, distance);
+            state.Move(direction, distance, 0);
 
             var expectedX = rules.AgentStartX;
             var expectedY = rules.AgentStartY;
@@ -119,13 +97,13 @@ namespace GameLib.Tests
         [Theory]
         [InlineData(MoveDirection.Left)]
         [InlineData(MoveDirection.Down)]
-        public void Move_WhenMoveIsInvalid_ThrowsInvalidMoveException(MoveDirection direction)
+        public void Move_WhenMoveGoesOutOfBoard_ThrowsOutOfBoardMoveException(MoveDirection direction)
         {
             var rules = new AgentGameRules(boardWidth: 8, boardHeight: 8, agentStartX: 0, agentStartY: 0, teamSize: 2, agentIdsFromTeam: new int[] { 0, 1 }, leaderId: 0);
             var state = GetSetUpState(rules);
             var distance = 1;
 
-            Should.Throw<InvalidMoveException>(() => state.Move(direction, distance));
+            Should.Throw<OutOfBoardMoveException>(() => state.Move(direction, distance, 0));
         }
 
         [Theory]
@@ -137,8 +115,8 @@ namespace GameLib.Tests
             var rules = GetDefaultRules();
             var state = GetSetUpState(rules);
 
-            var callTime = DateTime.UtcNow.AddMilliseconds(-1);
-            state.Move(MoveDirection.Down, distance);
+            var callTime = 0;
+            state.Move(MoveDirection.Down, distance, 1);
 
             AgentField field = state.Board[state.Position.X, state.Position.Y];
             field.Distance.ShouldBe(distance);
@@ -152,7 +130,7 @@ namespace GameLib.Tests
             var state = GetSetUpState(rules);
             state.HoldsPiece = false;
 
-            state.PickUpPiece();
+            state.PickUpPiece(0);
 
             state.HoldsPiece.ShouldBe(true);
             state.PieceState.ShouldBe(PieceState.Unknown);
@@ -166,9 +144,9 @@ namespace GameLib.Tests
             int x = 1;
             int y = 1;
             state.Position = (x, y);
-            state.Board.SetDistance(x, y, 5);
+            state.Board.SetDistance(x, y, 5, 0);
 
-            state.PickUpPiece();
+            state.PickUpPiece(0);
 
             state.Board[x, y].Distance.ShouldBe(-1);
         }
@@ -179,7 +157,7 @@ namespace GameLib.Tests
             var state = GetState();
             state.HoldsPiece = true;
 
-            Should.Throw<PieceOperationException>(() => state.PickUpPiece(), "Picking up piece when agent has one already");
+            Should.Throw<PieceOperationException>(() => state.PickUpPiece(0), "Picking up piece when agent has one already");
         }
 
         [Theory]
@@ -282,7 +260,7 @@ namespace GameLib.Tests
             var rules = GetDefaultRules();
             var state = GetSetUpState(rules);
             var resultBoard = new AgentBoard(rules);
-            SetupCommunicationBoards(state.Board, resultBoard, DateTime.MaxValue, distance);
+            SetupCommunicationBoards(state.Board, resultBoard, int.MaxValue, distance);
 
             state.UpdateBoardWithCommunicationData(resultBoard);
 
@@ -302,7 +280,7 @@ namespace GameLib.Tests
             var rules = GetDefaultRules();
             var state = GetSetUpState(rules);
             var resultBoard = new AgentBoard(rules);
-            SetupCommunicationBoards(state.Board, resultBoard, DateTime.MinValue, distance);
+            SetupCommunicationBoards(state.Board, resultBoard, 0, distance);
 
             state.UpdateBoardWithCommunicationData(resultBoard);
 
@@ -315,15 +293,14 @@ namespace GameLib.Tests
             }
         }
 
-        private static void SetupCommunicationBoards(AgentBoard agentBoard, AgentBoard resultBoard, in DateTime value, int distance)
+        private static void SetupCommunicationBoards(AgentBoard agentBoard, AgentBoard resultBoard, int value, int distance)
         {
             for (int x = 0; x < resultBoard.Width; x++)
             {
                 for (int y = 0; y < resultBoard.Height; y++)
                 {
-                    agentBoard.BoardTable[x, y].Distance = -1;
-                    resultBoard.BoardTable[x, y].Distance = distance;
-                    resultBoard.BoardTable[x, y].Timestamp = value;
+                    agentBoard.BoardTable[x, y].SetDistance(-1, 1000);
+                    resultBoard.BoardTable[x, y].SetDistance(distance, value);
                 }
             }
         }

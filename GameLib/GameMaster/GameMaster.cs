@@ -49,11 +49,12 @@ namespace GameLib
                 logger.Debug(e, $"Agent {agentId} didn't join the game :");
             }
             connection.Send(response);
-            
+
             if (state.PlayerStates.Count == rules.TeamSize * 2)
             {
                 logger.Info("Both teams are full - preparing to start the game");
                 start = DateTime.UtcNow;
+                long absoluteStartGameTimestamp = (long)(start - new DateTime(1970, 1, 1)).TotalMilliseconds;
                 state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, rules.TeamSize);
                 var rulesDict = state.GetAgentGameRules();
                 gameStarted = true;
@@ -62,7 +63,7 @@ namespace GameLib
                 foreach (var (playerId, state) in state.PlayerStates)
                 {
                     logger.Debug($"Agent {playerId} is in {state.Team}{(state.IsLeader ? " and is leader}" : "")}");
-                    Message startGameMessage = messageFactory.CreateGameStartMessage(playerId, (long)(start - new DateTime()).TotalMilliseconds, rulesDict[playerId]);
+                    Message startGameMessage = messageFactory.CreateGameStartMessage(playerId, absoluteStartGameTimestamp, rulesDict[playerId]);
                     connection.Send(startGameMessage);
                 }
                 logger.Info("Game started");
@@ -72,11 +73,6 @@ namespace GameLib
         public async Task GeneratePieces()
         {
             state.GeneratePiece();
-            /*while (!state.GameEnded)
-            {
-                state.GeneratePiece();
-                await Task.Delay(rules.PieceSpawnInterval).ConfigureAwait(false);
-            }*/
         }
 
         public async Task ListenJoiningAndStart()
@@ -144,7 +140,6 @@ namespace GameLib
             }
             catch (PendingLeaderCommunicationException e)
             {
-                (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 logger.Warn(e, $"Agent {agentId} couldn't move: ");
                 response = messageFactory.CreateInvalidActionErrorMessage(agentId, CurrentTimestamp(), messageId);
             }
@@ -154,10 +149,15 @@ namespace GameLib
                 (int timestamp, int waitUntil) = CalculateDelay(agentId);
                 response = messageFactory.CreateTimePenaltyErrorMessage(agentId, timestamp, waitUntil, messageId);
             }
-            catch (InvalidMoveException e)
+            catch (OutOfBoardMoveException e)
             {
                 logger.Warn(e, $"Agent {agentId} couldn't move: ");
                 response = messageFactory.CreateInvalidMoveDirectionErrorMessage(agentId, CurrentTimestamp(), messageId);
+            }
+            catch (AgentCollisionMoveException e)
+            {
+                logger.Warn(e, $"Agent {agentId} couldn't move: ");
+                response = messageFactory.CreateInvalidActionErrorMessage(agentId, CurrentTimestamp(), messageId);
             }
             connection.Send(response);
         }
@@ -344,6 +344,13 @@ namespace GameLib
                 (int timestamp, int waitUntil) = CalculateDelay(requesterAgentId);
                 logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {data.ToString()}");
                 Message response = messageFactory.CreateTimePenaltyErrorMessage(requesterAgentId, timestamp, waitUntil, messageId);
+                connection.Send(response);
+            }
+            catch (CommunicationInProgressException e)
+            {
+                int timestamp = CurrentTimestamp();
+                logger.Warn(e, $"Agent {requesterAgentId} couldn't request communication with {targetAgentId} and data {data.ToString()}");
+                Message response = messageFactory.CreateInvalidActionErrorMessage(requesterAgentId, timestamp, messageId);
                 connection.Send(response);
             }
         }

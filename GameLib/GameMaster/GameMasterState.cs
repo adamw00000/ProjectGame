@@ -15,7 +15,7 @@ namespace GameLib
         private readonly GameRules gameRules;
         public int UndiscoveredRedGoalsLeft;
         public int UndiscoveredBlueGoalsLeft;
-        private readonly Dictionary<(int senderId, int targetId), (object data, string senderMessageId)?> CommunicationData = 
+        private readonly Dictionary<(int senderId, int targetId), (object data, string senderMessageId)?> CommunicationData =
             new Dictionary<(int senderId, int targetId), (object data, string senderMessageId)?>();
 
         public readonly GameMasterBoard Board;
@@ -128,14 +128,14 @@ namespace GameLib
             }
 
             if (!IsOnBoard(newPosition))
-                throw new InvalidMoveException("Agent tried to move out of board!");
-
-            if (IsAnyAgentOn(newPosition))
-                throw new InvalidMoveException("Agent tried to on the space occupied by another agent!");
+                throw new OutOfBoardMoveException("Agent tried to move out of board!");
 
             var enemyTeam = player.Team == Team.Blue ? Team.Red : Team.Blue;
             if (Board.IsAgentInGoalArea(newPosition.X, newPosition.Y, enemyTeam))
-                throw new InvalidMoveException("Agent tried to move onto enemy goal area!");
+                throw new OutOfBoardMoveException("Agent tried to move onto enemy goal area!");
+
+            if (IsAnyAgentOn(newPosition))
+                throw new AgentCollisionMoveException("Agent tried to on the space occupied by another agent!");
 
             player.Position = newPosition;
             PlayerStates[playerId] = player;
@@ -365,6 +365,11 @@ namespace GameLib
             PlayerState senderPlayer = PlayerStates[senderId];
 
             CheckEligibility(senderPlayer);
+
+            if (CommunicationData.ContainsKey((senderId, targetId)) && CommunicationData[(senderId, targetId)] != null)
+            {
+                throw new CommunicationInProgressException($"Agent {senderId} waits for response from {targetId}");
+            }
 
             if (senderPlayer.IsLeader)
             {
