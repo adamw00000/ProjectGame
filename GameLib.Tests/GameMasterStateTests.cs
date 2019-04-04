@@ -49,7 +49,7 @@ namespace GameLib.Tests
 
             foreach (var (x, y) in state.Board.PiecesPositions)
             {
-                bool inTaskArea = x >= rules.GoalAreaHeight && x < rules.BoardHeight - rules.GoalAreaHeight;
+                bool inTaskArea = y >= rules.GoalAreaHeight && y < rules.BoardHeight - rules.GoalAreaHeight;
                 state.Board.BoardTable[x, y].HasPiece.ShouldBe(inTaskArea);
             }
         }
@@ -83,7 +83,7 @@ namespace GameLib.Tests
             var state = Helper.GetGameMasterState(rules);
             var agentId = 0;
 
-            state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY, Team.Red));
+            state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY, Team.Blue));
 
             state.Move(agentId, direction);
 
@@ -92,19 +92,19 @@ namespace GameLib.Tests
             switch (direction)
             {
                 case MoveDirection.Left:
-                    expectedY--;
-                    break;
-
-                case MoveDirection.Right:
-                    expectedY++;
-                    break;
-
-                case MoveDirection.Up:
                     expectedX--;
                     break;
 
-                case MoveDirection.Down:
+                case MoveDirection.Right:
                     expectedX++;
+                    break;
+
+                case MoveDirection.Up:
+                    expectedY++;
+                    break;
+
+                case MoveDirection.Down:
+                    expectedY--;
                     break;
             }
 
@@ -136,7 +136,9 @@ namespace GameLib.Tests
 
         [Theory]
         [InlineData(0, 0, MoveDirection.Left)]
+        [InlineData(0, 0, MoveDirection.Down)]
         [InlineData(7, 7, MoveDirection.Right)]
+        [InlineData(7, 7, MoveDirection.Up)]
         public void Move_WhenAgentMovesOutsideBoard_ThrowsInvalidMoveException(int agentX, int agentY, MoveDirection direction)
         {
             var rules = Helper.GetDefaultRules();
@@ -160,15 +162,15 @@ namespace GameLib.Tests
             var direction = MoveDirection.Up;
 
             state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY));
-            state.PlayerStates.Add(agentId + 1, new PlayerState(agentX - 1, agentY));
+            state.PlayerStates.Add(agentId + 1, new PlayerState(agentX, agentY + 1));
 
             Should.Throw<InvalidMoveException>(() => state.Move(agentId, direction), "Agent tried to on the space occupied by another agent!");
             state.PlayerStates[0].LastActionDelay.ShouldBe(0);
         }
 
         [Theory]
-        [InlineData(6, 0, Team.Red, MoveDirection.Down)]
-        [InlineData(2, 2, Team.Blue, MoveDirection.Up)]
+        [InlineData(0, 2, Team.Red, MoveDirection.Down)]
+        [InlineData(2, 5, Team.Blue, MoveDirection.Up)]
         public void Move_WhenAgentMovesToEnemyGoalArea_ThrowsInvalidMoveException(int agentX, int agentY, Team team, MoveDirection direction)
         {
             var rules = Helper.GetDefaultRules();
@@ -196,23 +198,24 @@ namespace GameLib.Tests
 
             Should.Throw<DelayException>(() => state.Move(agentId, direction));
         }
+
         [Theory]
-        [InlineData(5, 0, MoveDirection.Right, 0)]
-        [InlineData(3, 1, MoveDirection.Right, 2)]
-        [InlineData(7, 1, MoveDirection.Up, 1)]
-        [InlineData(5, 2, MoveDirection.Up, 2)]
-        [InlineData(3, 4, MoveDirection.Right, 1)]
-        [InlineData(5, 4, MoveDirection.Down, 3)]
-        [InlineData(7, 7, MoveDirection.Left, 6)]
-        public void Move_WhenSucceded_ReturnsDistanceToClosestPiece(int agentX, int agentY, MoveDirection direction, int expected)
+        [InlineData(0, 5, MoveDirection.Right, Team.Blue, 0)]
+        [InlineData(1, 3, MoveDirection.Right, Team.Red, 2)]
+        [InlineData(1, 7, MoveDirection.Down, Team.Red, 1)]
+        [InlineData(2, 5, MoveDirection.Up, Team.Red, 2)]
+        [InlineData(4, 3, MoveDirection.Right, Team.Blue, 1)]
+        [InlineData(4, 5, MoveDirection.Down, Team.Blue, 1)]
+        [InlineData(7, 7, MoveDirection.Left, Team.Red, 6)]
+        public void Move_WhenSucceded_ReturnsDistanceToClosestPiece(int agentX, int agentY, MoveDirection direction, Team agentTeam, int expected)
         {
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);
             var agentId = 0;
 
-            state.GeneratePieceAt(3, 4);
-            state.GeneratePieceAt(5, 1);
-            state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY));
+            state.GeneratePieceAt(4, 3);
+            state.GeneratePieceAt(1, 5);
+            state.PlayerStates.Add(agentId, new PlayerState(agentX, agentY, agentTeam));
 
             int result = state.Move(agentId, direction);
 
@@ -307,6 +310,7 @@ namespace GameLib.Tests
 
             state.PickUpPiece(agentId);
 
+            // [x, y] := Goal Areas are on left and right
             int[,] results = { {3,2,1,2,3,4,5,6},
                                {2,1,0,1,2,3,4,5},
                                {3,2,1,2,3,4,5,6},
@@ -469,29 +473,30 @@ namespace GameLib.Tests
 
             int agentId = 0;
 
-            state.PlayerStates.Add(agentId, new PlayerState(0, 0, Team.Red) { LastActionDelay = 0, Piece = new Piece(0.5) });
+            state.PlayerStates.Add(agentId, new PlayerState(0, 0, Team.Blue) { LastActionDelay = 0, Piece = new Piece(0.5) });
 
             state.PutPiece(agentId);
 
             state.PlayerStates[agentId].Piece.ShouldBe(null);
             state.Board[0, 0].HasPiece.ShouldBe(false);
         }
+
         [Fact]
         public void PutPieceInGoalArea_WhenSucceeded_LowersNumberOfUndiscoveredGoals()
         {
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);
 
-            int undiscoveredRedGoals = state.UndiscoveredRedGoalsLeft;
+            int undiscoveredBlueGoals = state.UndiscoveredBlueGoalsLeft;
 
             int agentId = 0;
 
             state.Board[0, 0] = new GameMasterField() { IsGoal = true };
-            state.PlayerStates.Add(agentId, new PlayerState(0, 0, Team.Red) { LastActionDelay = 0, Piece = new Piece(1) });
+            state.PlayerStates.Add(agentId, new PlayerState(0, 0, Team.Blue) { LastActionDelay = 0, Piece = new Piece(1) });
 
             state.PutPiece(agentId);
 
-            state.UndiscoveredRedGoalsLeft.ShouldBe(undiscoveredRedGoals - 1);
+            state.UndiscoveredBlueGoalsLeft.ShouldBe(undiscoveredBlueGoals - 1);
         }
 
         [Theory]
@@ -505,7 +510,7 @@ namespace GameLib.Tests
             int agentId = 0;
 
             state.Board[0, 0] = new GameMasterField() { IsGoal = isGoal };
-            state.PlayerStates.Add(agentId, new PlayerState(0, 0, Team.Red) { LastActionDelay = 0, Piece = new Piece(1) });
+            state.PlayerStates.Add(agentId, new PlayerState(0, 0, Team.Blue) { LastActionDelay = 0, Piece = new Piece(1) });
             var expectedResult = isGoal ? PutPieceResult.PieceGoalRealized : PutPieceResult.PieceGoalUnrealized;
 
             var result = state.PutPiece(agentId);
@@ -522,12 +527,13 @@ namespace GameLib.Tests
             int agentId = 0;
 
             state.Board[0, 0] = new GameMasterField() { IsGoal = true };
-            state.PlayerStates.Add(agentId, new PlayerState(0, 0, Team.Red) { LastActionDelay = 0, Piece = new Piece(0) });
+            state.PlayerStates.Add(agentId, new PlayerState(0, 0, Team.Blue) { LastActionDelay = 0, Piece = new Piece(0) });
 
             var result = state.PutPiece(agentId);
 
             result.ShouldBe(PutPieceResult.PieceWasFake);
         }
+
         [Fact]
         public void DiscoveringAllGoals_EndsGame()
         {
@@ -539,23 +545,23 @@ namespace GameLib.Tests
 
             int idCounter = 0;
 
-            for (int i = 0; i < state.Board.GoalAreaHeight; i++) //sets red players where red goals are
+            for (int y = 0; y < state.Board.GoalAreaHeight; y++) //sets red players where red goals are
             {
-                for (int j= 0; j < state.Board.Width; j++)
+                for (int x = 0; x < state.Board.Width; x++)
                 {
-                    if(state.Board[i,j].IsGoal)
+                    if (state.Board[x, y].IsGoal)
                     {
-                        state.PlayerStates.Add(idCounter++, new PlayerState(i, j, Team.Red) { LastActionDelay = 0, Piece = new Piece(1) });
+                        state.PlayerStates.Add(idCounter++, new PlayerState(x, y, Team.Blue) { LastActionDelay = 0, Piece = new Piece(1) });
                     }
                 }
             }
-            for (int i = state.Board.Height - state.Board.GoalAreaHeight; i < state.Board.Height; i++) //sets blue players where blue goals are
+            for (int y = state.Board.Height - state.Board.GoalAreaHeight; y < state.Board.Height; y++) //sets blue players where blue goals are
             {
-                for (int j = 0; j < state.Board.Width; j++)
+                for (int x = 0; x < state.Board.Width; x++)
                 {
-                    if (state.Board[i, j].IsGoal)
+                    if (state.Board[x, y].IsGoal)
                     {
-                        state.PlayerStates.Add(idCounter++, new PlayerState(i, j, Team.Blue) { LastActionDelay = 0, Piece = new Piece(1) });
+                        state.PlayerStates.Add(idCounter++, new PlayerState(x, y, Team.Red) { LastActionDelay = 0, Piece = new Piece(1) });
                     }
                 }
             }
@@ -574,8 +580,8 @@ namespace GameLib.Tests
 
         [Theory]
         [InlineData(4, 4)]
-        [InlineData(3, 5)]
-        [InlineData(2, 0)]
+        [InlineData(5, 3)]
+        [InlineData(0, 2)]
         public void PutPieceInTaskArea_PutsPieceBackOnBoard_AndPlayerDoesntHaveIt(int x, int y)
         {
             var rules = Helper.GetStaticDefaultRules();
@@ -836,6 +842,7 @@ namespace GameLib.Tests
             state.PlayerStates.Add(agentId, new PlayerState(x, y) { LastActionDelay = 0 });
 
             DiscoveryResult discoveryResult = state.Discover(agentId);
+            // [x, y]
             int[,] distances = { {3,2,1,2,3,4,5,6},
                                  {2,1,0,1,2,3,4,5},
                                  {3,2,1,2,3,4,5,6},
@@ -902,8 +909,8 @@ namespace GameLib.Tests
             var senderId = 0;
             var targetId = 1;
             var previousSenderDelay = 1000 * 3600 * 24;
-            state.PlayerStates.Add(senderId, new PlayerState(-1,-1) { LastRequestTimestamp = DateTime.UtcNow, LastActionDelay = previousSenderDelay});
-            state.PlayerStates.Add(targetId, new PlayerState(-1,-1));
+            state.PlayerStates.Add(senderId, new PlayerState(-1, -1) { LastRequestTimestamp = DateTime.UtcNow, LastActionDelay = previousSenderDelay });
+            state.PlayerStates.Add(targetId, new PlayerState(-1, -1));
 
             var beforeTimestamp = DateTime.UtcNow.AddMilliseconds(-1);
 
@@ -1004,9 +1011,9 @@ namespace GameLib.Tests
             var state = Helper.GetGameMasterState(rules);
             Helper.AddPlayers(state, rules);
 
-            state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, rules.BoardWidth);
+            state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, teamSize: rules.BoardWidth);
 
-            bool[,] positions = new bool[rules.BoardHeight, rules.BoardWidth];
+            bool[,] positions = new bool[rules.BoardWidth, rules.BoardHeight];
 
             for (int i = 0; i < state.PlayerStates.Count; i++)
             {
@@ -1015,8 +1022,8 @@ namespace GameLib.Tests
             }
             for (int i = 0; i < rules.BoardWidth; i++)
             {
-                positions[0, i].ShouldBe(true);
-                positions[rules.BoardHeight - 1, i].ShouldBe(true);
+                positions[i, 0].ShouldBe(true);
+                positions[i, rules.BoardHeight - 1].ShouldBe(true);
             }
         }
 
@@ -1027,9 +1034,9 @@ namespace GameLib.Tests
             var state = Helper.GetGameMasterState(rules);
             Helper.AddPlayers(state, rules);
 
-            state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, rules.BoardWidth);
+            state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, teamSize: rules.BoardWidth);
 
-            bool[,] positions = new bool[rules.BoardHeight, rules.BoardWidth];
+            bool[,] positions = new bool[rules.BoardWidth, rules.BoardHeight];
 
             for (int i = 0; i < state.PlayerStates.Count; i++)
             {
@@ -1038,8 +1045,8 @@ namespace GameLib.Tests
             }
             for (int i = 0; i < rules.BoardWidth; i++)
             {
-                positions[0, i].ShouldBe(true);
-                positions[rules.BoardHeight - 1, i].ShouldBe(true);
+                positions[i, 0].ShouldBe(true);
+                positions[i, rules.BoardHeight - 1].ShouldBe(true);
             }
         }
 
@@ -1052,7 +1059,7 @@ namespace GameLib.Tests
 
             state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, 12);
 
-            bool[,] positions = new bool[rules.BoardHeight, rules.BoardWidth];
+            bool[,] positions = new bool[rules.BoardWidth, rules.BoardHeight];
 
             for (int i = 0; i < state.PlayerStates.Count; i++)
             {
@@ -1061,23 +1068,23 @@ namespace GameLib.Tests
             }
             for (int i = 0; i < rules.BoardWidth; i++)
             {
-                positions[0, i].ShouldBe(true);
-                positions[rules.BoardHeight - 1, i].ShouldBe(true);
+                positions[i, 0].ShouldBe(true);
+                positions[i, rules.BoardHeight - 1].ShouldBe(true);
             }
             for (int i = 0; i < 2; i++)
             {
-                positions[1, i].ShouldBe(false);
-                positions[rules.BoardHeight - 2, i].ShouldBe(false);
+                positions[i, 1].ShouldBe(false);
+                positions[i, rules.BoardHeight - 2].ShouldBe(false);
             }
             for (int i = 2; i < 6; i++)
             {
-                positions[1, i].ShouldBe(true);
-                positions[rules.BoardHeight - 2, i].ShouldBe(true);
+                positions[i, 1].ShouldBe(true);
+                positions[i, rules.BoardHeight - 2].ShouldBe(true);
             }
             for (int i = 6; i < 8; i++)
             {
-                positions[1, i].ShouldBe(false);
-                positions[rules.BoardHeight - 2, i].ShouldBe(false);
+                positions[i, 1].ShouldBe(false);
+                positions[i, rules.BoardHeight - 2].ShouldBe(false);
             }
         }
 
@@ -1090,7 +1097,7 @@ namespace GameLib.Tests
 
             state.InitializePlayerPositions(rules.BoardWidth, rules.BoardHeight, rules.TeamSize);
 
-            bool[,] positions = new bool[rules.BoardHeight, rules.BoardWidth];
+            bool[,] positions = new bool[rules.BoardWidth, rules.BoardHeight];
 
             for (int i = 0; i < state.PlayerStates.Count; i++)
             {
@@ -1099,10 +1106,10 @@ namespace GameLib.Tests
             }
             for (int i = 0; i < rules.BoardWidth; i++)
             {
-                positions[0, i].ShouldBe(true);
-                positions[1, i].ShouldBe(true);
-                positions[rules.BoardHeight - 1, i].ShouldBe(true);
-                positions[rules.BoardHeight - 2, i].ShouldBe(true);
+                positions[i, 0].ShouldBe(true);
+                positions[i, 1].ShouldBe(true);
+                positions[i, rules.BoardHeight - 1].ShouldBe(true);
+                positions[i, rules.BoardHeight - 2].ShouldBe(true);
             }
         }
 
@@ -1120,7 +1127,7 @@ namespace GameLib.Tests
         [Theory]
         [InlineData(0, 3)]
         [InlineData(2, -1)]
-        public void JoinAgent_WithNonExistingTeamId_ThrowsGameSetupException(int agentId, int teamId) 
+        public void JoinAgent_WithNonExistingTeamId_ThrowsGameSetupException(int agentId, int teamId)
         {
             var rules = Helper.GetDefaultRules();
             var state = Helper.GetGameMasterState(rules);

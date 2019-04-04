@@ -6,9 +6,9 @@ namespace GameLib
 {
     public class ActionCommunicationAgreement : Action
     {
-        int RequesterId;
-        bool Agreement;
-        object Data;
+        public int RequesterId;
+        public bool Agreement;
+        public object Data;
 
         public ActionCommunicationAgreement(int requesteerId, bool agreement, object data)
         {
@@ -19,7 +19,7 @@ namespace GameLib
 
         public override void Execute(Agent agent)
         {
-            agent.AgreeOnCommunication(RequesterId, Agreement, Data);
+            agent.AgreeOnCommunication(this);
         }
     }
 }

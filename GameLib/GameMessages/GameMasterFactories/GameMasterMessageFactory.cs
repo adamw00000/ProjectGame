@@ -23,7 +23,7 @@ namespace GameLib
             return new ActionCommunicationResponseWithData(agentId, timestamp, waitUntil, senderId, agreement, data, messageId);
         }
 
-        public Message CreateDestoryPieceResponseMessage(int agentId, int timestamp, int waitUntil, string messageId)
+        public Message CreateDestroyPieceResponseMessage(int agentId, int timestamp, int waitUntil, string messageId)
         {
             return new ActionDestroyPieceResponse(agentId, timestamp, waitUntil, messageId);
         }
@@ -58,9 +58,9 @@ namespace GameLib
             return new JoinGameResponseMessage(agentId, isConnected);
         }
 
-        public Message CreateMakeMoveResponseMessage(int agentId, int timestamp, int waitUntil, int distance, string messageId)
+        public Message CreateMoveResponseMessage(int agentId, int timestamp, int waitUntil, int distance, string messageId)
         {
-            return new ActionMakeMoveResponse(agentId, timestamp, waitUntil, distance, messageId);
+            return new ActionMoveResponse(agentId, timestamp, waitUntil, distance, messageId);
         }
 
         public Message CreatePickPieceResponseMessage(int agentId, int timestamp, int waitUntil, string messageId)

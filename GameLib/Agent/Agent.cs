@@ -18,10 +18,9 @@ namespace GameLib
         private readonly AgentState state;
         private AgentGameRules rules;
 
-        private HashSet<string> awaitedMessages = new HashSet<string>();
+        private Dictionary<string, Action> awaitedMessages = new Dictionary<string, Action>();
         private string lastMessageId;
         private bool waitForResponse;
-        private MoveDirection lastMoveDirection;
 
         private IAgentMessageFactory unwrappedMessageFactory;
         private AgentMessageFactoryWrapper messageFactory;
@@ -43,7 +42,7 @@ namespace GameLib
         {
             state.JoinGame(choosenTeam, wantsToBeLeader);
             
-            Message joinMessage = unwrappedMessageFactory.JoinGameMessage(choosenTeam, wantsToBeLeader);
+            Message joinMessage = unwrappedMessageFactory.CreateJoinGameMessage(choosenTeam, wantsToBeLeader);
 
             connection.Send(joinMessage);
             logger.Debug($"Agent with temporary id {tempId} sent JoinGameMessage. He wants to join team {(choosenTeam == Team.Blue ? "Blue" : "Red")} and {(wantsToBeLeader ? "wants" : "doesn't want")} to be a leader.");
@@ -137,7 +136,7 @@ namespace GameLib
 
         public void HandlePickPieceResponse(int timestamp, int waitUntilTime, string messageId)
         {
-            if (awaitedMessages.Contains(messageId))
+            if (awaitedMessages.ContainsKey(messageId))
             {
                 awaitedMessages.Remove(messageId);
                 logger.Debug($"Agent {id} picked up piece");
@@ -157,7 +156,7 @@ namespace GameLib
 
         public void HandlePutPieceResponse(int timestamp, int waitUntilTime, PutPieceResult putPieceResult, string messageId)
         {
-            if (awaitedMessages.Contains(messageId))
+            if (awaitedMessages.ContainsKey(messageId))
             {
                 awaitedMessages.Remove(messageId);
                 logger.Debug($"Agent {id} put piece on the board, result: {putPieceResult.ToString()}");
@@ -177,7 +176,7 @@ namespace GameLib
 
         public void HandleDestroyPieceResponse(int timestamp, int waitUntilTime, string messageId)
         {
-            if (awaitedMessages.Contains(messageId))
+            if (awaitedMessages.ContainsKey(messageId))
             {
                 awaitedMessages.Remove(messageId);
                 logger.Debug($"Agent {id} destroyed his piece");
@@ -197,11 +196,12 @@ namespace GameLib
 
         public void HandleMoveResponse(int timestamp, int waitUntilTime, int distance, string messageId)
         {
-            if (awaitedMessages.Contains(messageId))
+            if (awaitedMessages.ContainsKey(messageId))
             {
+                MoveDirection direction = ((ActionMove)awaitedMessages[messageId]).Direction;
                 awaitedMessages.Remove(messageId);
                 logger.Debug($"Agent {id} - current time: {state.CurrentTimestamp()}, wait until: {waitUntilTime}");
-                state.Move(lastMoveDirection, distance); //Needs to be fixed with collection of actions
+                state.Move(direction, distance); //Needs to be fixed with collection of actions
                 state.WaitUntilTime = waitUntilTime;
 
                 logger.Debug($"Agent {id} - waiting for message {lastMessageId}, received {messageId}");
@@ -219,7 +219,7 @@ namespace GameLib
 
         public void HandleDiscoverResponse(int timestamp, int waitUntilTime, DiscoveryResult closestPieces, string messageId)
         {
-            if (awaitedMessages.Contains(messageId))
+            if (awaitedMessages.ContainsKey(messageId))
             {
                 awaitedMessages.Remove(messageId);
                 logger.Debug($"Agent {id} discovered his surroundings");
@@ -239,7 +239,7 @@ namespace GameLib
 
         public void HandleCheckPieceResponse(int timestamp, int waitUntilTime, bool isValid, string messageId)
         {
-            if (awaitedMessages.Contains(messageId))
+            if (awaitedMessages.ContainsKey(messageId))
             {
                 awaitedMessages.Remove(messageId);
                 logger.Debug($"Agent {id} checked his piece validity - it is {(isValid ? "valid" : "invalid")}");
@@ -269,7 +269,7 @@ namespace GameLib
         {
             try
             {
-                if (awaitedMessages.Contains(messageId))
+                if (awaitedMessages.ContainsKey(messageId))
                 {
                     awaitedMessages.Remove(messageId);
                     logger.Debug($"Agent {id} received communication response from agent {senderId}, he " + (agreement ? "agreed" : "didn't agree") + " for the communication");
@@ -322,65 +322,64 @@ namespace GameLib
             waitForResponse = false;
         }
 
-        public void Move(MoveDirection direction)
+        public void Move(ActionMove action)
         {
             waitForResponse = true;
-            lastMoveDirection = direction;
-            (Message message, string messageId) = messageFactory.MoveMessage(direction);
-            SendAndAddToCollection(message, messageId);
+            (Message message, string messageId) = messageFactory.MoveMessage(action.Direction);
+            SendAndAddToCollection(message, messageId, action);
         }
 
-        public void CheckPiece()
+        public void CheckPiece(ActionCheckPiece action)
         {
             waitForResponse = true;
             (Message message, string messageId) = messageFactory.CheckPieceMessage();
-            SendAndAddToCollection(message, messageId);
+            SendAndAddToCollection(message, messageId, action);
         }
 
-        public void DestroyPiece()
+        public void DestroyPiece(ActionDestroyPiece action)
         {
             waitForResponse = true;
             (Message message, string messageId) = messageFactory.DestroyMessage();
-            SendAndAddToCollection(message, messageId);
+            SendAndAddToCollection(message, messageId, action);
         }
 
-        public void PutPiece()
+        public void PutPiece(ActionPutPiece action)
         {
             waitForResponse = true;
             (Message message, string messageId) = messageFactory.PutPieceMessage();
-            SendAndAddToCollection(message, messageId);
+            SendAndAddToCollection(message, messageId, action);
         }
 
-        public void PickPiece()
+        public void PickPiece(ActionPickPiece action)
         {
             waitForResponse = true;
             (Message message, string messageId) = messageFactory.PickPieceMessage();
-            SendAndAddToCollection(message, messageId);
+            SendAndAddToCollection(message, messageId, action);
         }
 
-        public void Communicate(int targetId, object data)
+        public void Communicate(ActionCommunicate action)
         {
-            (Message message, string messageId) = messageFactory.CommunicationRequestMessage(targetId, data);
-            SendAndAddToCollection(message, messageId);
+            (Message message, string messageId) = messageFactory.CommunicationRequestMessage(action.TargetId, action.Data);
+            SendAndAddToCollection(message, messageId, action);
         }
 
-        public void Discover()
+        public void Discover(ActionDiscovery action)
         {
             waitForResponse = true;
             (Message message, string messageId) = messageFactory.DiscoveryMessage();
-            SendAndAddToCollection(message, messageId);
+            SendAndAddToCollection(message, messageId, action);
         }
 
-        public void AgreeOnCommunication(int requesterId, bool agreement, object data)
+        public void AgreeOnCommunication(ActionCommunicationAgreement action)
         {
-            waitForResponse = agreement;
-            (Message message, string messageId) = messageFactory.CommunicationAgreementMessage(requesterId, agreement, data);
-            SendAndAddToCollection(message, messageId);
+            waitForResponse = action.Agreement;
+            (Message message, string messageId) = messageFactory.CommunicationAgreementMessage(action.RequesterId, action.Agreement, action.Data);
+            SendAndAddToCollection(message, messageId, action);
         }
 
-        private void SendAndAddToCollection(Message message, string messageId)
+        private void SendAndAddToCollection(Message message, string messageId, Action action)
         {
-            awaitedMessages.Add(messageId);
+            awaitedMessages.Add(messageId, action);
             lastMessageId = messageId;
             logger.Debug($"Agent {id} sent message {messageId}");
             connection.Send(message);
