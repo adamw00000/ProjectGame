@@ -2,11 +2,11 @@
 
 namespace GameLib
 {
-    internal class ActionMakeMoveResponse : ActionResponseMessage
+    internal class ActionMoveResponse : ActionResponseMessage
     {
         private readonly int closestPieceDistance;
 
-        public ActionMakeMoveResponse(int agentId, int timestamp, int waitUntilTime, int closestPieceDistance, string messageId) : base(agentId, timestamp, waitUntilTime, messageId)
+        public ActionMoveResponse(int agentId, int timestamp, int waitUntilTime, int closestPieceDistance, string messageId) : base(agentId, timestamp, waitUntilTime, messageId)
         {
             this.closestPieceDistance = closestPieceDistance;
         }

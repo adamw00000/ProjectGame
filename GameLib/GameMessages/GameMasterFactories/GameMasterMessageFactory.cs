@@ -60,7 +60,7 @@ namespace GameLib
 
         public Message CreateMoveResponseMessage(int agentId, int timestamp, int waitUntil, int distance, string messageId)
         {
-            return new ActionMakeMoveResponse(agentId, timestamp, waitUntil, distance, messageId);
+            return new ActionMoveResponse(agentId, timestamp, waitUntil, distance, messageId);
         }
 
         public Message CreatePickPieceResponseMessage(int agentId, int timestamp, int waitUntil, string messageId)
