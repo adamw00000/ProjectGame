@@ -355,6 +355,14 @@ namespace GameLib
                 return;
             }
 
+            if (agreement && targetData == null)
+            {
+                logger.Warn($"Agent {targetAgentId} sent null as targetData");
+                Message response = messageFactory.CreateInvalidActionErrorMessage(targetAgentId, CurrentTimestamp(), targetMessageId);
+                connection.Send(response);
+                return;
+            }
+
             (object data, string senderMessageId) senderData;
             try
             {
@@ -376,14 +384,6 @@ namespace GameLib
                 logger.Debug($"Request of agent {requesterAgentId} was rejected by {targetAgentId}");
                 Message response = messageFactory.CreateCommunicationResponseWithDataMessage(requesterAgentId, timestamp,
                     CalculateDelay(requesterAgentId).waitUntil, targetAgentId, false, null, senderData.senderMessageId);
-                connection.Send(response);
-                return;
-            }
-
-            if (targetData == null)
-            {
-                logger.Warn($"Agent {targetAgentId} sent null as targetData");
-                Message response = messageFactory.CreateInvalidActionErrorMessage(targetAgentId, CurrentTimestamp(), targetMessageId);
                 connection.Send(response);
                 return;
             }
