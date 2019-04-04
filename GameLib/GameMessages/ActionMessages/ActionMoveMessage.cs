@@ -17,5 +17,10 @@ namespace GameLib
         {
             gameMaster.MoveAgent(AgentId, MoveDirection, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"ActionMoveMessage (agentId: {AgentId}, messageId: {MessageId}, direction: {MoveDirection})";
+        }
     }
 }

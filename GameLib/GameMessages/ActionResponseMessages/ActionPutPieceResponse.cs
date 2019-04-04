@@ -14,5 +14,10 @@ namespace GameLib
         {
             agent.HandlePutPieceResponse(Timestamp, WaitUntilTime, PutPieceResult, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"ActionPutPieceResponse (agentId: {AgentId}, messageId: {MessageId}, put piece result: {PutPieceResult})";
+        }
     }
 }

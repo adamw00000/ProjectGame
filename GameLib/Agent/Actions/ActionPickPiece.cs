@@ -10,5 +10,10 @@ namespace GameLib
         {
             agent.PickPiece(this);
         }
+
+        public override string ToString()
+        {
+            return "ActionPickPiece";
+        }
     }
 }

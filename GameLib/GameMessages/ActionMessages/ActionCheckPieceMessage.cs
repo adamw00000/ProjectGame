@@ -12,5 +12,10 @@ namespace GameLib
         {
             gameMaster.CheckPiece(AgentId, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"ActionCheckPieceMessage (agentId: {AgentId}, messageId: {MessageId})";
+        }
     }
 }

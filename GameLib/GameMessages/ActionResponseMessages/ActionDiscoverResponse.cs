@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace GameLib
 {
@@ -14,6 +15,12 @@ namespace GameLib
         public override void Handle(Agent agent)
         {
             agent.HandleDiscoverResponse(Timestamp, WaitUntilTime, closestPieces, MessageId);
+        }
+
+        public override string ToString()
+        {
+            return $"ActionDiscoverResponse (agentId: {AgentId}, messageId: {MessageId}, " +
+                $"discovery result: {closestPieces.Fields.Aggregate("", (s, tuple) => s + $"({tuple.x},{tuple.y},{tuple.distance}) ")})";
         }
     }
 }

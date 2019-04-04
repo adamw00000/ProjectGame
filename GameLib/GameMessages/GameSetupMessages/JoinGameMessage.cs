@@ -19,5 +19,10 @@ namespace GameLib
         {
             gameMaster.JoinGame(AgentId, TeamId, WantToBeLeader);
         }
+
+        public override string ToString()
+        {
+            return $"JoinGameMessage (agentId: {AgentId}, teamId: {TeamId}, does agent want to be a leader: {WantToBeLeader})";
+        }
     }
 }

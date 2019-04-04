@@ -10,5 +10,10 @@ namespace GameLib
         {
             agent.DestroyPiece(this);
         }
+
+        public override string ToString()
+        {
+            return "ActionDestroyPiece";
+        }
     }
 }

@@ -13,5 +13,10 @@ namespace GameLib
         {
             agent.HandlePickPieceResponse(Timestamp, WaitUntilTime, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"ActionPickPieceResponse (agentId: {AgentId}, messageId: {MessageId})";
+        }
     }
 }

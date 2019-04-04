@@ -11,5 +11,10 @@
         {
             gameMaster.DestroyPiece(AgentId, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"ActionDestroyPieceMessage (agentId: {AgentId}, messageId: {MessageId})";
+        }
     }
 }

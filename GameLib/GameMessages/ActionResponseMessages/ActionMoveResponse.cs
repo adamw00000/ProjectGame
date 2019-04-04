@@ -15,5 +15,10 @@ namespace GameLib
         {
             agent.HandleMoveResponse(Timestamp, WaitUntilTime, closestPieceDistance, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"ActionMoveResponse (agentId: {AgentId}, messageId: {MessageId}, Manhattan distance: {closestPieceDistance})";
+        }
     }
 }

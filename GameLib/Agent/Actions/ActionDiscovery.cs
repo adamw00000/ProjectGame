@@ -10,5 +10,10 @@ namespace GameLib
         {
             agent.Discover(this);
         }
+
+        public override string ToString()
+        {
+            return "ActionDiscovery";
+        }
     }
 }

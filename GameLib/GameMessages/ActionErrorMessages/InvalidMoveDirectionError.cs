@@ -15,5 +15,10 @@ namespace GameLib
         {
             agent.HandleInvalidMoveDirectionError(Timestamp, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"InvalidMoveDirectionError (agentId: {AgentId})";
+        }
     }
 }

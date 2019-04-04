@@ -10,5 +10,10 @@
         {
             agent.HandleDestroyPieceResponse(Timestamp, WaitUntilTime, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"ActionDestroyPieceResponse (agentId: {AgentId}, messageId: {MessageId})";
+        }
     }
 }

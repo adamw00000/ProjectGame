@@ -10,5 +10,10 @@
         {
             gameMaster.PutPiece(AgentId, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"ActionPutPieceMessage (agentId: {AgentId}, messageId: {MessageId})";
+        }
     }
 }

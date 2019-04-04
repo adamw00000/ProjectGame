@@ -17,5 +17,10 @@ namespace GameLib
         {
             agent.EndGame(WinningTeam, Timestamp);
         }
+
+        public override string ToString()
+        {
+            return $"GameOverMessage (agentId: {AgentId}, winning team: {WinningTeam})";
+        }
     }
 }

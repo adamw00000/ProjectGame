@@ -10,5 +10,10 @@
         {
             gameMaster.PickPiece(AgentId, MessageId);
         }
+
+        public override string ToString()
+        {
+            return $"ActionPickPieceMessage (agentId: {AgentId}, messageId: {MessageId})";
+        }
     }
 }
