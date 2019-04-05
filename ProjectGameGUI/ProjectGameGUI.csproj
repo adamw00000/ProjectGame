@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Update="**\*.xaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="**\*.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.7.0" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.7.0" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.7.0" />
+    <PackageReference Include="NLog" Version="4.5.11" />
+    <PackageReference Include="ReactiveUI" Version="9.12.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GameLib\GameLib.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="NLog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
